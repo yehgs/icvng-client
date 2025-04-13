@@ -111,6 +111,7 @@ export default function HeaderTest() {
       [subcategoryId]: !expandedSubcategories[subcategoryId],
     });
   };
+  console.log(categoryStructure);
 
   const navigateToComparisonPage = () => {
     navigate('/compare');
@@ -318,7 +319,7 @@ export default function HeaderTest() {
                                   <div>
                                     <Link
                                       to={`/category/${category.slug}/subcategory/${subcategory.slug}`}
-                                      className="font-bold mb-2 hover:text-secondary-200"
+                                      className="font-bold hover:text-secondary-200"
                                     >
                                       {subcategory.name}
                                     </Link>
@@ -330,7 +331,7 @@ export default function HeaderTest() {
                                           .map((brand) => (
                                             <li
                                               key={brand._id}
-                                              className="text-gray-600 hover:text-gray-900 py-1 cursor-pointer"
+                                              className="text-gray-600 hover:text-gray-900 py-1 cursor-pointer text-sm"
                                             >
                                               <Link to={`/brand/${brand.slug}`}>
                                                 {brand.name}
@@ -358,16 +359,16 @@ export default function HeaderTest() {
                               >
                                 <Link
                                   to={`/brand/${brand.slug}`}
-                                  className="flex flex-col items-center text-center"
+                                  className="flex items-center text-center"
                                 >
                                   <img
                                     src={
-                                      brand.logo || `/api/placeholder/120/120`
+                                      brand.image || `/api/placeholder/120/120`
                                     }
                                     alt={brand.name}
-                                    className="w-24 h-24 object-cover rounded-full mb-2"
+                                    className="w-20 h-10 object-cover rounded-full mb-2"
                                   />
-                                  <span className="font-medium">
+                                  <span className="font-medium text-xs">
                                     {brand.name}
                                   </span>
                                 </Link>
@@ -418,7 +419,14 @@ export default function HeaderTest() {
                         navigateToCategory(category._id, category.slug)
                       }
                     >
-                      <span>{category.name}</span>
+                      <div className="flex items-center">
+                        <img
+                          src={category.image}
+                          alt={category.name}
+                          className="w-8 h-8 mr-2"
+                        />
+                        <span>{category.name}</span>
+                      </div>
                       {category.subcategories &&
                         category.subcategories.length > 0 && (
                           <ChevronRight size={20} />
@@ -450,7 +458,14 @@ export default function HeaderTest() {
                           )
                         }
                       >
-                        <span>{subcategory.name}</span>
+                        <div className="flex items-center">
+                          <img
+                            src={subcategory.image}
+                            alt={subcategory.name}
+                            className="w-8 h-8 mr-2"
+                          />
+                          <span>{subcategory.name}</span>
+                        </div>
                         {subcategory.brands &&
                           subcategory.brands.length > 0 && (
                             <ChevronRight size={20} />
@@ -466,7 +481,14 @@ export default function HeaderTest() {
                         className="p-4 hover:bg-gray-100 border-b cursor-pointer"
                         onClick={() => navigateToBrand(brand._id, brand.slug)}
                       >
-                        {brand.name}
+                        <div className="flex items-center">
+                          <img
+                            src={brand.image}
+                            alt={brand.name}
+                            className="w-16 h-8 mr-2"
+                          />
+                          <span>{brand.name}</span>
+                        </div>
                       </div>
                     ))
                   ) : (
