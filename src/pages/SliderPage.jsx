@@ -100,7 +100,7 @@ const SliderPage = () => {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setOpenAddSlider(true)}
-            className="bg-blue-500 text-white px-4 py-1 rounded hover:bg-blue-600 transition-colors"
+            className="bg-secondary-200 text-white px-4 py-1 rounded hover:bg-secondary-100 transition-colors"
           >
             Add Slider
           </button>

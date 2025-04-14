@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { valideURLConvert } from '../utils/valideURLConvert';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import HomeSlider from '../components/HomeSlider';
 
 const Home = () => {
   const loadingCategory = useSelector((state) => state.product.loadingCategory);
@@ -14,36 +15,10 @@ const Home = () => {
   const navigate = useNavigate();
 
   // States for carousels
-  const [currentBannerSlide, setCurrentBannerSlide] = useState(0);
   const [currentBrandSlide, setCurrentBrandSlide] = useState(0);
   const [currentProductSlide, setCurrentProductSlide] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredProducts, setFilteredProducts] = useState([]);
-
-  // Mock data for banner slider (replace with your actual data)
-  const bannerSlides = [
-    {
-      id: 1,
-      image:
-        'https://dummyimage.com/1200x400/7a5c3e/ffffff&text=Premium+Coffee+Beans',
-      title: 'Premium Coffee Beans',
-      description: 'Discover our selection of freshly roasted coffee beans',
-    },
-    {
-      id: 2,
-      image:
-        'https://dummyimage.com/1200x400/5e3a19/ffffff&text=Coffee+Equipment',
-      title: 'Coffee Equipment',
-      description: 'Professional brewing equipment for perfect coffee',
-    },
-    {
-      id: 3,
-      image:
-        'https://dummyimage.com/1200x400/3e2a12/ffffff&text=Special+Offers',
-      title: 'Special Offers',
-      description: 'Limited time discounts on select products',
-    },
-  ];
 
   // Mock data for side banners (replace with your actual data)
   const sideBanners = [
@@ -86,18 +61,6 @@ const Home = () => {
   };
 
   // Carousel controls
-  const nextBannerSlide = () => {
-    setCurrentBannerSlide((prev) =>
-      prev === bannerSlides.length - 1 ? 0 : prev + 1
-    );
-  };
-
-  const prevBannerSlide = () => {
-    setCurrentBannerSlide((prev) =>
-      prev === 0 ? bannerSlides.length - 1 : prev - 1
-    );
-  };
-
   const nextBrandSlide = () => {
     if (!brand || brand.length === 0) return;
     const maxSlides = Math.max(Math.ceil(brand.length / 6) - 1, 0);
@@ -121,14 +84,6 @@ const Home = () => {
     const maxSlides = Math.max(Math.ceil(filteredProducts.length / 4) - 1, 0);
     setCurrentProductSlide((prev) => (prev === 0 ? maxSlides : prev - 1));
   };
-
-  // Auto slide for banners
-  useEffect(() => {
-    const interval = setInterval(() => {
-      nextBannerSlide();
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [currentBannerSlide]);
 
   // Auto slide for brands
   useEffect(() => {
@@ -166,63 +121,13 @@ const Home = () => {
       {/* Main Banner Section with Side Banners */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-col md:flex-row gap-4">
-          {/* Main Banner Slider - 3/4 width on desktop */}
-          <div className="w-full md:w-3/4 relative overflow-hidden rounded shadow-lg h-64 md:h-96">
-            {bannerSlides.map((slide, index) => (
-              <div
-                key={slide.id}
-                className={`absolute w-full h-full transition-opacity duration-500 ease-in-out ${
-                  index === currentBannerSlide
-                    ? 'opacity-100 z-10'
-                    : 'opacity-0 z-0'
-                }`}
-              >
-                <img
-                  src={slide.image}
-                  alt={slide.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 text-white p-4">
-                  <h2 className="text-xl md:text-2xl font-bold">
-                    {slide.title}
-                  </h2>
-                  <p className="text-sm md:text-base mt-1">
-                    {slide.description}
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            {/* Navigation Buttons */}
-            <button
-              className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-20"
-              onClick={prevBannerSlide}
-            >
-              <ChevronLeft size={24} />
-            </button>
-            <button
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-20"
-              onClick={nextBannerSlide}
-            >
-              <ChevronRight size={24} />
-            </button>
-
-            {/* Dots Indicator */}
-            <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
-              {bannerSlides.map((_, index) => (
-                <button
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index === currentBannerSlide ? 'bg-white' : 'bg-gray-400'
-                  }`}
-                  onClick={() => setCurrentBannerSlide(index)}
-                />
-              ))}
-            </div>
+          {/* HomeSlider Component - 3/4 width on desktop */}
+          <div className="w-full md:w-3/4">
+            <HomeSlider />
           </div>
 
           {/* Side Banners - 1/4 width on desktop, stacked vertically */}
-          <div className="w-full md:w-1/4 flex flex-row md:flex-col gap-4 mt-4 md:mt-0">
+          <div className="w-full md:w-1/4 flex flex-row md:flex-col gap-4 mt-4 md:mt-0 md:h-96">
             {sideBanners.map((banner) => (
               <Link
                 key={banner.id}

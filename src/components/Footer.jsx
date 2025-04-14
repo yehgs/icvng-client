@@ -10,6 +10,7 @@ import {
   MapPin,
   ArrowRight,
 } from 'lucide-react';
+import banner1 from '../assets/web-mix-small.png';
 
 const PreFooter = () => {
   const [email, setEmail] = useState('');
@@ -47,16 +48,30 @@ const PreFooter = () => {
               />
               <button
                 type="submit"
-                className="bg-amber-700 hover:bg-amber-800 text-white px-4 py-2 rounded-md transition flex items-center justify-center"
+                className="bg-secondary-100 hover:bg-amber-800 text-white px-4 py-2 rounded-md transition flex items-center justify-center"
               >
                 Subscribe <ArrowRight size={16} className="ml-2" />
               </button>
             </form>
+            <h3 className="text-xl font-bold mt-8 text-gray-800 md:block hidden">
+              Follow Us
+            </h3>
+            <div className="flex gap-4 mt-4">
+              <a href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage">
+                <Facebook size={24} />
+              </a>
+              <a href="https://twitter.com/italiancoffee_v">
+                <Twitter size={24} />
+              </a>
+              <a href="https://www.instagram.com/italiancofeeventure/">
+                <Instagram size={24} />
+              </a>
+            </div>
           </div>
 
           {/* Product Categories */}
           <div className="w-full md:w-1/2">
-            <img src="../assets/web_mix.webp" alt="img coffee mix" />
+            <img src={banner1} alt="img coffee mix" />
           </div>
         </div>
       </div>
@@ -93,7 +108,7 @@ const Footer = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap">
             {/* Company Info */}
-            <div className="w-full md:w-1/4 mb-8 md:mb-0">
+            <div className="w-full md:w-2/5 mb-8 md:mb-0">
               <h3 className="text-xl font-bold mb-4">
                 Italian Coffee Ventures
               </h3>
@@ -118,7 +133,7 @@ const Footer = () => {
             </div>
 
             {/* Quick Links */}
-            <div className="w-full md:w-1/4 mb-8 md:mb-0">
+            <div className="w-full md:w-1/5 mb-8 md:mb-0">
               <FooterAccordionItem title="Quick Links">
                 <ul>
                   <li className="mb-2 hover:text-amber-300 cursor-pointer">
@@ -141,7 +156,7 @@ const Footer = () => {
             </div>
 
             {/* Customer Service */}
-            <div className="w-full md:w-1/4 mb-8 md:mb-0">
+            <div className="w-full md:w-1/5 mb-8 md:mb-0">
               <FooterAccordionItem title="Customer Service">
                 <ul>
                   <li className="mb-2 hover:text-amber-300 cursor-pointer">
@@ -164,16 +179,18 @@ const Footer = () => {
             </div>
 
             {/* Contact Information */}
-            <div className="w-full md:w-1/4">
+            <div className="w-full md:w-1/5">
               <FooterAccordionItem title="Contact Us">
                 <ul>
                   <li className="mb-3 flex items-start">
                     <MapPin size={20} className="mr-2 mt-1 flex-shrink-0" />
-                    <span>123 Coffee Avenue, Lagos, Nigeria</span>
+                    <span>3 Kafi Street, Alausa, Ikeja, Lagos, Nigeria</span>
                   </li>
                   <li className="mb-3 flex items-center">
                     <Phone size={20} className="mr-2 flex-shrink-0" />
-                    <span>+234 123 456 7890</span>
+                    <a href="tel:08039827194" className="decoration-none">
+                      08039827194
+                    </a>
                   </li>
                   <li className="flex items-center">
                     <Mail size={20} className="mr-2 flex-shrink-0" />
@@ -190,7 +207,7 @@ const Footer = () => {
           </div>
 
           {/* Copyright and Payment Methods */}
-          <div className="mt-12 pt-6 border-t border-amber-800">
+          <div className="mt-12 pt-6 border-t border-secondary-100">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm mb-4 md:mb-0">
                 © 2025 Italian Coffee Ventures. All rights reserved.
