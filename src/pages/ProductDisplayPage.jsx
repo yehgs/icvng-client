@@ -218,7 +218,7 @@ const ProductDisplayPage = () => {
             {/* Price and Stock */}
             <div className="space-y-2">
               <div className="flex items-end gap-3">
-                <span className="text-3xl font-bold text-green-700">
+                <span className="text-3xl font-bold text-secondary-200">
                   {DisplayPriceInNaira(
                     pricewithDiscount(data.price, data.discount)
                   )}

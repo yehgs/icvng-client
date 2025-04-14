@@ -89,7 +89,7 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
         className="w-full bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-md cursor-not-allowed"
         disabled
       >
-        Out of Stock
+        Available on Request
       </button>
     );
   }
