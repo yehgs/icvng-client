@@ -405,11 +405,13 @@ const UploadProduct = () => {
               <option value="Breakfast Blend">Breakfast Blend</option>
               <option value="Espresso Blend">Espresso Blend</option>
               <option value="Mocha-Java Blend">Mocha-Java Blend</option>
+              <option value="Mocha Italia">Mocha Italia</option>
               <option value="African Blend">African Blend</option>
               <option value="Latin American Blend">Latin American Blend</option>
               <option value="Indonesian Blend">Indonesian Blend</option>
               <option value="Italian Roast Blend">Italian Roast Blend</option>
               <option value="French Roast Blend">French Roast Blend</option>
+              <option value="Varius Blend">Varius Blend</option>
             </select>
           </div>
 

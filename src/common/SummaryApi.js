@@ -221,6 +221,26 @@ const SummaryApi = {
     url: '/api/order/order-list',
     method: 'get',
   },
+  addSlider: {
+    url: '/api/slider/add',
+    method: 'POST',
+  },
+  getAllSliders: {
+    url: '/api/slider/all',
+    method: 'GET',
+  },
+  getActiveSliders: {
+    url: '/api/slider/active',
+    method: 'GET',
+  },
+  updateSlider: {
+    url: '/api/slider/update',
+    method: 'PUT',
+  },
+  deleteSlider: {
+    url: '/api/slider/delete',
+    method: 'DELETE',
+  },
 };
 
 export default SummaryApi;

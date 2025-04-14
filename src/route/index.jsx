@@ -14,6 +14,7 @@ import MyOrders from '../pages/MyOrders';
 import Address from '../pages/Address';
 import CategoryPage from '../pages/CategoryPage';
 import BrandPage from '../pages/BrandPage';
+import SliderPage from '../pages/SliderPage';
 import CoffeeRoastAreas from '../components/CoffeeRoastAreas';
 import SubCategoryPage from '../pages/SubCategoryPage';
 import UploadProduct from '../pages/UploadProduct';
@@ -118,6 +119,14 @@ const router = createBrowserRouter([
             element: (
               <AdminPermision>
                 <BrandPage />
+              </AdminPermision>
+            ),
+          },
+          {
+            path: 'slider',
+            element: (
+              <AdminPermision>
+                <SliderPage />
               </AdminPermision>
             ),
           },
