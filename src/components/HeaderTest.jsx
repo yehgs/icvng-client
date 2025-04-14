@@ -366,7 +366,7 @@ export default function HeaderTest() {
                                       brand.image || `/api/placeholder/120/120`
                                     }
                                     alt={brand.name}
-                                    className="w-20 h-10 object-cover rounded-full mb-2"
+                                    className="w-20 h-10 object-cover rounded-full mr-2"
                                   />
                                   <span className="font-medium text-xs">
                                     {brand.name}
@@ -513,7 +513,15 @@ export default function HeaderTest() {
                         className="p-4 hover:bg-gray-100 border-b cursor-pointer"
                         onClick={() => navigateToBrand(brand._id, brand.slug)}
                       >
-                        {brand.name}
+                        <div className="flex items-center">
+                          <img
+                            src={brand.image}
+                            ho
+                            alt={brand.name}
+                            className="w-8 h-8 mr-2"
+                          />
+                          <span>{brand.name}</span>
+                        </div>
                       </div>
                     ))
                   ) : (
