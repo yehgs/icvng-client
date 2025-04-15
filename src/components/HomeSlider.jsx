@@ -58,15 +58,15 @@ const HomeSlider = () => {
     setCurrentSlide(index);
   };
 
-  if (loading) {
-    return (
-      <div className="w-full h-64 md:h-96 bg-gray-200 animate-pulse rounded">
-        <div className="w-full h-full flex items-center justify-center text-gray-500">
-          Loading slider...
-        </div>
-      </div>
-    );
-  }
+  //   if (loading) {
+  //     return (
+  //       <div className="w-full h-64 md:h-96 bg-gray-200 animate-pulse rounded">
+  //         <div className="w-full h-full flex items-center justify-center text-gray-500">
+  //           Loading slider...
+  //         </div>
+  //       </div>
+  //     );
+  //   }
 
   if (sliders.length === 0) {
     return null; // Hide slider section if no sliders are available

@@ -30,10 +30,8 @@ export default function HeaderTest() {
   const user = useSelector((state) => state?.user);
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart);
-  const [openBottomMenu, setOpenBottomMenu] = useState(false);
   const { totalPrice, totalQty } = useGlobalContext();
   const [openCartSection, setOpenCartSection] = useState(false);
-  const productCategories = useSelector((state) => state.product.allCategory);
   const categoryStructure = useSelector(
     (state) => state.product.categoryStructure
   );
