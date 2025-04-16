@@ -397,6 +397,9 @@ const UploadProduct = () => {
               <option value="Arabica/Robusta Blend (80/20)">
                 Arabica/Robusta Blend (80/20)
               </option>
+              <option value="Arabica/Robusta Blend (40/60)">
+                Arabica/Robusta Blend (40/60)
+              </option>
               <option value="Single Origin Arabica">
                 Single Origin Arabica
               </option>
