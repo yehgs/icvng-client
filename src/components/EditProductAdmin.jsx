@@ -21,6 +21,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     weight: propsData.weight || '',
     blend: propsData.blend || '',
     aromaticProfile: propsData.aromaticProfile || '',
+    alcoholLevel: propsData.alcoholLevel || '',
     coffeeOrigin: propsData.coffeeOrigin || '',
     intensity: propsData.intensity || '',
     coffeeRoastAreas: propsData.coffeeRoastAreas || null,
@@ -341,6 +342,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   <option value="ACCESSORIES">Accessories</option>
                   <option value="COFFEE BEANS">Coffee Bean</option>
                   <option value="TEA">Tea</option>
+                  <option value="DRINKS">Drinks</option>
                 </select>
               </div>
 
@@ -419,6 +421,22 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   placeholder="Enter coffee Aromatic profile"
                   name="aromaticProfile"
                   value={data.aromaticProfile}
+                  onChange={handleChange}
+                  className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+                />
+              </div>
+
+              {/* Aromatic Profile Input */}
+              <div className="grid gap-1">
+                <label htmlFor="alcoholLevel" className="font-medium">
+                  Alcohol Level
+                </label>
+                <input
+                  id="alcoholLevel"
+                  type="text"
+                  placeholder="Enter coffee Alcohol level"
+                  name="alcoholLevel"
+                  value={data.alcoholLevel}
                   onChange={handleChange}
                   className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
                 />

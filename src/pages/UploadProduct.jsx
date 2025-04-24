@@ -24,6 +24,7 @@ const UploadProduct = () => {
     weight: '',
     blend: '',
     aromaticProfile: '',
+    alcoholLevel: '',
     coffeeOrigin: '',
     intensity: '',
     category: null,
@@ -202,6 +203,7 @@ const UploadProduct = () => {
           weight: '',
           blend: '',
           aromaticProfile: '',
+          alcoholLevel: '',
           coffeeOrigin: '',
           intensity: '',
           coffeeRoastAreas: null,
@@ -377,6 +379,7 @@ const UploadProduct = () => {
               <option value="ACCESSORIES">Accessories</option>{' '}
               <option value="COFFEE_BEANS">Coffee Bean</option>
               <option value="TEA">Tea</option>
+              <option value="DRINKS">Drinks</option>
             </select>
           </div>
 
@@ -448,6 +451,21 @@ const UploadProduct = () => {
               placeholder="Enter coffee Aromatic profile"
               name="aromaticProfile"
               value={data.aromaticProfile}
+              onChange={handleChange}
+              className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+            />
+          </div>
+
+          <div className="grid gap-1">
+            <label htmlFor="alcoholLevel" className="font-medium">
+              Alcohol Level
+            </label>
+            <input
+              id="alcoholLevel"
+              type="text"
+              placeholder="Enter coffee alcohol level"
+              name="alcoholLevel"
+              value={data.alcoholLevel}
               onChange={handleChange}
               className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
             />
