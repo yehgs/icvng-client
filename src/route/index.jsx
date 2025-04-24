@@ -28,7 +28,6 @@ import Success from '../pages/Success';
 import Cancel from '../pages/Cancel';
 import Attributes from '../components/Attributes';
 import Tags from '../components/Tags';
-import ShopPage from '../pages/Shop';
 
 const router = createBrowserRouter([
   {
@@ -42,10 +41,6 @@ const router = createBrowserRouter([
       {
         path: 'search',
         element: <SearchPage />,
-      },
-      {
-        path: 'shop',
-        element: <ShopPage />,
       },
       {
         path: 'login',
