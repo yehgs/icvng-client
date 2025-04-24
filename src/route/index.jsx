@@ -28,6 +28,7 @@ import Success from '../pages/Success';
 import Cancel from '../pages/Cancel';
 import Attributes from '../components/Attributes';
 import Tags from '../components/Tags';
+import WishlistPage from '../pages/WishListPage';
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: '',
         element: <Home />,
+      },
+      {
+        path: 'wishlist',
+        element: <WishlistPage />,
       },
       {
         path: 'search',

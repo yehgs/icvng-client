@@ -6,6 +6,7 @@ import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useSelector } from 'react-redux';
 import { FaMinus, FaPlus, FaShoppingCart } from 'react-icons/fa';
+import { BsCart4 } from 'react-icons/bs';
 
 const AddToCartButton = ({ data, quantity = 1 }) => {
   const { fetchCartItem, updateCartItem, deleteCartItem } = useGlobalContext();
@@ -131,7 +132,7 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
           ) : (
             <>
-              <FaShoppingCart className="mr-2" /> Add to Cart
+              <BsCart4 className="mr-2" /> Add to Cart
             </>
           )}
         </button>

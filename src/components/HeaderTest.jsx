@@ -19,10 +19,10 @@ import SearchInput from './Search';
 import useMobile from '../hooks/useMobile';
 import UserMenu from './UserMenu';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
-import { useGlobalContext } from '../provider/GlobalProvider';
+import { useGlobalContext, useWishlist } from '../provider/GlobalProvider';
 import DisplayCartItem from './DisplayCartItem';
 
-export default function HeaderTest() {
+export default function Header() {
   const [isMobile] = useMobile();
   const location = useLocation();
   const isSearchPage = location.pathname === '/search';
@@ -31,6 +31,7 @@ export default function HeaderTest() {
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart);
   const { totalPrice, totalQty } = useGlobalContext();
+  const { wishlistCount } = useWishlist(); // Get wishlist count from context
   const [openCartSection, setOpenCartSection] = useState(false);
   const categoryStructure = useSelector(
     (state) => state.product.categoryStructure
@@ -109,7 +110,11 @@ export default function HeaderTest() {
       [subcategoryId]: !expandedSubcategories[subcategoryId],
     });
   };
-  console.log(categoryStructure);
+
+  // Navigate to wishlist page
+  const navigateToWishlistPage = () => {
+    navigate('/wishlist');
+  };
 
   const navigateToComparisonPage = () => {
     navigate('/compare');
@@ -219,10 +224,10 @@ export default function HeaderTest() {
                 <User size={24} className="cursor-pointer text-gray-700" />
               </button>
             )}
-            <button className="relative" onClick={navigateToComparisonPage}>
+            <button className="relative" onClick={navigateToWishlistPage}>
               <Heart size={24} className="cursor-pointer text-gray-700" />
               <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                3
+                {wishlistCount}
               </span>
             </button>
             <button className="relative">
@@ -514,7 +519,6 @@ export default function HeaderTest() {
                         <div className="flex items-center">
                           <img
                             src={brand.image}
-                            ho
                             alt={brand.name}
                             className="w-8 h-8 mr-2"
                           />
