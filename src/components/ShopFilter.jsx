@@ -17,6 +17,8 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   const [filters, setFilters] = useState({
     productType: [],
     category: '',
+    subCategory: '',
+    brand: [],
     roastLevel: [],
     intensity: [],
     blend: [],
@@ -29,19 +31,35 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   // UI states
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
-    productType: true,
-    category: true,
-    roastLevel: true,
-    intensity: true,
-    blend: true,
-    price: true,
+    productType: false,
+    category: false,
+    subCategory: false,
+    brand: false,
+    roastLevel: false,
+    intensity: false,
+    blend: false,
+    price: false,
   });
   const [priceRange, setPriceRange] = useState({
     min: '',
     max: '',
   });
+
+  // Data states
   const [categories, setCategories] = useState([]);
+  const [subCategories, setSubCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Available filter options
+  const productTypeOptions = [
+    { value: 'COFFEE', label: 'Coffee' },
+    { value: 'COFFEE_BEANS', label: 'Coffee Beans' },
+    { value: 'MACHINE', label: 'Machines' },
+    { value: 'ACCESSORIES', label: 'Accessories' },
+    { value: 'TEA', label: 'Tea' },
+    { value: 'DRINKS', label: 'Other Drinks' },
+  ];
 
   // Available filter options
   const roastLevelOptions = [
@@ -92,8 +110,26 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
     { value: 'alphabet', label: 'Name (A-Z)' },
   ];
 
+  // Handle filter change for categories
+  const handleCategoryChange = (categoryId) => {
+    // Clear subcategory if category changes
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      category: categoryId,
+      subCategory: '',
+    }));
+
+    // Fetch subcategories for the selected category
+    fetchSubCategories(categoryId);
+  };
+
   // Handle filter change
   const handleFilterChange = (filterType, value) => {
+    if (filterType === 'category') {
+      handleCategoryChange(value);
+      return;
+    }
+
     setFilters((prevFilters) => {
       if (Array.isArray(prevFilters[filterType])) {
         // For array filters (checkboxes)
@@ -151,7 +187,10 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   // Reset filters
   const resetFilters = () => {
     const defaultFilters = {
-      productType: ['COFFEE'],
+      productType: [],
+      category: '',
+      subCategory: '',
+      brand: [],
       roastLevel: [],
       intensity: [],
       blend: [],
@@ -160,6 +199,7 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
 
     setFilters(defaultFilters);
     setPriceRange({ min: '', max: '' });
+    setSubCategories([]);
     onApplyFilters(defaultFilters);
   };
 
@@ -183,6 +223,37 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
         minPrice: undefined,
         maxPrice: undefined,
       });
+
+      return;
+    }
+
+    if (type === 'category') {
+      setFilters((prev) => ({
+        ...prev,
+        category: '',
+        subCategory: '', // Also clear subcategory when category is removed
+      }));
+
+      setSubCategories([]);
+
+      onApplyFilters({
+        ...filters,
+        category: '',
+        subCategory: '',
+      });
+      return;
+    }
+
+    if (type === 'subCategory') {
+      setFilters((prev) => ({
+        ...prev,
+        subCategory: '',
+      }));
+
+      onApplyFilters({
+        ...filters,
+        subCategory: '',
+      });
       return;
     }
 
@@ -201,12 +272,55 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   // Count active filters
   const getActiveFilterCount = () => {
     let count = 0;
+    if (filters.productType?.length) count += filters.productType.length;
+    if (filters.category) count += 1;
+    if (filters.subCategory) count += 1;
+    if (filters.brand?.length) count += filters.brand.length;
     if (filters.roastLevel?.length) count += filters.roastLevel.length;
     if (filters.intensity?.length) count += filters.intensity.length;
     if (filters.blend?.length) count += filters.blend.length;
     if (priceRange.min || priceRange.max) count += 1;
     return count;
   };
+
+  // Fetch categories, subcategories, and brands on component mount
+  useEffect(() => {
+    const fetchFilterData = async () => {
+      setLoading(true);
+      try {
+        // Fetch categories
+        const categoryResponse = await Axios({
+          ...SummaryApi.getCategory,
+          params: { active: true },
+        });
+
+        if (categoryResponse.data.success) {
+          setCategories(categoryResponse.data.data || []);
+        }
+
+        // Fetch brands - This is where brands are fetched
+        const brandResponse = await Axios({
+          ...SummaryApi.getBrand,
+          params: { active: true },
+        });
+
+        if (brandResponse.data.success) {
+          setBrands(brandResponse.data.data || []);
+        }
+
+        // If category is already selected, fetch subcategories
+        if (filters.category) {
+          fetchSubCategories(filters.category);
+        }
+      } catch (error) {
+        AxiosToastError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilterData();
+  }, []);
 
   // Set initial price range from filters
   useEffect(() => {
@@ -296,112 +410,313 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
             </select>
           </div>
 
-          {/* Roast Level */}
           <div className="mb-4 border-t pt-4">
             <div
               className="flex justify-between items-center cursor-pointer mb-2"
-              onClick={() => toggleSection('roastLevel')}
+              onClick={() => toggleSection('productType')}
             >
-              <h3 className="font-medium">Roast Level</h3>
-              {expandedSections.roastLevel ? (
+              <h3 className="font-medium">Product Type</h3>
+              {expandedSections.productType ? (
                 <FaChevronUp />
               ) : (
                 <FaChevronDown />
               )}
             </div>
 
-            {expandedSections.roastLevel && (
+            {expandedSections.productType && (
               <div className="space-y-2">
-                {roastLevelOptions.map((option) => (
+                {productTypeOptions.map((option) => (
                   <div key={option.value} className="flex items-center">
                     <input
                       type="checkbox"
-                      id={`roast-${option.value}`}
-                      checked={filters.roastLevel?.includes(option.value)}
+                      id={`type-${option.value}`}
+                      checked={filters.productType?.includes(option.value)}
                       onChange={() =>
-                        handleFilterChange('roastLevel', option.value)
+                        handleFilterChange('productType', option.value)
                       }
                       className="mr-2"
                     />
+                    <label htmlFor={`type-${option.value}`} className="text-sm">
+                      {option.label}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Category */}
+          <div className="mb-4 border-t pt-4">
+            <div
+              className="flex justify-between items-center cursor-pointer mb-2"
+              onClick={() => toggleSection('category')}
+            >
+              <h3 className="font-medium">Category</h3>
+              {expandedSections.category ? <FaChevronUp /> : <FaChevronDown />}
+            </div>
+
+            {expandedSections.category && (
+              <div className="space-y-2">
+                <div className="flex items-center mb-2">
+                  <input
+                    type="radio"
+                    id="category-all"
+                    name="category"
+                    checked={!filters.category}
+                    onChange={() => handleCategoryChange('')}
+                    className="mr-2"
+                  />
+                  <label htmlFor="category-all" className="text-sm">
+                    All Categories
+                  </label>
+                </div>
+
+                {categories.map((category) => (
+                  <div key={category._id} className="flex items-center">
+                    <input
+                      type="radio"
+                      id={`category-${category._id}`}
+                      name="category"
+                      checked={filters.category === category._id}
+                      onChange={() => handleCategoryChange(category._id)}
+                      className="mr-2"
+                    />
                     <label
-                      htmlFor={`roast-${option.value}`}
+                      htmlFor={`category-${category._id}`}
                       className="text-sm"
                     >
-                      {option.label}
+                      {category.name}
                     </label>
                   </div>
                 ))}
+
+                {loading && (
+                  <div className="text-sm text-gray-500">
+                    Loading categories...
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          {/* Intensity */}
-          <div className="mb-4 border-t pt-4">
-            <div
-              className="flex justify-between items-center cursor-pointer mb-2"
-              onClick={() => toggleSection('intensity')}
-            >
-              <h3 className="font-medium">Intensity</h3>
-              {expandedSections.intensity ? <FaChevronUp /> : <FaChevronDown />}
-            </div>
-
-            {expandedSections.intensity && (
-              <div className="grid grid-cols-2 gap-2">
-                {intensityOptions.map((option) => (
-                  <div key={option.value} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      id={`intensity-${option.value}`}
-                      checked={filters.intensity?.includes(option.value)}
-                      onChange={() =>
-                        handleFilterChange('intensity', option.value)
-                      }
-                      className="mr-1"
-                    />
-                    <label
-                      htmlFor={`intensity-${option.value}`}
-                      className="text-xs"
-                    >
-                      {option.label.substring(0, 8)}
-                    </label>
-                  </div>
-                ))}
+          {/* Subcategory - Only show if a category is selected and subcategories exist */}
+          {filters.category && subCategories.length > 0 && (
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection('subCategory')}
+              >
+                <h3 className="font-medium">Subcategory</h3>
+                {expandedSections.subCategory ? (
+                  <FaChevronUp />
+                ) : (
+                  <FaChevronDown />
+                )}
               </div>
-            )}
-          </div>
 
-          {/* Blend */}
-          <div className="mb-4 border-t pt-4">
-            <div
-              className="flex justify-between items-center cursor-pointer mb-2"
-              onClick={() => toggleSection('blend')}
-            >
-              <h3 className="font-medium">Coffee Blend</h3>
-              {expandedSections.blend ? <FaChevronUp /> : <FaChevronDown />}
-            </div>
-
-            {expandedSections.blend && (
-              <div className="space-y-2">
-                {blendOptions.map((option) => (
-                  <div key={option.value} className="flex items-center">
+              {expandedSections.subCategory && (
+                <div className="space-y-2">
+                  <div className="flex items-center mb-2">
                     <input
-                      type="checkbox"
-                      id={`blend-${option.value}`}
-                      checked={filters.blend?.includes(option.value)}
-                      onChange={() => handleFilterChange('blend', option.value)}
+                      type="radio"
+                      id="subcategory-all"
+                      name="subcategory"
+                      checked={!filters.subCategory}
+                      onChange={() => handleFilterChange('subCategory', '')}
                       className="mr-2"
                     />
-                    <label
-                      htmlFor={`blend-${option.value}`}
-                      className="text-sm line-clamp-1"
-                    >
-                      {option.label}
+                    <label htmlFor="subcategory-all" className="text-sm">
+                      All Subcategories
+                    </label>
+                  </div>
+
+                  {subCategories.map((subCategory) => (
+                    <div key={subCategory._id} className="flex items-center">
+                      <input
+                        type="radio"
+                        id={`subcategory-${subCategory._id}`}
+                        name="subcategory"
+                        checked={filters.subCategory === subCategory._id}
+                        onChange={() =>
+                          handleFilterChange('subCategory', subCategory._id)
+                        }
+                        className="mr-2"
+                      />
+                      <label
+                        htmlFor={`subcategory-${subCategory._id}`}
+                        className="text-sm"
+                      >
+                        {subCategory.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Brands */}
+          <div className="mb-4 border-t pt-4">
+            <div
+              className="flex justify-between items-center cursor-pointer mb-2"
+              onClick={() => toggleSection('brand')}
+            >
+              <h3 className="font-medium">Brands</h3>
+              {expandedSections.brand ? <FaChevronUp /> : <FaChevronDown />}
+            </div>
+
+            {expandedSections.brand && (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {brands.map((brand) => (
+                  <div key={brand._id} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`brand-${brand._id}`}
+                      checked={filters.brand?.includes(brand._id)}
+                      onChange={() => handleFilterChange('brand', brand._id)}
+                      className="mr-2"
+                    />
+                    <label htmlFor={`brand-${brand._id}`} className="text-sm">
+                      {brand.name}
                     </label>
                   </div>
                 ))}
+
+                {loading && (
+                  <div className="text-sm text-gray-500">Loading brands...</div>
+                )}
+                {!loading && brands.length === 0 && (
+                  <div className="text-sm text-gray-500">
+                    No brands available
+                  </div>
+                )}
               </div>
             )}
           </div>
+
+          {(filters.productType.includes('COFFEE') ||
+            filters.productType.includes('COFFEE_BEANS') ||
+            filters.productType.length === 0) && (
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection('roastLevel')}
+              >
+                <h3 className="font-medium">Roast Level</h3>
+                {expandedSections.roastLevel ? (
+                  <FaChevronUp />
+                ) : (
+                  <FaChevronDown />
+                )}
+              </div>
+
+              {expandedSections.roastLevel && (
+                <div className="space-y-2">
+                  {roastLevelOptions.map((option) => (
+                    <div key={option.value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`roast-${option.value}`}
+                        checked={filters.roastLevel?.includes(option.value)}
+                        onChange={() =>
+                          handleFilterChange('roastLevel', option.value)
+                        }
+                        className="mr-2"
+                      />
+                      <label
+                        htmlFor={`roast-${option.value}`}
+                        className="text-sm"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Intensity - Only shown for Coffee and Coffee Beans */}
+          {(filters.productType.includes('COFFEE') ||
+            filters.productType.includes('COFFEE_BEANS') ||
+            filters.productType.length === 0) && (
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection('intensity')}
+              >
+                <h3 className="font-medium">Intensity</h3>
+                {expandedSections.intensity ? (
+                  <FaChevronUp />
+                ) : (
+                  <FaChevronDown />
+                )}
+              </div>
+
+              {expandedSections.intensity && (
+                <div className="grid grid-cols-2 gap-2">
+                  {intensityOptions.map((option) => (
+                    <div key={option.value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`intensity-${option.value}`}
+                        checked={filters.intensity?.includes(option.value)}
+                        onChange={() =>
+                          handleFilterChange('intensity', option.value)
+                        }
+                        className="mr-1"
+                      />
+                      <label
+                        htmlFor={`intensity-${option.value}`}
+                        className="text-xs"
+                      >
+                        {option.label.substring(0, 8)}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Blend - Only shown for Coffee and Coffee Beans */}
+          {(filters.productType.includes('COFFEE') ||
+            filters.productType.includes('COFFEE_BEANS') ||
+            filters.productType.length === 0) && (
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection('blend')}
+              >
+                <h3 className="font-medium">Coffee Blend</h3>
+                {expandedSections.blend ? <FaChevronUp /> : <FaChevronDown />}
+              </div>
+
+              {expandedSections.blend && (
+                <div className="space-y-2">
+                  {blendOptions.map((option) => (
+                    <div key={option.value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`blend-${option.value}`}
+                        checked={filters.blend?.includes(option.value)}
+                        onChange={() =>
+                          handleFilterChange('blend', option.value)
+                        }
+                        className="mr-2"
+                      />
+                      <label
+                        htmlFor={`blend-${option.value}`}
+                        className="text-sm line-clamp-1"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Price Range */}
           <div className="mb-4 border-t pt-4">

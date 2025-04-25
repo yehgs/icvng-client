@@ -25,7 +25,10 @@ const ShopPage = () => {
 
   // Filter state
   const [activeFilters, setActiveFilters] = useState({
-    productType: ['COFFEE'],
+    productType: [],
+    category: '',
+    subCategory: '',
+    brand: [],
     roastLevel: [],
     intensity: [],
     blend: [],
@@ -56,7 +59,14 @@ const ShopPage = () => {
         data: {
           search: searchText,
           page: currentPage,
-          productType: activeFilters.productType,
+          productType:
+            activeFilters.productType.length > 0
+              ? activeFilters.productType
+              : undefined,
+          category: activeFilters.category || undefined,
+          subCategory: activeFilters.subCategory || undefined,
+          brand:
+            activeFilters.brand.length > 0 ? activeFilters.brand : undefined,
           roastLevel:
             activeFilters.roastLevel.length > 0
               ? activeFilters.roastLevel
@@ -131,15 +141,17 @@ const ShopPage = () => {
   };
 
   return (
-    <section className="bg-gray-50">
+    <section className="bg-gray-50 min-h-screen">
       <div className="container mx-auto p-4">
         <div className="flex flex-col lg:flex-row">
-          {/* Filter Column */}
+          {/* Filter Column - Sticky on desktop */}
           <div className="lg:w-1/4 lg:pr-4">
-            <ShopFilter
-              onApplyFilters={handleApplyFilters}
-              initialFilters={activeFilters}
-            />
+            <div className="lg:sticky lg:top-20">
+              <ShopFilter
+                onApplyFilters={handleApplyFilters}
+                initialFilters={activeFilters}
+              />
+            </div>
           </div>
 
           {/* Product Column */}

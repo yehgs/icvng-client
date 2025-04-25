@@ -1,10 +1,14 @@
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
 
-export default function ActiveFilterChips({ filters, onRemoveFilter }) {
+const ActiveFilterChips = ({ filters, onRemoveFilter }) => {
   // Convert filter types to readable labels
   const getFilterTypeLabel = (type) => {
     const labels = {
+      productType: 'Type',
+      category: 'Category',
+      subCategory: 'Subcategory',
+      brand: 'Brand',
       roastLevel: 'Roast',
       intensity: 'Intensity',
       blend: 'Blend',
@@ -20,6 +24,18 @@ export default function ActiveFilterChips({ filters, onRemoveFilter }) {
         LIGHT: 'Light Roast',
         MEDIUM: 'Medium Roast',
         DARK: 'Dark Roast',
+      };
+      return labels[value] || value;
+    }
+
+    if (type === 'productType') {
+      const labels = {
+        COFFEE: 'Coffee',
+        COFFEE_BEANS: 'Coffee Beans',
+        MACHINE: 'Machines',
+        ACCESSORIES: 'Accessories',
+        TEA: 'Tea',
+        DRINKS: 'Drinks',
       };
       return labels[value] || value;
     }
@@ -44,17 +60,38 @@ export default function ActiveFilterChips({ filters, onRemoveFilter }) {
     const chips = [];
 
     // Add array type filters (checkboxes)
-    ['roastLevel', 'intensity', 'blend'].forEach((type) => {
-      if (filters[type]?.length > 0) {
-        filters[type].forEach((value) => {
-          chips.push({
-            type,
-            value,
-            label: formatFilterValue(type, value),
+    ['productType', 'roastLevel', 'intensity', 'blend', 'brand'].forEach(
+      (type) => {
+        if (filters[type]?.length > 0) {
+          filters[type].forEach((value) => {
+            chips.push({
+              type,
+              value,
+              label: formatFilterValue(type, value),
+            });
           });
+        }
+      }
+    );
+
+    // Add single-value filters
+    ['category', 'subCategory'].forEach((type) => {
+      if (filters[type]) {
+        chips.push({
+          type,
+          value: filters[type],
+          label: filters[type], // We'll need to display a lookup value in the actual implementation
         });
       }
     });
+
+    if (filters.subCategory) {
+      chips.push({
+        type: 'subCategory',
+        value: filters.subCategory,
+        label: 'Selected Subcategory', // Ideally, you'd show the actual subcategory name
+      });
+    }
 
     // Add price range filter
     if (filters.minPrice || filters.maxPrice) {
@@ -80,10 +117,10 @@ export default function ActiveFilterChips({ filters, onRemoveFilter }) {
     <div className="flex flex-wrap gap-2 my-3">
       {activeChips.map((chip, index) => (
         <div
-          key={`${chip.type}-${chip.value}-${index}`}
-          className="inline-flex items-center bg-green-50 text-green-800 rounded-full px-3 py-1 text-sm"
+          key={`${chip.type}-${index}`}
+          className="bg-green-50 text-green-800 text-xs font-medium px-2 py-1 rounded-full flex items-center"
         >
-          <span className="mr-1 font-medium">
+          <span className="font-bold mr-1">
             {getFilterTypeLabel(chip.type)}:
           </span>
           <span>{chip.label}</span>
@@ -99,11 +136,13 @@ export default function ActiveFilterChips({ filters, onRemoveFilter }) {
       {activeChips.length > 0 && (
         <button
           onClick={() => onRemoveFilter('all')}
-          className="text-blue-600 hover:text-blue-800 text-sm underline"
+          className="text-blue-600 hover:text-blue-800 text-xs underline"
         >
           Clear All
         </button>
       )}
     </div>
   );
-}
+};
+
+export default ActiveFilterChips;
