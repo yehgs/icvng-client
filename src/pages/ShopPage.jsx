@@ -83,11 +83,21 @@ const ShopPage = () => {
   }, [urlLoading]);
 
   useEffect(() => {
+    console.log('URL params:', params);
+    console.log('Is URL filter active:', isUrlFilterActive);
+
     const loadUrlFilters = async () => {
       if (isUrlFilterActive) {
         setUrlLoading(true);
         try {
+          console.log('Resolving URL filters...');
           const { urlFilters, displayNames } = await resolveFiltersFromUrl();
+          console.log(
+            'Resolved filters:',
+            urlFilters,
+            'Display names:',
+            displayNames
+          );
 
           // Update filter state with URL values
           setActiveFilters((prev) => ({
@@ -103,6 +113,8 @@ const ShopPage = () => {
         } finally {
           setUrlLoading(false);
         }
+      } else {
+        setUrlLoading(false);
       }
     };
 

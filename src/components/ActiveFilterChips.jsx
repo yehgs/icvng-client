@@ -103,14 +103,6 @@ const ActiveFilterChips = ({
       }
     });
 
-    if (filters.subCategory) {
-      chips.push({
-        type: 'subCategory',
-        value: filters.subCategory,
-        label: 'Selected Subcategory', // Ideally, you'd show the actual subcategory name
-      });
-    }
-
     // Add price range filter
     if (filters.minPrice || filters.maxPrice) {
       chips.push({

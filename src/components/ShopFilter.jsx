@@ -510,6 +510,9 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
         <ActiveFilterChips
           filters={filters}
           onRemoveFilter={handleRemoveFilter}
+          categoryMap={categoryMap}
+          subCategoryMap={subCategoryMap}
+          brandMap={brandMap}
         />
       </div>
 
@@ -532,6 +535,9 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
           <ActiveFilterChips
             filters={filters}
             onRemoveFilter={handleRemoveFilter}
+            categoryMap={categoryMap}
+            subCategoryMap={subCategoryMap}
+            brandMap={brandMap}
           />
 
           {/* Sort options */}
