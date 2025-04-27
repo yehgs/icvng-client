@@ -1,7 +1,13 @@
 import React from 'react';
 import { FaTimes } from 'react-icons/fa';
 
-const ActiveFilterChips = ({ filters, onRemoveFilter }) => {
+const ActiveFilterChips = ({
+  filters,
+  onRemoveFilter,
+  categoryMap = {},
+  subCategoryMap = {},
+  brandMap = {},
+}) => {
   // Convert filter types to readable labels
   const getFilterTypeLabel = (type) => {
     const labels = {
@@ -44,6 +50,18 @@ const ActiveFilterChips = ({ filters, onRemoveFilter }) => {
       return `Intensity ${value.split('/')[0]}`;
     }
 
+    if (type === 'category' && categoryMap[value]) {
+      return categoryMap[value];
+    }
+
+    if (type === 'subCategory' && subCategoryMap[value]) {
+      return subCategoryMap[value];
+    }
+
+    if (type === 'brand' && brandMap[value]) {
+      return brandMap[value];
+    }
+
     // For price range
     if (type === 'priceRange') {
       const { min, max } = value;
@@ -80,7 +98,7 @@ const ActiveFilterChips = ({ filters, onRemoveFilter }) => {
         chips.push({
           type,
           value: filters[type],
-          label: filters[type], // We'll need to display a lookup value in the actual implementation
+          label: formatFilterValue(type, filters[type]),
         });
       }
     });
@@ -117,10 +135,10 @@ const ActiveFilterChips = ({ filters, onRemoveFilter }) => {
     <div className="flex flex-wrap gap-2 my-3">
       {activeChips.map((chip, index) => (
         <div
-          key={`${chip.type}-${index}`}
-          className="bg-green-50 text-green-800 text-xs font-medium px-2 py-1 rounded-full flex items-center"
+          key={`${chip.type}-${chip.value}-${index}`}
+          className="inline-flex items-center bg-green-50 text-green-800 rounded-full px-3 py-1 text-sm"
         >
-          <span className="font-bold mr-1">
+          <span className="mr-1 font-medium">
             {getFilterTypeLabel(chip.type)}:
           </span>
           <span>{chip.label}</span>

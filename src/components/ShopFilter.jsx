@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaFilter, FaTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
@@ -10,8 +10,10 @@ import ActiveFilterChips from './ActiveFilterChips';
 const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const params = useParams();
   const searchParams = new URLSearchParams(location.search);
   const searchText = searchParams.get('q') || '';
+  const isUrlFilterActive = Boolean(params.categorySlug || params.brandSlug);
 
   // Filter states
   const [filters, setFilters] = useState({
@@ -32,7 +34,7 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [expandedSections, setExpandedSections] = useState({
     productType: false,
-    category: false,
+    category: !isUrlFilterActive,
     subCategory: false,
     brand: false,
     roastLevel: false,
@@ -50,6 +52,9 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   const [subCategories, setSubCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [categoryMap, setCategoryMap] = useState({});
+  const [subCategoryMap, setSubCategoryMap] = useState({});
+  const [brandMap, setBrandMap] = useState({});
 
   // Available filter options
   const productTypeOptions = [
@@ -58,7 +63,7 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
     { value: 'MACHINE', label: 'Machines' },
     { value: 'ACCESSORIES', label: 'Accessories' },
     { value: 'TEA', label: 'Tea' },
-    { value: 'DRINKS', label: 'Other Drinks' },
+    { value: 'DRINKS', label: 'Drinks' },
   ];
 
   // Available filter options
@@ -109,6 +114,105 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
     { value: 'popularity', label: 'Popularity' },
     { value: 'alphabet', label: 'Name (A-Z)' },
   ];
+
+  // Fetch categories, subcategories, and brands on component mount
+  useEffect(() => {
+    const fetchFilterData = async () => {
+      setLoading(true);
+      try {
+        // Fetch categories
+        const categoryResponse = await Axios({
+          ...SummaryApi.getCategory,
+          params: { active: true },
+        });
+
+        if (categoryResponse.data.success) {
+          const categoryData = categoryResponse.data.data || [];
+          setCategories(categoryData);
+
+          // Create category ID to name mapping
+          const catMap = {};
+          categoryData.forEach((cat) => {
+            catMap[cat._id] = cat.name;
+          });
+          setCategoryMap(catMap);
+        }
+
+        // Fetch brands
+        const brandResponse = await Axios({
+          ...SummaryApi.getBrand,
+          params: { active: true },
+        });
+
+        if (brandResponse.data.success) {
+          const brandData = brandResponse.data.data || [];
+          setBrands(brandData);
+
+          // Create brand ID to name mapping
+          const bMap = {};
+          brandData.forEach((brand) => {
+            bMap[brand._id] = brand.name;
+          });
+          setBrandMap(bMap);
+        }
+
+        // If category is already selected, fetch subcategories
+        if (filters.category) {
+          fetchSubCategories(filters.category);
+        }
+      } catch (error) {
+        AxiosToastError(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFilterData();
+  }, []);
+
+  // Set initial price range from filters
+  useEffect(() => {
+    if (filters.minPrice || filters.maxPrice) {
+      setPriceRange({
+        min: filters.minPrice || '',
+        max: filters.maxPrice || '',
+      });
+    }
+  }, [filters.minPrice, filters.maxPrice]);
+
+  // Fetch subcategories when category changes
+  const fetchSubCategories = async (categoryId) => {
+    if (!categoryId) {
+      setSubCategories([]);
+      return;
+    }
+
+    try {
+      const response = await Axios({
+        ...SummaryApi.getSubCategory,
+        data: { category: categoryId },
+      });
+
+      if (response.data.success) {
+        const subCategoryData = response.data.data || [];
+        setSubCategories(subCategoryData);
+
+        // Create subcategory ID to name mapping
+        const subCatMap = {};
+        subCategoryData.forEach((subCat) => {
+          subCatMap[subCat._id] = subCat.name;
+        });
+        setSubCategoryMap(subCatMap);
+
+        // Expand subcategory section if subcategories exist
+        if (subCategoryData.length > 0) {
+          setExpandedSections((prev) => ({ ...prev, subCategory: true }));
+        }
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
 
   // Handle filter change for categories
   const handleCategoryChange = (categoryId) => {
@@ -201,6 +305,12 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
     setPriceRange({ min: '', max: '' });
     setSubCategories([]);
     onApplyFilters(defaultFilters);
+
+    // If we're on a URL-filtered page, navigate back to shop
+    if (isUrlFilterActive) {
+      const currentSearch = location.search;
+      navigate(`/shop${currentSearch}`);
+    }
   };
 
   // Handle removing a single filter
@@ -228,6 +338,13 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
     }
 
     if (type === 'category') {
+      // If we're on a URL-filtered page by category, navigate back to shop
+      if (params.categorySlug) {
+        const currentSearch = location.search;
+        navigate(`/shop${currentSearch}`);
+        return;
+      }
+
       setFilters((prev) => ({
         ...prev,
         category: '',
@@ -245,6 +362,13 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
     }
 
     if (type === 'subCategory') {
+      // If we're on a URL-filtered page by subcategory, navigate back to category
+      if (params.subcategorySlug && params.categorySlug) {
+        const currentSearch = location.search;
+        navigate(`/category/${params.categorySlug}${currentSearch}`);
+        return;
+      }
+
       setFilters((prev) => ({
         ...prev,
         subCategory: '',
@@ -254,6 +378,22 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
         ...filters,
         subCategory: '',
       });
+      return;
+    }
+
+    if (type === 'brand' && params.brandSlug) {
+      // If we're on a URL-filtered page by brand, navigate appropriately
+      const currentSearch = location.search;
+
+      if (params.subcategorySlug && params.categorySlug) {
+        navigate(
+          `/category/${params.categorySlug}/subcategory/${params.subcategorySlug}${currentSearch}`
+        );
+      } else if (params.categorySlug) {
+        navigate(`/category/${params.categorySlug}${currentSearch}`);
+      } else {
+        navigate(`/shop${currentSearch}`);
+      }
       return;
     }
 
@@ -284,53 +424,53 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
   };
 
   // Fetch categories, subcategories, and brands on component mount
-  useEffect(() => {
-    const fetchFilterData = async () => {
-      setLoading(true);
-      try {
-        // Fetch categories
-        const categoryResponse = await Axios({
-          ...SummaryApi.getCategory,
-          params: { active: true },
-        });
+  // useEffect(() => {
+  //   const fetchFilterData = async () => {
+  //     setLoading(true);
+  //     try {
+  //       // Fetch categories
+  //       const categoryResponse = await Axios({
+  //         ...SummaryApi.getCategory,
+  //         params: { active: true },
+  //       });
 
-        if (categoryResponse.data.success) {
-          setCategories(categoryResponse.data.data || []);
-        }
+  //       if (categoryResponse.data.success) {
+  //         setCategories(categoryResponse.data.data || []);
+  //       }
 
-        // Fetch brands - This is where brands are fetched
-        const brandResponse = await Axios({
-          ...SummaryApi.getBrand,
-          params: { active: true },
-        });
+  //       // Fetch brands - This is where brands are fetched
+  //       const brandResponse = await Axios({
+  //         ...SummaryApi.getBrand,
+  //         params: { active: true },
+  //       });
 
-        if (brandResponse.data.success) {
-          setBrands(brandResponse.data.data || []);
-        }
+  //       if (brandResponse.data.success) {
+  //         setBrands(brandResponse.data.data || []);
+  //       }
 
-        // If category is already selected, fetch subcategories
-        if (filters.category) {
-          fetchSubCategories(filters.category);
-        }
-      } catch (error) {
-        AxiosToastError(error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       // If category is already selected, fetch subcategories
+  //       if (filters.category) {
+  //         fetchSubCategories(filters.category);
+  //       }
+  //     } catch (error) {
+  //       AxiosToastError(error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchFilterData();
-  }, []);
+  //   fetchFilterData();
+  // }, []);
 
-  // Set initial price range from filters
-  useEffect(() => {
-    if (filters.minPrice || filters.maxPrice) {
-      setPriceRange({
-        min: filters.minPrice || '',
-        max: filters.maxPrice || '',
-      });
-    }
-  }, []);
+  // //Set initial price range from filters
+  // useEffect(() => {
+  //   if (filters.minPrice || filters.maxPrice) {
+  //     setPriceRange({
+  //       min: filters.minPrice || '',
+  //       max: filters.maxPrice || '',
+  //     });
+  //   }
+  // }, []);
 
   return (
     <div className="w-full mb-4">
@@ -803,6 +943,15 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
               </button>
             )}
 
+            {/* Active Filter Chips - Mobile */}
+            <ActiveFilterChips
+              filters={filters}
+              onRemoveFilter={handleRemoveFilter}
+              categoryMap={categoryMap}
+              subCategoryMap={subCategoryMap}
+              brandMap={brandMap}
+            />
+
             {/* Sort options */}
             <div className="mb-4 border-t pt-4">
               <h3 className="font-medium mb-2">Sort By</h3>
@@ -817,6 +966,110 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
                   </option>
                 ))}
               </select>
+            </div>
+
+            {/* Product Type */}
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection('productType')}
+              >
+                <h3 className="font-medium">Product Type</h3>
+                {expandedSections.productType ? (
+                  <FaChevronUp />
+                ) : (
+                  <FaChevronDown />
+                )}
+              </div>
+
+              {expandedSections.productType && (
+                <div className="space-y-2">
+                  {productTypeOptions.map((option) => (
+                    <div key={option.value} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`mobile-type-${option.value}`}
+                        checked={filters.productType?.includes(option.value)}
+                        onChange={() =>
+                          handleFilterChange('productType', option.value)
+                        }
+                        className="mr-2"
+                      />
+                      <label
+                        htmlFor={`mobile-type-${option.value}`}
+                        className="text-sm"
+                      >
+                        {option.label}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Category */}
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection('category')}
+              >
+                <h3 className="font-medium">Category</h3>
+                {expandedSections.category ? (
+                  <FaChevronUp />
+                ) : (
+                  <FaChevronDown />
+                )}
+              </div>
+
+              {expandedSections.category && (
+                <div className="space-y-2">
+                  <div className="flex items-center mb-2">
+                    <input
+                      type="radio"
+                      id="mobile-category-all"
+                      name="category"
+                      checked={!filters.category}
+                      onChange={() => handleCategoryChange('')}
+                      className="mr-2"
+                      disabled={isUrlFilterActive && params.categorySlug}
+                    />
+                    <label
+                      htmlFor="mobile-category-all"
+                      className={`text-sm ${
+                        isUrlFilterActive && params.categorySlug
+                          ? 'text-gray-400'
+                          : ''
+                      }`}
+                    >
+                      All Categories
+                    </label>
+                  </div>
+
+                  {categories.map((category) => (
+                    <div key={category._id} className="flex items-center">
+                      <input
+                        type="radio"
+                        id={`mobile-category-${category._id}`}
+                        name="category"
+                        checked={filters.category === category._id}
+                        onChange={() => handleCategoryChange(category._id)}
+                        className="mr-2"
+                        disabled={isUrlFilterActive && params.categorySlug}
+                      />
+                      <label
+                        htmlFor={`mobile-category-${category._id}`}
+                        className={`text-sm ${
+                          isUrlFilterActive && params.categorySlug
+                            ? 'text-gray-400'
+                            : ''
+                        }`}
+                      >
+                        {category.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Roast Level */}

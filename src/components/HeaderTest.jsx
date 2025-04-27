@@ -3,7 +3,6 @@ import logo from '../assets/web-logo.png';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
-  Search,
   User,
   ShoppingCart,
   Heart,
@@ -151,8 +150,19 @@ export default function Header() {
     setVerticalMenuActive(false);
   };
 
-  const navigateToBrand = (brandId, brandSlug) => {
-    navigate(`/brand/${brandSlug}`);
+  const navigateToCategoryBrand = (brandId, categorySlug, brandSlug) => {
+    navigate(`/category/${categorySlug}/brand/${brandSlug}`);
+    setVerticalMenuActive(false);
+  };
+  const navigateToSubcategoryBrand = (
+    brandId,
+    categorySlug,
+    subcategorySlug,
+    brandSlug
+  ) => {
+    navigate(
+      `/category/${categorySlug}/subcategory/${subcategorySlug}/brand/${brandSlug}`
+    );
     setVerticalMenuActive(false);
   };
 
@@ -270,7 +280,7 @@ export default function Header() {
       {/* Bottom Bar with Categories */}
       <div className="bg-gray-100 border-b border-gray-200 relative z-20">
         <div className="container mx-auto px-4">
-          <div className="flex items-center py-3">
+          <div className="flex items-center">
             {/* Hamburger Menu for Vertical Menu */}
             <div
               className="mr-6 cursor-pointer"
@@ -280,14 +290,14 @@ export default function Header() {
             </div>
 
             {/* Horizontal Categories */}
-            <div className="flex overflow-x-auto hide-scrollbar space-x-6">
+            <div className="flex overflow-x-auto hide-scrollbar space-x-4">
               {loadingCategoryStructure ? (
                 <div className="whitespace-nowrap">Loading categories...</div>
               ) : (
                 categoryStructure.map((category) => (
                   <div
                     key={category._id}
-                    className="whitespace-nowrap cursor-pointer font-medium"
+                    className="whitespace-nowrap cursor-pointer font-medium py-3"
                     onMouseEnter={() => setActiveCategory(category)}
                     onMouseLeave={() => setActiveCategory(null)}
                   >
@@ -308,7 +318,7 @@ export default function Header() {
                             {category.subcategories.map((subcategory) => (
                               <div
                                 key={subcategory._id}
-                                className="w-full md:w-1/2 lg:w-1/3 p-4"
+                                className="w-full md:w-1/3 lg:w-1/4 p-4"
                               >
                                 <div className="flex items-start">
                                   <img
@@ -336,7 +346,9 @@ export default function Header() {
                                               key={brand._id}
                                               className="text-gray-600 hover:text-gray-900 py-1 cursor-pointer text-sm"
                                             >
-                                              <Link to={`/brand/${brand.slug}`}>
+                                              <Link
+                                                to={`/category/${category.slug}/subcategory/${subcategory.slug}/brand/${brand.slug}`}
+                                              >
                                                 {brand.name}
                                               </Link>
                                             </li>
@@ -361,7 +373,7 @@ export default function Header() {
                                 className="w-full md:w-1/4 lg:w-1/5 p-4"
                               >
                                 <Link
-                                  to={`/brand/${brand.slug}`}
+                                  to={`/category/${category.slug}/brand/${brand.slug}`}
                                   className="flex items-center text-center"
                                 >
                                   <img
@@ -514,7 +526,14 @@ export default function Header() {
                       <div
                         key={brand._id}
                         className="p-4 hover:bg-gray-100 border-b cursor-pointer"
-                        onClick={() => navigateToBrand(brand._id, brand.slug)}
+                        onClick={() =>
+                          navigateToSubcategoryBrand(
+                            brand._id,
+                            verticalCategory.slug,
+                            verticalSubcategory.slug,
+                            brand.slug
+                          )
+                        }
                       >
                         <div className="flex items-center">
                           <img
