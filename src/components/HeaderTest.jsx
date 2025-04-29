@@ -20,6 +20,7 @@ import UserMenu from './UserMenu';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
 import { useGlobalContext, useWishlist } from '../provider/GlobalProvider';
 import DisplayCartItem from './DisplayCartItem';
+import HeaderNavigation from '../components/HeaderNavigation';
 
 export default function Header() {
   const [isMobile] = useMobile();
@@ -137,7 +138,7 @@ export default function Header() {
   };
 
   const navigateToCategory = (categoryId, categorySlug) => {
-    navigate(`/category/${categorySlug}`);
+    navigate(`shop/category/${categorySlug}`);
     setVerticalMenuActive(false);
   };
 
@@ -146,12 +147,12 @@ export default function Header() {
     categorySlug,
     subcategorySlug
   ) => {
-    navigate(`/category/${categorySlug}/subcategory/${subcategorySlug}`);
+    navigate(`shop/category/${categorySlug}/subcategory/${subcategorySlug}`);
     setVerticalMenuActive(false);
   };
 
   const navigateToCategoryBrand = (brandId, categorySlug, brandSlug) => {
-    navigate(`/category/${categorySlug}/brand/${brandSlug}`);
+    navigate(`shop/category/${categorySlug}/brand/${brandSlug}`);
     setVerticalMenuActive(false);
   };
   const navigateToSubcategoryBrand = (
@@ -161,7 +162,7 @@ export default function Header() {
     brandSlug
   ) => {
     navigate(
-      `/category/${categorySlug}/subcategory/${subcategorySlug}/brand/${brandSlug}`
+      `shop/category/${categorySlug}/subcategory/${subcategorySlug}/brand/${brandSlug}`
     );
     setVerticalMenuActive(false);
   };
@@ -277,407 +278,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Bottom Bar with Categories */}
-      <div className="bg-gray-100 border-b border-gray-200 relative z-20">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center">
-            {/* Hamburger Menu for Vertical Menu */}
-            <div
-              className="mr-6 cursor-pointer"
-              onClick={() => setVerticalMenuActive(true)}
-            >
-              <Menu size={24} className="text-gray-700" />
-            </div>
-
-            {/* Horizontal Categories */}
-            <div className="flex overflow-x-auto hide-scrollbar space-x-4">
-              {loadingCategoryStructure ? (
-                <div className="whitespace-nowrap">Loading categories...</div>
-              ) : (
-                categoryStructure.map((category) => (
-                  <div
-                    key={category._id}
-                    className="whitespace-nowrap cursor-pointer font-medium py-3"
-                    onMouseEnter={() => setActiveCategory(category)}
-                    onMouseLeave={() => setActiveCategory(null)}
-                  >
-                    <Link
-                      to={`/category/${category.slug}`}
-                      className="flex flex-col items-center justify-center min-w-[70px] text-center hover:text-secondary-200 transition-colors"
-                    >
-                      <span className="text-sm truncate">{category.name}</span>
-                    </Link>
-
-                    {/* Mega Menu on Hover */}
-                    {activeCategory && activeCategory._id === category._id && (
-                      <div className="absolute left-0 right-0 bg-white shadow-lg z-20 mt-3 p-6">
-                        {category.subcategories &&
-                        category.subcategories.length > 0 ? (
-                          // Type A: With Subcategories
-                          <div className="flex flex-wrap">
-                            {category.subcategories.map((subcategory) => (
-                              <div
-                                key={subcategory._id}
-                                className="w-full md:w-1/3 lg:w-1/4 p-4"
-                              >
-                                <div className="flex items-start">
-                                  <img
-                                    src={
-                                      subcategory.image ||
-                                      `/api/placeholder/120/120`
-                                    }
-                                    alt={subcategory.name}
-                                    className="w-16 h-16 object-cover rounded mr-4"
-                                  />
-                                  <div>
-                                    <Link
-                                      to={`/category/${category.slug}/subcategory/${subcategory.slug}`}
-                                      className="font-bold hover:text-secondary-200"
-                                    >
-                                      {subcategory.name}
-                                    </Link>
-                                    <ul className="mt-2">
-                                      {subcategory.brands &&
-                                      subcategory.brands.length > 0 ? (
-                                        subcategory.brands
-                                          .slice(0, 5)
-                                          .map((brand) => (
-                                            <li
-                                              key={brand._id}
-                                              className="text-gray-600 hover:text-gray-900 py-1 cursor-pointer text-sm"
-                                            >
-                                              <Link
-                                                to={`/category/${category.slug}/subcategory/${subcategory.slug}/brand/${brand.slug}`}
-                                              >
-                                                {brand.name}
-                                              </Link>
-                                            </li>
-                                          ))
-                                      ) : (
-                                        <li className="text-gray-500 py-1">
-                                          No brands available
-                                        </li>
-                                      )}
-                                    </ul>
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        ) : category.brands && category.brands.length > 0 ? (
-                          // Type B: No Subcategories, but has brands
-                          <div className="flex flex-wrap">
-                            {category.brands.map((brand) => (
-                              <div
-                                key={brand._id}
-                                className="w-full md:w-1/4 lg:w-1/5 p-4"
-                              >
-                                <Link
-                                  to={`/category/${category.slug}/brand/${brand.slug}`}
-                                  className="flex items-center text-center"
-                                >
-                                  <img
-                                    src={
-                                      brand.image || `/api/placeholder/120/120`
-                                    }
-                                    alt={brand.name}
-                                    className="w-20 h-10 object-cover rounded-full mr-2"
-                                  />
-                                  <span className="font-medium text-xs">
-                                    {brand.name}
-                                  </span>
-                                </Link>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          // No subcategories or brands
-                          <div className="p-4 text-center text-gray-500">
-                            No subcategories or brands available
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Vertical Menu - Desktop & Mobil */}
-      {verticalMenuActive && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 flex">
-          {!isMobil ? (
-            // Desktop Version - Multi-column layout
-            <div ref={menuRef} className="flex h-full">
-              {/* First Layer - Categories */}
-              <div className="w-64 bg-white h-full overflow-y-auto">
-                <div className="p-4 font-bold border-b flex justify-between items-center">
-                  <span>All Categories</span>
-                  <X
-                    size={20}
-                    className="cursor-pointer text-gray-600 hover:text-gray-900"
-                    onClick={() => setVerticalMenuActive(false)}
-                  />
-                </div>
-                {loadingCategoryStructure ? (
-                  <div className="p-4">Loading categories...</div>
-                ) : (
-                  categoryStructure.map((category) => (
-                    <div
-                      key={category._id}
-                      className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
-                      onMouseEnter={() => setVerticalCategory(category)}
-                      onClick={() =>
-                        navigateToCategory(category._id, category.slug)
-                      }
-                    >
-                      <div className="flex items-center">
-                        <img
-                          src={category.image}
-                          alt={category.name}
-                          className="w-8 h-8 mr-2"
-                        />
-                        <span>{category.name}</span>
-                      </div>
-                      {category.subcategories &&
-                        category.subcategories.length > 0 && (
-                          <ChevronRight size={20} />
-                        )}
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Second Layer - Subcategories or Brands */}
-              {verticalCategory && (
-                <div className="w-64 bg-gray-50 h-full overflow-y-auto">
-                  <div className="p-4 font-bold border-b">
-                    {verticalCategory.name}
-                  </div>
-                  {verticalCategory.subcategories &&
-                  verticalCategory.subcategories.length > 0 ? (
-                    // Display subcategories
-                    verticalCategory.subcategories.map((subcategory) => (
-                      <div
-                        key={subcategory._id}
-                        className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
-                        onMouseEnter={() => setVerticalSubcategory(subcategory)}
-                        onClick={() =>
-                          navigateToSubcategory(
-                            subcategory._id,
-                            verticalCategory.slug,
-                            subcategory.slug
-                          )
-                        }
-                      >
-                        <div className="flex items-center">
-                          <img
-                            src={subcategory.image}
-                            alt={subcategory.name}
-                            className="w-8 h-8 mr-2"
-                          />
-                          <span>{subcategory.name}</span>
-                        </div>
-                        {subcategory.brands &&
-                          subcategory.brands.length > 0 && (
-                            <ChevronRight size={20} />
-                          )}
-                      </div>
-                    ))
-                  ) : verticalCategory.brands &&
-                    verticalCategory.brands.length > 0 ? (
-                    // Display brands directly if no subcategories
-                    verticalCategory.brands.map((brand) => (
-                      <div
-                        key={brand._id}
-                        className="p-4 hover:bg-gray-100 border-b cursor-pointer"
-                        onClick={() => navigateToBrand(brand._id, brand.slug)}
-                      >
-                        <div className="flex items-center">
-                          <img
-                            src={brand.image}
-                            alt={brand.name}
-                            className="w-16 h-8 mr-2"
-                          />
-                          <span>{brand.name}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-gray-500">
-                      No subcategories or brands available
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Third Layer - Brands */}
-              {verticalSubcategory && (
-                <div className="w-64 bg-white h-full overflow-y-auto">
-                  <div className="p-4 font-bold border-b">
-                    {verticalSubcategory.name} Brands
-                  </div>
-                  {verticalSubcategory.brands &&
-                  verticalSubcategory.brands.length > 0 ? (
-                    verticalSubcategory.brands.map((brand) => (
-                      <div
-                        key={brand._id}
-                        className="p-4 hover:bg-gray-100 border-b cursor-pointer"
-                        onClick={() =>
-                          navigateToSubcategoryBrand(
-                            brand._id,
-                            verticalCategory.slug,
-                            verticalSubcategory.slug,
-                            brand.slug
-                          )
-                        }
-                      >
-                        <div className="flex items-center">
-                          <img
-                            src={brand.image}
-                            alt={brand.name}
-                            className="w-8 h-8 mr-2"
-                          />
-                          <span>{brand.name}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="p-4 text-gray-500">No brands available</div>
-                  )}
-                </div>
-              )}
-            </div>
-          ) : (
-            // Mobil Version - Single column with expandable sections
-            <div
-              ref={menuRef}
-              className="w-4/5 bg-white h-full overflow-y-auto ml-auto"
-            >
-              <div className="p-4 font-bold border-b flex justify-between items-center">
-                <span>Menu</span>
-                <X
-                  size={20}
-                  className="cursor-pointer text-gray-600 hover:text-gray-900"
-                  onClick={() => setVerticalMenuActive(false)}
-                />
-              </div>
-
-              {loadingCategoryStructure ? (
-                <div className="p-4">Loading categories...</div>
-              ) : (
-                // Categories with expandable sections
-                categoryStructure.map((category) => (
-                  <div key={category._id}>
-                    <div
-                      className="p-4 border-b cursor-pointer flex justify-between items-center"
-                      onClick={() => toggleCategoryExpansion(category._id)}
-                    >
-                      <span className="font-medium">{category.name}</span>
-                      {(category.subcategories &&
-                        category.subcategories.length > 0) ||
-                      (category.brands && category.brands.length > 0) ? (
-                        expandedCategories[category._id] ? (
-                          <ChevronDown size={20} />
-                        ) : (
-                          <ChevronRight size={20} />
-                        )
-                      ) : null}
-                    </div>
-
-                    {/* Expanded category content */}
-                    {expandedCategories[category._id] && (
-                      <div className="bg-gray-50">
-                        {category.subcategories &&
-                        category.subcategories.length > 0 ? (
-                          // Show subcategories
-                          category.subcategories.map((subcategory) => (
-                            <div key={subcategory._id}>
-                              <div
-                                className="p-4 pl-8 border-b cursor-pointer flex justify-between items-center"
-                                onClick={() =>
-                                  toggleSubcategoryExpansion(subcategory._id)
-                                }
-                              >
-                                <span>{subcategory.name}</span>
-                                {subcategory.brands &&
-                                  subcategory.brands.length > 0 &&
-                                  (expandedSubcategories[subcategory._id] ? (
-                                    <ChevronDown size={18} />
-                                  ) : (
-                                    <ChevronRight size={18} />
-                                  ))}
-                              </div>
-
-                              {/* Brands for this subcategory */}
-                              {expandedSubcategories[subcategory._id] &&
-                                subcategory.brands && (
-                                  <div className="bg-white">
-                                    {subcategory.brands.length > 0 ? (
-                                      subcategory.brands.map((brand) => (
-                                        <div
-                                          key={brand._id}
-                                          className="p-3 pl-12 border-b cursor-pointer text-sm"
-                                          onClick={() =>
-                                            navigateToBrand(
-                                              brand._id,
-                                              brand.slug
-                                            )
-                                          }
-                                        >
-                                          {brand.name}
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <div className="p-3 pl-12 border-b text-sm text-gray-500">
-                                        No brands available
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                            </div>
-                          ))
-                        ) : category.brands && category.brands.length > 0 ? (
-                          // Show brands directly
-                          category.brands.map((brand) => (
-                            <div
-                              key={brand._id}
-                              className="p-4 pl-8 border-b cursor-pointer"
-                              onClick={() =>
-                                navigateToBrand(brand._id, brand.slug)
-                              }
-                            >
-                              {brand.name}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-4 pl-8 border-b text-gray-500">
-                            No subcategories or brands available
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Custom styles */}
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+      <HeaderNavigation />
     </div>
   );
 }

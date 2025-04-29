@@ -29,7 +29,8 @@ import Cancel from '../pages/Cancel';
 import Attributes from '../components/Attributes';
 import Tags from '../components/Tags';
 import WishlistPage from '../pages/WishListPage';
-import ShopPage from '../pages/ShopPage'; // Import the new ShopPage
+import ShopPage from '../pages/EnhancedShopPage';
+import CategoryDetailPage from '../components/CategoryDetailPage';
 
 const router = createBrowserRouter([
   {
@@ -72,31 +73,24 @@ const router = createBrowserRouter([
         path: 'user',
         element: <UserMenuMobile />,
       },
-      // New shop pages with different URL patterns
       {
         path: 'shop',
         element: <ShopPage />,
       },
+      { path: '/category/:categorySlug', element: <CategoryDetailPage /> },
       {
-        path: 'category/:categorySlug',
-        element: <ShopPage />,
+        path: '/category/:categorySlug/subcategory/:subcategorySlug',
+        element: <CategoryDetailPage />,
       },
       {
-        path: 'category/:categorySlug/subcategory/:subcategorySlug',
-        element: <ShopPage />,
+        path: '/category/:categorySlug/brand/:brandSlug',
+        element: <CategoryDetailPage />,
       },
       {
-        path: 'category/:categorySlug/subcategory/:subcategorySlug/brand/:brandSlug',
-        element: <ShopPage />,
+        path: '/category/:categorySlug/subcategory/:subcategorySlug/brand/:brandSlug',
+        element: <CategoryDetailPage />,
       },
-      {
-        path: 'category/:categorySlug/brand/:brandSlug',
-        element: <ShopPage />,
-      },
-      {
-        path: 'brand/:brandSlug',
-        element: <ShopPage />,
-      },
+      { path: '/brand/:brandSlug', element: <CategoryDetailPage /> },
       {
         path: 'dashboard',
         element: <Dashboard />,

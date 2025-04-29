@@ -1,6 +1,5 @@
 import { Outlet, useLocation } from 'react-router-dom';
 import './App.css';
-import Header from './components/Header';
 import HeaderTest from './components/HeaderTest';
 import Footer from './components/Footer';
 import toast, { Toaster } from 'react-hot-toast';
@@ -172,7 +171,6 @@ function App() {
 
   return (
     <GlobalProvider>
-      {/* <Header /> */}
       <HeaderTest />
       <main className="min-h-[78vh]">
         <Outlet />

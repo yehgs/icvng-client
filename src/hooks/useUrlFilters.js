@@ -1,9 +1,11 @@
 import { useParams, useLocation } from 'react-router-dom';
-import Axios from './Axios';
+import { useEffect, useRef, useState } from 'react';
+import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
+import { useFilterState } from './useFilterState';
 
 /**
- * Custom hook to extract and process filter parameters from URL.
+ * Enhanced version of useUrlFilters hook that works with Redux state
  *
  * Handles various URL patterns:
  * - /shop (base shop with no filters)
@@ -12,16 +14,101 @@ import SummaryApi from '../common/SummaryApi';
  * - /category/:categorySlug/brand/:brandSlug (filter by category and brand)
  * - /category/:categorySlug/subcategory/:subcategorySlug/brand/:brandSlug (filter by category, subcategory, and brand)
  * - /brand/:brandSlug (filter by brand only)
- *
- * @returns {Object} An object containing:
- *   - urlFilters: The extracted filter objects with IDs
- *   - isLoading: Loading state
- *   - error: Any error that occurred
- *   - resolveFiltersFromUrl: Function to fetch and resolve slug values to IDs
  */
 export const useUrlFilters = () => {
   const params = useParams();
   const location = useLocation();
+  const previousUrl = useRef(location.pathname);
+  const [isProcessingUrl, setIsProcessingUrl] = useState(false);
+
+  const {
+    activeFilters,
+    urlState,
+    setFromUrl,
+    setUrlLoadingState,
+    updateFilterData,
+  } = useFilterState();
+
+  // Track and handle URL changes
+  useEffect(() => {
+    // If the URL hasn't changed, don't process
+    if (previousUrl.current === location.pathname) {
+      return;
+    }
+
+    console.log(
+      `URL changed from ${previousUrl.current} to ${location.pathname}`
+    );
+
+    // Update the previous URL ref
+    previousUrl.current = location.pathname;
+
+    // Process the URL filters
+    const processUrlFilters = async () => {
+      setIsProcessingUrl(true);
+      setUrlLoadingState(true);
+
+      const { categorySlug, subcategorySlug, brandSlug } = params;
+
+      // Only process if we have URL filters or we're on the shop page
+      const isFilterUrl = Boolean(categorySlug || subcategorySlug || brandSlug);
+
+      try {
+        if (isFilterUrl) {
+          console.log(`Processing URL filters for ${location.pathname}`);
+
+          // Resolve filter data from URL
+          const result = await resolveFiltersFromUrl();
+
+          console.log('Resolved filters from URL:', result);
+
+          // Set URL filters in the state
+          setFromUrl(result.urlFilters, {
+            ...result.displayNames,
+            pageTitle: generatePageTitle(result.displayNames),
+            breadcrumbs: generateBreadcrumbs(result.displayNames),
+          });
+        } else if (location.pathname === '/shop') {
+          // Reset URL-based filters for shop page
+          console.log('Resetting filters for shop page');
+
+          // Clear URL-based filters but preserve other filters
+          setFromUrl(
+            {
+              category: '',
+              categorySlug: '',
+              categoryName: '',
+              subCategory: '',
+              subcategorySlug: '',
+              subCategoryName: '',
+              brand: [],
+              brandSlugs: [],
+              brandNames: [],
+            },
+            {
+              pageTitle: 'Shop',
+              breadcrumbs: [
+                { label: 'Home', url: '/' },
+                { label: 'Shop', url: '/shop' },
+              ],
+            }
+          );
+        }
+      } catch (error) {
+        console.error('Error processing URL filters:', error);
+      } finally {
+        // Mark URL processing as complete
+        setUrlLoadingState(false);
+
+        // After a short delay, allow processing again
+        setTimeout(() => {
+          setIsProcessingUrl(false);
+        }, 300);
+      }
+    };
+
+    processUrlFilters();
+  }, [location.pathname, params]);
 
   /**
    * Resolves slugs from URL to actual database IDs.
@@ -31,13 +118,15 @@ export const useUrlFilters = () => {
     const { categorySlug, subcategorySlug, brandSlug } = params;
     const urlFilters = {
       category: '',
+      categorySlug: categorySlug || '',
+      categoryName: '',
       subCategory: '',
+      subcategorySlug: subcategorySlug || '',
+      subCategoryName: '',
       brand: [],
+      brandSlugs: brandSlug ? [brandSlug] : [],
+      brandNames: [],
     };
-
-    let categoryName = '';
-    let subcategoryName = '';
-    let brandName = '';
 
     try {
       // Step 1: Resolve category if present
@@ -53,7 +142,12 @@ export const useUrlFilters = () => {
         ) {
           const category = categoryResponse.data.data[0];
           urlFilters.category = category._id;
-          categoryName = category.name;
+          urlFilters.categoryName = category.name;
+
+          // Update categories in filter data if available
+          if (categoryResponse.data.data.length > 0) {
+            updateFilterData('categories', categoryResponse.data.data);
+          }
         }
       }
 
@@ -73,7 +167,12 @@ export const useUrlFilters = () => {
         ) {
           const subcategory = subcategoryResponse.data.data[0];
           urlFilters.subCategory = subcategory._id;
-          subcategoryName = subcategory.name;
+          urlFilters.subCategoryName = subcategory.name;
+
+          // Update subcategories in filter data
+          if (subcategoryResponse.data.data.length > 0) {
+            updateFilterData('subcategories', subcategoryResponse.data.data);
+          }
         }
       }
 
@@ -87,16 +186,22 @@ export const useUrlFilters = () => {
         if (brandResponse.data.success && brandResponse.data.data.length > 0) {
           const brand = brandResponse.data.data[0];
           urlFilters.brand = [brand._id];
-          brandName = brand.name;
+          urlFilters.brandNames = [brand.name];
+
+          // Update brands in filter data
+          if (brandResponse.data.data.length > 0) {
+            updateFilterData('brands', brandResponse.data.data);
+          }
         }
       }
 
       return {
         urlFilters,
         displayNames: {
-          categoryName,
-          subcategoryName,
-          brandName,
+          categoryName: urlFilters.categoryName,
+          subcategoryName: urlFilters.subCategoryName,
+          brandName:
+            urlFilters.brandNames.length > 0 ? urlFilters.brandNames[0] : '',
         },
       };
     } catch (error) {
@@ -104,8 +209,14 @@ export const useUrlFilters = () => {
       return {
         urlFilters: {
           category: '',
+          categorySlug: '',
+          categoryName: '',
           subCategory: '',
+          subcategorySlug: '',
+          subCategoryName: '',
           brand: [],
+          brandSlugs: [],
+          brandNames: [],
         },
         displayNames: {
           categoryName: '',
@@ -184,7 +295,14 @@ export const useUrlFilters = () => {
     return breadcrumbs;
   };
 
+  // Return current state and methods
   return {
+    // Current state
+    activeFilters,
+    urlState,
+    isProcessingUrl,
+
+    // Methods for manual usage if needed
     resolveFiltersFromUrl,
     generatePageTitle,
     generateBreadcrumbs,

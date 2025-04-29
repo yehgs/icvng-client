@@ -172,7 +172,7 @@ const CardProduct = ({ data }) => {
           </span>
         )}
         {Boolean(data.discount) && (
-          <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full">
+          <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full mr-7">
             {data.discount}% OFF
           </span>
         )}

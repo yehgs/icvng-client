@@ -1,127 +1,131 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import CardLoading from '../components/CardLoading';
 import SummaryApi from '../common/SummaryApi';
 import Axios from '../utils/Axios';
 import AxiosToastError from '../utils/AxiosToastError';
 import CardProduct from '../components/CardProduct';
 import InfiniteScroll from 'react-infinite-scroll-component';
-import {
-  useLocation,
-  useSearchParams,
-  useParams,
-  Link,
-} from 'react-router-dom';
 import noDataImage from '../assets/nothing here yet.webp';
-import ShopFilter from '../components/ShopFilter';
+import ShopFilter from '../components/EnhancedShopFilter';
 import { FaSearch, FaChevronRight } from 'react-icons/fa';
-import useUrlFilters from '../utils/urlFilterHandler';
+import { useFilterState } from '../hooks/useFilterState.js';
+import { useUrlFilters } from '../hooks/useUrlFilters.js';
 
-const ShopPage = () => {
-  const [data, setData] = useState([]);
+const EnhancedShopPage = () => {
+  // Products data state
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [urlLoading, setUrlLoading] = useState(true);
-  const loadingArrayCard = new Array(10).fill(null);
   const [page, setPage] = useState(1);
   const [totalPage, setTotalPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const location = useLocation();
-  const params = useParams();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const searchText = searchParams.get('q') || '';
-  const [searchInput, setSearchInput] = useState(searchText);
-  const firstLoadRef = useRef(true);
-  const isUrlFilterActive = Boolean(params.categorySlug || params.brandSlug);
 
-  // Get URL filter handling functions
-  const { resolveFiltersFromUrl, generatePageTitle, generateBreadcrumbs } =
-    useUrlFilters();
-  const [pageTitle, setPageTitle] = useState('Shop');
-  const [breadcrumbs, setBreadcrumbs] = useState([
-    { label: 'Home', url: '/' },
-    { label: 'Shop', url: '/shop' },
+  // Local UI state
+  const loadingArrayCard = new Array(10).fill(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchInput, setSearchInput] = useState('');
+  const firstLoadRef = useRef(true);
+  const fetchTimeoutRef = useRef(null);
+
+  // Get filter state from centralized store
+  const {
+    activeFilters,
+    filterData,
+    urlState,
+    applyFilters,
+    updateSearchTerm,
+    removeFilter,
+    resetFilters,
+  } = useFilterState();
+
+  // Monitor URL parameters with enhanced useUrlFilters hook
+  const { isProcessingUrl } = useUrlFilters();
+
+  // Initialize search input from URL on mount
+  useEffect(() => {
+    const searchText = searchParams.get('q') || '';
+    setSearchInput(searchText);
+    updateSearchTerm(searchText);
+  }, [searchParams]);
+
+  // Fetch products when component mounts
+  useEffect(() => {
+    const initialLoad = async () => {
+      if (firstLoadRef.current) {
+        // Short delay to ensure all filter states are initialized
+        setTimeout(() => {
+          console.log('Initial product fetch with filters:', activeFilters);
+          fetchProducts(true);
+          firstLoadRef.current = false;
+        }, 200);
+      }
+    };
+
+    initialLoad();
+
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced effect for filter changes
+  useEffect(() => {
+    // Don't trigger on initial render
+    if (firstLoadRef.current) {
+      return;
+    }
+
+    // Don't fetch when URL is still processing
+    if (urlState.isLoading || isProcessingUrl) {
+      console.log('Skipping fetch during URL processing');
+      return;
+    }
+
+    console.log('Filter changed, scheduling product fetch');
+
+    // Clear any existing timeout
+    if (fetchTimeoutRef.current) {
+      clearTimeout(fetchTimeoutRef.current);
+    }
+
+    // Set a debounce timeout for filter changes
+    fetchTimeoutRef.current = setTimeout(() => {
+      console.log('Executing debounced product fetch');
+      fetchProducts(true);
+    }, 300);
+
+    return () => {
+      if (fetchTimeoutRef.current) {
+        clearTimeout(fetchTimeoutRef.current);
+      }
+    };
+  }, [
+    activeFilters.category,
+    activeFilters.subCategory,
+    activeFilters.brand,
+    activeFilters.search,
+    activeFilters.sort,
+    activeFilters.minPrice,
+    activeFilters.maxPrice,
+    activeFilters.productType,
+    activeFilters.roastLevel,
+    activeFilters.intensity,
+    activeFilters.blend,
+    urlState.isLoading,
+    isProcessingUrl,
   ]);
 
-  // Filter state
-  const [activeFilters, setActiveFilters] = useState({
-    productType: [],
-    category: '',
-    subCategory: '',
-    brand: [],
-    roastLevel: [],
-    intensity: [],
-    blend: [],
-    minPrice: '',
-    maxPrice: '',
-    sort: 'newest',
-    search: searchText,
-  });
-
+  // Fetch more products when page changes
   useEffect(() => {
-    const loadInitialData = async () => {
-      // If there are URL filters, wait for them to resolve
-      if (isUrlFilterActive) {
-        if (!urlLoading) {
-          fetchData(true);
-        }
-      } else {
-        // Otherwise, load data immediately
-        fetchData(true);
-      }
-      firstLoadRef.current = false;
-    };
-
-    if (firstLoadRef.current) {
-      loadInitialData();
+    if (page > 1 && !firstLoadRef.current) {
+      fetchProducts(false);
     }
-  }, [urlLoading]);
+  }, [page]);
 
-  useEffect(() => {
-    if (!urlLoading && firstLoadRef.current) {
-      fetchData(true);
-      firstLoadRef.current = false;
-    }
-  }, [urlLoading]);
-
-  useEffect(() => {
-    console.log('URL params:', params);
-    console.log('Is URL filter active:', isUrlFilterActive);
-
-    const loadUrlFilters = async () => {
-      if (isUrlFilterActive) {
-        setUrlLoading(true);
-        try {
-          console.log('Resolving URL filters...');
-          const { urlFilters, displayNames } = await resolveFiltersFromUrl();
-          console.log(
-            'Resolved filters:',
-            urlFilters,
-            'Display names:',
-            displayNames
-          );
-
-          // Update filter state with URL values
-          setActiveFilters((prev) => ({
-            ...prev,
-            ...urlFilters,
-          }));
-
-          // Set page title and breadcrumbs
-          setPageTitle(generatePageTitle(displayNames));
-          setBreadcrumbs(generateBreadcrumbs(displayNames));
-        } catch (error) {
-          console.error('Error loading URL filters:', error);
-        } finally {
-          setUrlLoading(false);
-        }
-      } else {
-        setUrlLoading(false);
-      }
-    };
-
-    loadUrlFilters();
-  }, [location.pathname]);
-
-  const fetchData = async (resetPage = false) => {
+  // Fetch products with current filters
+  const fetchProducts = async (resetPage = false) => {
     try {
       setLoading(true);
       const currentPage = resetPage ? 1 : page;
@@ -137,10 +141,19 @@ const ShopPage = () => {
         sortValue = '';
       }
 
+      console.log('Fetching products with filters:', {
+        search: activeFilters.search,
+        category: activeFilters.category,
+        subCategory: activeFilters.subCategory,
+        brand: activeFilters.brand,
+        productType: activeFilters.productType,
+        page: currentPage,
+      });
+
       const response = await Axios({
         ...SummaryApi.searchProduct,
         data: {
-          search: searchText,
+          search: activeFilters.search,
           page: currentPage,
           productType:
             activeFilters.productType.length > 0
@@ -169,52 +182,32 @@ const ShopPage = () => {
       const { data: responseData } = response;
 
       if (responseData.success) {
+        console.log(
+          `Received ${responseData.data.length} products (page ${currentPage}/${responseData.totalPage})`
+        );
+
         if (currentPage === 1) {
-          setData(responseData.data);
+          setProducts(responseData.data);
         } else {
-          setData((prev) => [...prev, ...responseData.data]);
+          setProducts((prev) => [...prev, ...responseData.data]);
         }
+
         setTotalPage(responseData.totalPage);
         setTotalCount(responseData.totalCount);
       }
     } catch (error) {
+      console.error('Error fetching products:', error);
       AxiosToastError(error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle filter changes
+  // Handle filter changes from the ShopFilter component
   const handleApplyFilters = (filters) => {
-    setActiveFilters({ ...filters, search: searchText });
-    fetchData(true); // Reset to page 1 when filters change
+    console.log('Applying new filters from ShopFilter:', filters);
+    applyFilters(filters);
   };
-
-  useEffect(() => {
-    // Reset active filters when search text changes
-    setActiveFilters((prev) => ({
-      ...prev,
-      search: searchText,
-    }));
-
-    if (!urlLoading) {
-      fetchData(true); // Reset to page 1 when search changes
-    }
-  }, [searchText, urlLoading]);
-
-  useEffect(() => {
-    if (page > 1) {
-      fetchData();
-    }
-  }, [page]);
-
-  // Initial data load after URL filters are resolved
-  useEffect(() => {
-    if (!urlLoading && firstLoadRef.current) {
-      fetchData(true);
-      firstLoadRef.current = false;
-    }
-  }, [urlLoading]);
 
   // Handle search form submission
   const handleSearch = (e) => {
@@ -224,9 +217,11 @@ const ShopPage = () => {
     } else {
       setSearchParams({});
     }
-    setPage(1);
+
+    updateSearchTerm(searchInput.trim());
   };
 
+  // Load more products for infinite scroll
   const handleFetchMore = () => {
     if (totalPage > page) {
       setPage((prev) => prev + 1);
@@ -238,8 +233,8 @@ const ShopPage = () => {
       <div className="container mx-auto p-4">
         {/* Breadcrumbs */}
         <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-          <nav className="flex text-sm">
-            {breadcrumbs.map((crumb, index) => (
+          <nav className="flex text-sm flex-wrap">
+            {urlState.breadcrumbs.map((crumb, index) => (
               <React.Fragment key={index}>
                 <Link
                   to={crumb.url}
@@ -247,7 +242,7 @@ const ShopPage = () => {
                 >
                   {crumb.label}
                 </Link>
-                {index < breadcrumbs.length - 1 && (
+                {index < urlState.breadcrumbs.length - 1 && (
                   <FaChevronRight
                     className="mx-2 text-gray-400 self-center"
                     size={12}
@@ -261,8 +256,9 @@ const ShopPage = () => {
         <div className="flex flex-col lg:flex-row">
           {/* Filter Column - Sticky on desktop */}
           <div className="lg:w-1/4 lg:pr-4">
-            <div className="lg:sticky lg:top-20">
-              {loading && urlLoading ? (
+            {/* <div className="lg:sticky lg:top-20"> */}
+            <div>
+              {loading && urlState.isLoading ? (
                 <div className="bg-white p-8 rounded-lg shadow-sm mb-4 text-center">
                   <div className="animate-pulse">
                     <div className="h-4 bg-gray-200 rounded mb-2 w-3/4 mx-auto"></div>
@@ -274,6 +270,8 @@ const ShopPage = () => {
                 <ShopFilter
                   onApplyFilters={handleApplyFilters}
                   initialFilters={activeFilters}
+                  onRemoveFilter={removeFilter}
+                  onResetFilters={resetFilters}
                 />
               )}
             </div>
@@ -284,9 +282,9 @@ const ShopPage = () => {
             <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4">
                 <div>
-                  <h1 className="text-xl font-bold">{pageTitle}</h1>
+                  <h1 className="text-xl font-bold">{urlState.pageTitle}</h1>
                   <p className="text-gray-600 text-sm">
-                    Showing {data.length} of {totalCount} products
+                    Showing {products.length} of {totalCount} products
                   </p>
                 </div>
 
@@ -314,7 +312,7 @@ const ShopPage = () => {
               </div>
 
               <InfiniteScroll
-                dataLength={data.length}
+                dataLength={products.length}
                 next={handleFetchMore}
                 hasMore={page < totalPage}
                 loader={
@@ -324,7 +322,7 @@ const ShopPage = () => {
                 }
               >
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
-                  {data.map((product, index) => (
+                  {products.map((product, index) => (
                     <CardProduct
                       data={product}
                       key={`product-${product._id}-${index}`}
@@ -332,7 +330,7 @@ const ShopPage = () => {
                   ))}
 
                   {/* Loading placeholders */}
-                  {(loading || urlLoading) &&
+                  {(loading || urlState.isLoading) &&
                     loadingArrayCard.map((_, index) => (
                       <CardLoading key={`loading-${index}`} />
                     ))}
@@ -340,7 +338,7 @@ const ShopPage = () => {
               </InfiniteScroll>
 
               {/* No results message */}
-              {!data.length && !loading && !urlLoading && (
+              {!products.length && !loading && !urlState.isLoading && (
                 <div className="flex flex-col justify-center items-center w-full mx-auto py-10">
                   <img
                     src={noDataImage}
@@ -361,4 +359,4 @@ const ShopPage = () => {
   );
 };
 
-export default ShopPage;
+export default EnhancedShopPage;
