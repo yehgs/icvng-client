@@ -34,6 +34,7 @@ import CategoryDetailPage from '../components/CategoryDetailPage';
 import NotFoundPage from '../components/NotFoundPage';
 import ProductRequestPage from '../pages/ProductRequestPage';
 import UserProductRequests from '../pages/UserProductRequests.jsx';
+import AdminRatingsPage from '../pages/AdminRatingsPage.JSX';
 
 const router = createBrowserRouter([
   {
@@ -123,6 +124,14 @@ const router = createBrowserRouter([
             element: (
               <AdminPermision>
                 <CategoryPage />
+              </AdminPermision>
+            ),
+          },
+          {
+            path: 'ratings',
+            element: (
+              <AdminPermision>
+                <AdminRatingsPage />
               </AdminPermision>
             ),
           },

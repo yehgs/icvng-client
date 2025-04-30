@@ -265,6 +265,26 @@ const SummaryApi = {
     url: '/api/product-request/delete',
     method: 'DELETE',
   },
+  getRatings: {
+    url: '/api/rating/get',
+    method: 'GET',
+  },
+  addRating: {
+    url: '/api/rating/add',
+    method: 'POST',
+  },
+  updateRating: {
+    url: '/api/rating/update',
+    method: 'PUT',
+  },
+  deleteRating: {
+    url: '/api/rating/delete',
+    method: 'DELETE',
+  },
+  getAllRatingsAdmin: {
+    url: '/api/rating/admin/all',
+    method: 'GET',
+  },
 };
 
 export default SummaryApi;

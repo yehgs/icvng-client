@@ -20,6 +20,7 @@ import AddToCartButton from '../components/AddToCartButton';
 // New components
 import RoastIndicator from '../components/RoastIndicator';
 import IntensityMeter from '../components/IntensityMeter';
+import RatingReviewComponent from '../components/RatingReviewComponent';
 
 const ProductDisplayPage = () => {
   const params = useParams();
@@ -443,42 +444,10 @@ const ProductDisplayPage = () => {
 
             {activeTab === 'reviews' && (
               <div>
-                {data.ratings.length > 0 ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center">
-                      <div className="text-5xl font-bold mr-4">
-                        {data.averageRating.toFixed(1)}
-                      </div>
-                      <div>
-                        <div className="flex">
-                          {renderStars(data.averageRating)}
-                        </div>
-                        <div className="text-sm text-gray-500 mt-1">
-                          Based on {data.ratings.length} reviews
-                        </div>
-                      </div>
-                    </div>
-
-                    <button className="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-4 rounded">
-                      Write a Review
-                    </button>
-
-                    {/* We'd need to fetch actual review data here */}
-                    <p className="text-gray-500">
-                      Reviews will be displayed here when fetched from the
-                      server.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <p className="text-gray-500 mb-4">
-                      There are no reviews yet.
-                    </p>
-                    <button className="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-4 rounded">
-                      Be the first to write a review
-                    </button>
-                  </div>
-                )}
+                <RatingReviewComponent
+                  productId={productId}
+                  onRatingAdded={fetchProductDetails}
+                />
               </div>
             )}
           </div>

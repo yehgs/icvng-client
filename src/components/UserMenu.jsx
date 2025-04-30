@@ -161,6 +161,15 @@ const UserMenu = ({ close }) => {
             Slider
           </Link>
         )}
+        {isAdmin(user.role) && (
+          <Link
+            onClick={handleClose}
+            to={'/dashboard/ratings'}
+            className="px-2 hover:bg-orange-200 py-1"
+          >
+            User Ratings
+          </Link>
+        )}
 
         <Link
           onClick={handleClose}
