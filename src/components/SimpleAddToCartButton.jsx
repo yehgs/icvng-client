@@ -48,40 +48,39 @@ const SimpleAddToCartButton = ({ data }) => {
     setShowRequestModal(true);
   };
 
-  if (data.stock <= 0) {
-    return (
-      <>
+  return (
+    <>
+      {data.stock <= 0 ? (
         <button
           onClick={handleRequestClick}
           className="w-full bg-secondary-200 hover:bg-secondary-100 text-white text-sm font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
         >
           Request
         </button>
-
-        {showRequestModal && (
-          <ProductRequestModal
-            product={data}
-            onClose={() => setShowRequestModal(false)}
-          />
-        )}
-      </>
-    );
-  }
-
-  return (
-    <button
-      onClick={handleAddToCart}
-      className="w-full bg-green-700 hover:bg-green-800 text-white text-sm font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
-      disabled={loading}
-    >
-      {loading ? (
-        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
       ) : (
-        <>
-          <FaShoppingCart className="mr-1" /> Add
-        </>
+        <button
+          onClick={handleAddToCart}
+          className="w-full bg-green-700 hover:bg-green-800 text-white text-sm font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
+          disabled={loading}
+        >
+          {loading ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
+          ) : (
+            <>
+              <FaShoppingCart className="mr-1" /> Add
+            </>
+          )}
+        </button>
       )}
-    </button>
+
+      {/* Modal Portal */}
+      {showRequestModal && (
+        <ProductRequestModal
+          product={data}
+          onClose={() => setShowRequestModal(false)}
+        />
+      )}
+    </>
   );
 };
 

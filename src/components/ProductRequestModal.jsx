@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
@@ -7,6 +7,7 @@ import { useGlobalContext } from '../provider/GlobalProvider';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { addRequest } from '../store/productRequestSlice';
+import ReactDOM from 'react-dom';
 
 const ProductRequestModal = ({ product, onClose }) => {
   const [quantity, setQuantity] = useState(1);
@@ -64,9 +65,16 @@ const ProductRequestModal = ({ product, onClose }) => {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+  // Use a portal to render the modal at the root level of the DOM
+  return ReactDOM.createPortal(
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-gray-800">
             Request Product
@@ -177,7 +185,8 @@ const ProductRequestModal = ({ product, onClose }) => {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body // This ensures the modal is mounted directly to the body element
   );
 };
 
