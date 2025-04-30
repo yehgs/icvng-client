@@ -34,7 +34,7 @@ import CategoryDetailPage from '../components/CategoryDetailPage';
 import NotFoundPage from '../components/NotFoundPage';
 import ProductRequestPage from '../pages/ProductRequestPage';
 import UserProductRequests from '../pages/UserProductRequests.jsx';
-import AdminRatingsPage from '../pages/AdminRatingsPage.JSX';
+import AdminRatingsPage from '../pages/AdminRatingsPage.jsx';
 
 const router = createBrowserRouter([
   {
