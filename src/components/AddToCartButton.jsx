@@ -7,6 +7,7 @@ import AxiosToastError from '../utils/AxiosToastError';
 import { useSelector } from 'react-redux';
 import { FaMinus, FaPlus, FaShoppingCart } from 'react-icons/fa';
 import { BsCart4 } from 'react-icons/bs';
+import ProductRequestModal from './ProductRequestModal';
 
 const AddToCartButton = ({ data, quantity = 1 }) => {
   const { fetchCartItem, updateCartItem, deleteCartItem } = useGlobalContext();
@@ -15,6 +16,7 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
   const [isAvailableCart, setIsAvailableCart] = useState(false);
   const [qty, setQty] = useState(0);
   const [cartItemDetails, setCartItemsDetails] = useState();
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -44,6 +46,12 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRequestClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setShowRequestModal(true);
   };
 
   // Checking if this item is in cart or not
@@ -86,12 +94,21 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
 
   if (data.stock <= 0) {
     return (
-      <button
-        className="w-full bg-gray-300 text-gray-700 font-medium py-3 px-6 rounded-md cursor-not-allowed"
-        disabled
-      >
-        Available on Request
-      </button>
+      <>
+        <button
+          onClick={handleRequestClick}
+          className="w-full bg-secondary-200 hover:bg-secondary-100 text-white text-sm font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
+        >
+          Available on Request
+        </button>
+
+        {showRequestModal && (
+          <ProductRequestModal
+            product={data}
+            onClose={() => setShowRequestModal(false)}
+          />
+        )}
+      </>
     );
   }
 

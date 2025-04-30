@@ -31,6 +31,9 @@ import Tags from '../components/Tags';
 import WishlistPage from '../pages/WishListPage';
 import ShopPage from '../pages/EnhancedShopPage';
 import CategoryDetailPage from '../components/CategoryDetailPage';
+import NotFoundPage from '../components/NotFoundPage';
+import ProductRequestPage from '../pages/ProductRequestPage';
+import UserProductRequests from '../pages/UserProductRequests.jsx';
 
 const router = createBrowserRouter([
   {
@@ -108,10 +111,26 @@ const router = createBrowserRouter([
             element: <Address />,
           },
           {
+            path: 'user-request',
+            element: <UserProductRequests />,
+          },
+          {
+            path: 'address',
+            element: <Address />,
+          },
+          {
             path: 'category',
             element: (
               <AdminPermision>
                 <CategoryPage />
+              </AdminPermision>
+            ),
+          },
+          {
+            path: 'product-request',
+            element: (
+              <AdminPermision>
+                <ProductRequestPage />
               </AdminPermision>
             ),
           },
@@ -200,6 +219,10 @@ const router = createBrowserRouter([
       {
         path: 'cancel',
         element: <Cancel />,
+      },
+      {
+        path: '*',
+        element: <NotFoundPage />,
       },
     ],
   },

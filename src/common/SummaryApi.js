@@ -241,6 +241,30 @@ const SummaryApi = {
     url: '/api/slider/delete',
     method: 'DELETE',
   },
+  createProductRequest: {
+    url: '/api/product-request/create',
+    method: 'POST',
+  },
+  getUserProductRequests: {
+    url: '/api/product-request/user',
+    method: 'GET',
+  },
+  getAllProductRequests: {
+    url: '/api/product-request/all',
+    method: 'GET',
+  },
+  getProductRequestDetails: (requestId) => ({
+    url: `/api/product-request/details/${requestId}`,
+    method: 'GET',
+  }),
+  updateProductRequestStatus: {
+    url: '/api/product-request/update-status',
+    method: 'PUT',
+  },
+  deleteProductRequest: {
+    url: '/api/product-request/delete',
+    method: 'DELETE',
+  },
 };
 
 export default SummaryApi;

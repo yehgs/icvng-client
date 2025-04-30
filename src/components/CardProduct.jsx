@@ -11,69 +11,7 @@ import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useGlobalContext } from '../provider/GlobalProvider';
 import WishlistButton from './WishlistButton';
-
-// Simplified AddToCartButton component
-const SimpleAddToCartButton = ({ data }) => {
-  const [loading, setLoading] = useState(false);
-  const { fetchCartItem } = useGlobalContext();
-
-  const handleAddToCart = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    try {
-      setLoading(true);
-
-      const response = await Axios({
-        ...SummaryApi.addTocart,
-        data: {
-          productId: data?._id,
-          quantity: 1,
-        },
-      });
-
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        toast.success(responseData.message);
-        if (fetchCartItem) {
-          fetchCartItem();
-        }
-      }
-    } catch (error) {
-      AxiosToastError(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  if (data.stock <= 0) {
-    return (
-      <button
-        className="w-full bg-gray-300 text-gray-700 text-sm font-medium py-2 px-3 rounded-md cursor-not-allowed"
-        disabled
-      >
-        Out of Stock
-      </button>
-    );
-  }
-
-  return (
-    <button
-      onClick={handleAddToCart}
-      className="w-full bg-green-700 hover:bg-green-800 text-white text-sm font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
-      disabled={loading}
-    >
-      {loading ? (
-        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
-      ) : (
-        <>
-          <FaShoppingCart className="mr-1" /> Add
-        </>
-      )}
-    </button>
-  );
-};
+import SimpleAddToCartButton from './SimpleAddToCartButton';
 
 const CardProduct = ({ data }) => {
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;

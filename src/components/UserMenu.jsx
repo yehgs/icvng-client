@@ -66,6 +66,15 @@ const UserMenu = ({ close }) => {
         {isAdmin(user.role) && (
           <Link
             onClick={handleClose}
+            to={'/dashboard/product-request'}
+            className="px-2 hover:bg-orange-200 py-1"
+          >
+            Product Request
+          </Link>
+        )}
+        {isAdmin(user.role) && (
+          <Link
+            onClick={handleClose}
             to={'/dashboard/tags'}
             className="px-2 hover:bg-orange-200 py-1"
           >
@@ -161,6 +170,13 @@ const UserMenu = ({ close }) => {
           My Orders
         </Link>
 
+        <Link
+          onClick={handleClose}
+          to={'/dashboard/user-request'}
+          className="px-2 hover:bg-orange-200 py-1"
+        >
+          Your Request
+        </Link>
         <Link
           onClick={handleClose}
           to={'/dashboard/address'}

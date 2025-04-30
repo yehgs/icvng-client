@@ -261,7 +261,7 @@ export default function Header() {
                     <p>{DisplayPriceInNaira(totalPrice)}</p>
                   </div>
                 ) : (
-                  <Link to={'/shop'}>My Cart</Link>
+                  <Link>My Cart</Link>
                 )}
               </div>
             </button>

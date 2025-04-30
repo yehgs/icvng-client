@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaRegEyeSlash, FaRegEye } from 'react-icons/fa6';
 import toast from 'react-hot-toast';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import fetchUserDetails from '../utils/fetchUserDetails';
 import { useDispatch } from 'react-redux';
 import { setUserDetails } from '../store/userSlice';
@@ -19,6 +19,46 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
+
+  // Handle pending product requests after login
+  const handlePendingProductRequest = async () => {
+    const searchParams = new URLSearchParams(location.search);
+    const isRequestRedirect = searchParams.get('redirect') === 'request';
+
+    if (!isRequestRedirect) return;
+
+    const pendingRequestJSON = sessionStorage.getItem('pendingRequest');
+    if (!pendingRequestJSON) return;
+
+    try {
+      const pendingRequest = JSON.parse(pendingRequestJSON);
+
+      // Submit the pending request
+      const response = await Axios({
+        ...SummaryApi.createProductRequest,
+        data: {
+          productId: pendingRequest.productId,
+          quantity: parseInt(pendingRequest.quantity),
+          message: pendingRequest.message,
+        },
+      });
+
+      const { data: responseData } = response;
+
+      if (responseData.success) {
+        toast.success('Your product request was successfully submitted');
+
+        // Clear the pending request
+        sessionStorage.removeItem('pendingRequest');
+
+        // Redirect to user's product requests page
+        navigate('/account/product-requests');
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -56,7 +96,14 @@ const Login = () => {
           email: '',
           password: '',
         });
-        navigate('/');
+
+        // Handle any pending product requests
+        await handlePendingProductRequest();
+
+        // If no pending request redirects happened, go to homepage
+        if (sessionStorage.getItem('pendingRequest') === null) {
+          navigate('/');
+        }
       }
     } catch (error) {
       AxiosToastError(error);
@@ -68,6 +115,13 @@ const Login = () => {
   return (
     <section className="w-full container mx-auto px-2">
       <div className="bg-white my-4 w-full max-w-lg mx-auto rounded p-7">
+        {location.search.includes('redirect=request') && (
+          <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-md text-amber-800">
+            Please log in to submit your product request. After logging in, your
+            request will be automatically submitted.
+          </div>
+        )}
+
         <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
           <div className="grid gap-1">
             <label htmlFor="email">Email :</label>

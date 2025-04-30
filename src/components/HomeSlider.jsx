@@ -114,20 +114,20 @@ const HomeSlider = () => {
         <>
           {/* Navigation Buttons */}
           <button
-            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-20"
+            className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-10"
             onClick={prevSlide}
           >
             <ChevronLeft size={24} />
           </button>
           <button
-            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-20"
+            className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-50 hover:bg-opacity-75 rounded-full p-2 z-10"
             onClick={nextSlide}
           >
             <ChevronRight size={24} />
           </button>
 
           {/* Dots Indicator */}
-          <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+          <div className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
             {sliders.map((_, index) => (
               <button
                 key={index}
