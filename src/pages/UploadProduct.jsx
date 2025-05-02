@@ -22,11 +22,11 @@ const UploadProduct = () => {
     name: '',
     image: [],
     weight: '',
-    blend: '',
+    blend: null,
     aromaticProfile: '',
     alcoholLevel: '',
     coffeeOrigin: '',
-    intensity: '',
+    intensity: null,
     category: null,
     subCategory: null,
     brand: [],
@@ -35,7 +35,7 @@ const UploadProduct = () => {
     attributes: [],
     compatibleSystem: null,
     producer: null,
-    productType: '',
+    productType: null,
     roastLevel: null,
     unit: '',
     packaging: '',
@@ -201,11 +201,11 @@ const UploadProduct = () => {
           name: '',
           image: [],
           weight: '',
-          blend: '',
+          blend: null,
           aromaticProfile: '',
           alcoholLevel: '',
           coffeeOrigin: '',
-          intensity: '',
+          intensity: null,
           coffeeRoastAreas: null,
           category: null,
           subCategory: null,
@@ -214,7 +214,7 @@ const UploadProduct = () => {
           attributes: [],
           compatibleSystem: null,
           producer: null,
-          productType: '',
+          productType: null,
           roastLevel: null,
           unit: '',
           packaging: '',
@@ -373,7 +373,7 @@ const UploadProduct = () => {
               value={data.productType}
               onChange={handleChange}
             >
-              <option value={''}>Select Product Type</option>
+              <option value={null}>Select Product Type</option>
               <option value="COFFEE">Coffee</option>
               <option value="MACHINE">Machine</option>
               <option value="ACCESSORIES">Accessories</option>{' '}
@@ -391,11 +391,14 @@ const UploadProduct = () => {
               value={data.blend}
               onChange={handleChange}
             >
-              <option value="">Select Blend</option>
+              <option value={null}>Select Blend</option>
               <option value="100% Arabica">100% Arabica</option>
               <option value="100% Robusta">100% Robusta</option>
               <option value="Arabica/Robusta Blend (70/30)">
                 Arabica/Robusta Blend (70/30)
+              </option>
+              <option value="Arabica/Robusta Blend (30/70)">
+                Arabica/Robusta Blend (30/70)
               </option>
               <option value="Arabica/Robusta Blend (80/20)">
                 Arabica/Robusta Blend (80/20)
@@ -429,7 +432,7 @@ const UploadProduct = () => {
               value={data.intensity}
               onChange={handleChange}
             >
-              <option value="">Select Intensity</option>
+              <option value={null}>Select Intensity</option>
               {[...Array(10)].map((_, i) => {
                 const value = `${i + 1}/10`;
                 return (
