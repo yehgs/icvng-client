@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import HomeSlider from '../components/HomeSlider';
@@ -8,26 +8,98 @@ import FeaturedProductsSection from '../components/FeaturedProductsSection';
 import CategoryFilterSection from '../components/CategoryFilterSection';
 import PopularProductsSection from '../components/PopularProductsSection';
 import CoffeeOriginSection from '../components/CoffeeOriginSection';
+import Axios from '../utils/Axios';
+import SummaryApi from '../common/SummaryApi';
 
 const Home = () => {
   const brands = useSelector((state) => state.product.allBrands) || [];
+  const [sideBanner1, setSideBanner1] = useState(null);
+  const [sideBanner2, setSideBanner2] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  // Mock data for side banners (replace with your actual data)
-  const sideBanners = [
-    {
-      id: 1,
-      image:
-        'https://dummyimage.com/600x300/5e3a19/ffffff&text=Coffee+Subscriptions',
-      title: 'Coffee Subscriptions',
-      link: '/subscriptions',
-    },
-    {
-      id: 2,
-      image: 'https://dummyimage.com/600x300/3e2a12/ffffff&text=Gift+Sets',
-      title: 'Gift Sets',
-      link: '/gift-sets',
-    },
-  ];
+  // Fetch side banners from API
+  const fetchSideBanners = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch side banner 1
+      const response1 = await Axios({
+        ...SummaryApi.getActiveBanners,
+        params: { position: 'homepage_side1' },
+      });
+
+      if (response1.data.success && response1.data.data.length > 0) {
+        setSideBanner1(response1.data.data[0]);
+      }
+
+      // Fetch side banner 2
+      const response2 = await Axios({
+        ...SummaryApi.getActiveBanners,
+        params: { position: 'homepage_side2' },
+      });
+
+      if (response2.data.success && response2.data.data.length > 0) {
+        setSideBanner2(response2.data.data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching side banners:', error);
+      // Set fallback banners if API fails
+      setSideBanner1({
+        id: 1,
+        image:
+          'https://dummyimage.com/600x300/5e3a19/ffffff&text=Coffee+Subscriptions',
+        title: 'Coffee Subscriptions',
+        link: '/subscriptions',
+      });
+      setSideBanner2({
+        id: 2,
+        image: 'https://dummyimage.com/600x300/3e2a12/ffffff&text=Gift+Sets',
+        title: 'Gift Sets',
+        link: '/gift-sets',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSideBanners();
+  }, []);
+
+  const renderSideBanner = (banner, index) => {
+    if (!banner) return null;
+
+    const BannerWrapper = banner.link ? Link : 'div';
+    const bannerProps = banner.link ? { to: banner.link } : {};
+
+    return (
+      <BannerWrapper
+        key={banner._id || banner.id || `banner-${index}`}
+        {...bannerProps}
+        className={`w-1/2 md:w-full h-32 md:h-48 relative overflow-hidden rounded shadow-md hover:shadow-lg transition-shadow ${
+          banner.link ? 'cursor-pointer' : ''
+        }`}
+      >
+        <img
+          src={banner.image}
+          alt={banner.title || 'Banner'}
+          className="w-full h-full object-cover"
+        />
+        {(banner.title || banner.subtitle) && (
+          <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 text-white p-2">
+            {banner.title && (
+              <h3 className="text-sm md:text-lg font-semibold">
+                {banner.title}
+              </h3>
+            )}
+            {banner.subtitle && (
+              <p className="text-xs md:text-sm opacity-90">{banner.subtitle}</p>
+            )}
+          </div>
+        )}
+      </BannerWrapper>
+    );
+  };
 
   return (
     <section className="bg-white">
@@ -41,24 +113,17 @@ const Home = () => {
 
           {/* Side Banners - 1/4 width on desktop, stacked vertically */}
           <div className="w-full md:w-1/4 flex flex-row md:flex-col gap-4 mt-4 md:mt-0 md:h-96">
-            {sideBanners.map((banner) => (
-              <Link
-                key={banner.id}
-                to={banner.link}
-                className="w-1/2 md:w-full h-32 md:h-48 relative overflow-hidden rounded shadow-md hover:shadow-lg transition-shadow"
-              >
-                <img
-                  src={banner.image}
-                  alt={banner.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-50 text-white p-2">
-                  <h3 className="text-sm md:text-lg font-semibold">
-                    {banner.title}
-                  </h3>
-                </div>
-              </Link>
-            ))}
+            {loading ? (
+              <>
+                <div className="w-1/2 md:w-full h-32 md:h-48 bg-gray-200 animate-pulse rounded"></div>
+                <div className="w-1/2 md:w-full h-32 md:h-48 bg-gray-200 animate-pulse rounded"></div>
+              </>
+            ) : (
+              <>
+                {renderSideBanner(sideBanner1, 1)}
+                {renderSideBanner(sideBanner2, 2)}
+              </>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Facebook,
   Twitter,
@@ -11,9 +11,13 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import banner1 from '../assets/web-mix-small.png';
+import Axios from '../utils/Axios';
+import SummaryApi from '../common/SummaryApi';
 
 const PreFooter = () => {
   const [email, setEmail] = useState('');
+  const [footerBanner, setFooterBanner] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,6 +25,30 @@ const PreFooter = () => {
     alert(`Thank you for subscribing with ${email}!`);
     setEmail('');
   };
+
+  // Fetch footer banner from API
+  const fetchFooterBanner = async () => {
+    try {
+      setLoading(true);
+      const response = await Axios({
+        ...SummaryApi.getActiveBanners,
+        params: { position: 'footer' },
+      });
+
+      if (response.data.success && response.data.data.length > 0) {
+        setFooterBanner(response.data.data[0]);
+      }
+    } catch (error) {
+      console.error('Error fetching footer banner:', error);
+      // Will fall back to default banner image
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFooterBanner();
+  }, []);
 
   return (
     <div className="bg-gray-100 py-12">
@@ -69,9 +97,34 @@ const PreFooter = () => {
             </div>
           </div>
 
-          {/* Product Categories */}
+          {/* Footer Banner or Default Image */}
           <div className="w-full md:w-1/2">
-            <img src={banner1} alt="img coffee mix" />
+            {loading ? (
+              <div className="bg-gray-200 animate-pulse h-48 rounded"></div>
+            ) : footerBanner ? (
+              footerBanner.link ? (
+                <a href={footerBanner.link} className="block">
+                  <img
+                    src={footerBanner.image}
+                    alt={footerBanner.title || 'Footer Banner'}
+                    className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
+                  />
+                </a>
+              ) : (
+                <img
+                  src={footerBanner.image}
+                  alt={footerBanner.title || 'Footer Banner'}
+                  className="w-full h-auto rounded-lg"
+                />
+              )
+            ) : (
+              // Default banner when no footer banner is available
+              <img
+                src={banner1}
+                alt="Coffee mix"
+                className="w-full h-auto rounded-lg"
+              />
+            )}
           </div>
         </div>
       </div>

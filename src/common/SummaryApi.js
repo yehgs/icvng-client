@@ -285,6 +285,26 @@ const SummaryApi = {
     url: '/api/rating/admin/all',
     method: 'GET',
   },
+  addBanner: {
+    url: '/api/banner/add',
+    method: 'post',
+  },
+  getBanner: {
+    url: '/api/banner/get',
+    method: 'get',
+  },
+  getActiveBanners: {
+    url: '/api/banner/active',
+    method: 'get',
+  },
+  updateBanner: {
+    url: '/api/banner/update',
+    method: 'put',
+  },
+  deleteBanner: {
+    url: '/api/banner/delete',
+    method: 'delete',
+  },
 };
 
 export default SummaryApi;

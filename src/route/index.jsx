@@ -35,6 +35,7 @@ import NotFoundPage from '../components/NotFoundPage';
 import ProductRequestPage from '../pages/ProductRequestPage';
 import UserProductRequests from '../pages/UserProductRequests.jsx';
 import AdminRatingsPage from '../pages/AdminRatingsPage.jsx';
+import BannerAdmin from '../pages/BannerAdmin.jsx';
 
 const router = createBrowserRouter([
   {
@@ -110,6 +111,10 @@ const router = createBrowserRouter([
           {
             path: 'address',
             element: <Address />,
+          },
+          {
+            path: 'banners',
+            element: <BannerAdmin />,
           },
           {
             path: 'user-request',
