@@ -22,26 +22,31 @@ const UploadProduct = () => {
     name: '',
     image: [],
     weight: '',
-    blend: null,
-    aromaticProfile: '',
-    alcoholLevel: '',
-    coffeeOrigin: '',
-    intensity: null,
-    category: null,
-    subCategory: null,
     brand: [],
-    tags: [],
-    coffeeRoastAreas: null,
-    attributes: [],
     compatibleSystem: null,
     producer: null,
     productType: null,
     roastLevel: null,
+    roastOrigin: '',
+    blend: null,
+    featured: false,
+    aromaticProfile: '',
+    alcoholLevel: '',
+    coffeeOrigin: '',
+    intensity: null,
+    coffeeRoastAreas: null,
+    category: null,
+    subCategory: null,
+    tags: [],
+    attributes: [],
     unit: '',
     packaging: '',
     stock: '',
+    productAvailability: true,
     price: '',
     salePrice: '',
+    price3weeksDelivery: '',
+    price5weeksDelivery: '',
     btbPrice: '',
     btcPrice: '',
     discount: '',
@@ -52,6 +57,7 @@ const UploadProduct = () => {
     seoTitle: '',
     seoDescription: '',
     publish: 'PUBLISHED',
+    relatedProducts: [],
   });
 
   const [imageLoading, setImageLoading] = useState(false);
@@ -96,10 +102,10 @@ const UploadProduct = () => {
 
   // Handle change for general inputs
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -201,7 +207,14 @@ const UploadProduct = () => {
           name: '',
           image: [],
           weight: '',
+          brand: [],
+          compatibleSystem: null,
+          producer: null,
+          productType: null,
+          roastLevel: null,
+          roastOrigin: '',
           blend: null,
+          featured: false,
           aromaticProfile: '',
           alcoholLevel: '',
           coffeeOrigin: '',
@@ -209,18 +222,16 @@ const UploadProduct = () => {
           coffeeRoastAreas: null,
           category: null,
           subCategory: null,
-          brand: [],
           tags: [],
           attributes: [],
-          compatibleSystem: null,
-          producer: null,
-          productType: null,
-          roastLevel: null,
           unit: '',
           packaging: '',
           stock: '',
+          productAvailability: true,
           price: '',
           salePrice: '',
+          price3weeksDelivery: '',
+          price5weeksDelivery: '',
           btbPrice: '',
           btcPrice: '',
           discount: '',
@@ -231,9 +242,9 @@ const UploadProduct = () => {
           seoTitle: '',
           seoDescription: '',
           publish: 'PUBLISHED',
+          relatedProducts: [],
         });
       }
-      nav;
     } catch (error) {
       AxiosToastError(error);
     }
@@ -263,8 +274,18 @@ const UploadProduct = () => {
             />
           </div>
 
+          {/* SKU Display - Read Only */}
           <div className="grid gap-1">
-            <label htmlFor="description" className="font-medium">
+            <label className="font-medium">SKU (Product Code)</label>
+            <div className="bg-gray-100 p-2 border border-gray-300 rounded">
+              <span className="text-gray-500">
+                SKU will be auto-generated after product creation
+              </span>
+            </div>
+          </div>
+
+          <div className="grid gap-1">
+            <label htmlFor="shortDescription" className="font-medium">
               Short Description
             </label>
             <textarea
@@ -338,7 +359,7 @@ const UploadProduct = () => {
                   onChange={handleUploadImage}
                 />
               </label>
-              {/**display uploded image*/}
+              {/**display uploaded image*/}
               <div className="flex flex-wrap gap-4">
                 {data.image.map((img, index) => {
                   return (
@@ -376,11 +397,55 @@ const UploadProduct = () => {
               <option value={null}>Select Product Type</option>
               <option value="COFFEE">Coffee</option>
               <option value="MACHINE">Machine</option>
-              <option value="ACCESSORIES">Accessories</option>{' '}
-              <option value="COFFEE_BEANS">Coffee Bean</option>
+              <option value="ACCESSORIES">Accessories</option>
+              <option value="COFFEE_BEANS">Coffee Beans</option>
               <option value="TEA">Tea</option>
               <option value="DRINKS">Drinks</option>
             </select>
+          </div>
+
+          {/* Featured Checkbox */}
+          <div className="grid gap-1">
+            <label className="font-medium flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="featured"
+                checked={data.featured}
+                onChange={handleChange}
+                className="w-4 h-4"
+              />
+              Featured Product
+            </label>
+          </div>
+
+          {/* Product Availability Checkbox */}
+          <div className="grid gap-1">
+            <label className="font-medium flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="productAvailability"
+                checked={data.productAvailability}
+                onChange={handleChange}
+                className="w-4 h-4"
+              />
+              Product Available
+            </label>
+          </div>
+
+          {/* Roast Origin Input */}
+          <div className="grid gap-1">
+            <label htmlFor="roastOrigin" className="font-medium">
+              Roast Origin
+            </label>
+            <input
+              id="roastOrigin"
+              type="text"
+              placeholder="Enter roast origin"
+              name="roastOrigin"
+              value={data.roastOrigin}
+              onChange={handleChange}
+              className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+            />
           </div>
 
           <div className="grid gap-1">
@@ -418,6 +483,7 @@ const UploadProduct = () => {
               <option value="Espresso Blend">Espresso Blend</option>
               <option value="Mocha-Java Blend">Mocha-Java Blend</option>
               <option value="Mocha Italia">Mocha Italia</option>
+              <option value="Cappuccino Blend">Cappuccino Blend</option>
               <option value="African Blend">African Blend</option>
               <option value="Latin American Blend">Latin American Blend</option>
               <option value="Indonesian Blend">Indonesian Blend</option>
@@ -454,7 +520,7 @@ const UploadProduct = () => {
             <input
               id="aromaticProfile"
               type="text"
-              placeholder="Enter coffee Aromatic profile"
+              placeholder="Enter coffee aromatic profile"
               name="aromaticProfile"
               value={data.aromaticProfile}
               onChange={handleChange}
@@ -469,7 +535,7 @@ const UploadProduct = () => {
             <input
               id="alcoholLevel"
               type="text"
-              placeholder="Enter coffee alcohol level"
+              placeholder="Enter alcohol level"
               name="alcoholLevel"
               value={data.alcoholLevel}
               onChange={handleChange}
@@ -522,12 +588,12 @@ const UploadProduct = () => {
                   return;
                 }
 
-                const coffeeRoastAreas = allBrands.find(
+                const coffeeRoastArea = allCoffeeRoastAreas.find(
                   (el) => el._id === value
                 );
                 setData((prev) => ({
                   ...prev,
-                  coffeeRoastAreas: coffeeRoastAreas,
+                  coffeeRoastAreas: coffeeRoastArea,
                 }));
               }}
             >
@@ -712,6 +778,40 @@ const UploadProduct = () => {
             </div>
           </div>
 
+          {/* New Pricing Fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid gap-1">
+              <label htmlFor="price3weeksDelivery" className="font-medium">
+                3 Weeks Delivery Price
+              </label>
+              <input
+                id="price3weeksDelivery"
+                type="number"
+                placeholder="Enter 3 weeks delivery price"
+                name="price3weeksDelivery"
+                value={data.price3weeksDelivery}
+                re
+                onChange={handleChange}
+                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+              />
+            </div>
+
+            <div className="grid gap-1">
+              <label htmlFor="price5weeksDelivery" className="font-medium">
+                5 Weeks Delivery Price
+              </label>
+              <input
+                id="price5weeksDelivery"
+                type="number"
+                placeholder="Enter 5 weeks delivery price"
+                name="price5weeksDelivery"
+                value={data.price5weeksDelivery}
+                onChange={handleChange}
+                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+              />
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="grid gap-1">
               <label htmlFor="btbPrice" className="font-medium">
@@ -783,7 +883,7 @@ const UploadProduct = () => {
                 {data.brand.map((b, index) => (
                   <div
                     key={b._id}
-                    className="text-sm flex items-center gap-1 bg-blue-50 mt-2"
+                    className="text-sm flex items-center gap-1 bg-blue-50 mt-2 p-1 rounded"
                   >
                     <p>{b.name}</p>
                     <div
@@ -888,7 +988,7 @@ const UploadProduct = () => {
                 {data.tags.map((t, index) => (
                   <div
                     key={t._id}
-                    className="text-sm flex items-center gap-1 bg-blue-50 mt-2"
+                    className="text-sm flex items-center gap-1 bg-blue-50 mt-2 p-1 rounded"
                   >
                     <p>{t.name}</p>
                     <div
@@ -929,7 +1029,7 @@ const UploadProduct = () => {
                 {data.attributes.map((a, index) => (
                   <div
                     key={a._id}
-                    className="text-sm flex items-center gap-1 bg-blue-50 mt-2"
+                    className="text-sm flex items-center gap-1 bg-blue-50 mt-2 p-1 rounded"
                   >
                     <p>{a.name}</p>
                     <div

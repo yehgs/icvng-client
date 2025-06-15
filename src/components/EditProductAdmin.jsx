@@ -19,7 +19,14 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     name: propsData.name || '',
     image: propsData.image || [],
     weight: propsData.weight || '',
+    brand: propsData.brand || [],
+    compatibleSystem: propsData.compatibleSystem || null,
+    producer: propsData.producer || null,
+    productType: propsData.productType || null,
+    roastLevel: propsData.roastLevel || null,
+    roastOrigin: propsData.roastOrigin || '',
     blend: propsData.blend || null,
+    featured: propsData.featured || false,
     aromaticProfile: propsData.aromaticProfile || '',
     alcoholLevel: propsData.alcoholLevel || '',
     coffeeOrigin: propsData.coffeeOrigin || '',
@@ -27,21 +34,23 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     coffeeRoastAreas: propsData.coffeeRoastAreas || null,
     category: propsData.category || null,
     subCategory: propsData.subCategory || null,
-    brand: propsData.brand || [],
     tags: propsData.tags || [],
     attributes: propsData.attributes || [],
-    compatibleSystem: propsData.compatibleSystem || null,
-    producer: propsData.producer || null,
-    productType: propsData.productType || null,
-    roastLevel: propsData.roastLevel || null,
     unit: propsData.unit || '',
     packaging: propsData.packaging || '',
     stock: propsData.stock || 0,
+    productAvailability:
+      propsData.productAvailability !== undefined
+        ? propsData.productAvailability
+        : true,
     price: propsData.price || 0,
     salePrice: propsData.salePrice || 0,
+    price3weeksDelivery: propsData.price3weeksDelivery || 0,
+    price5weeksDelivery: propsData.price5weeksDelivery || 0,
     btbPrice: propsData.btbPrice || 0,
     btcPrice: propsData.btcPrice || 0,
     discount: propsData.discount || 0,
+    sku: propsData.sku || '',
     description: propsData.description || '',
     shortDescription: propsData.shortDescription || '',
     additionalInfo: propsData.additionalInfo || '',
@@ -49,6 +58,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     seoTitle: propsData.seoTitle || '',
     seoDescription: propsData.seoDescription || '',
     publish: propsData.publish || 'PENDING',
+    relatedProducts: propsData.relatedProducts || [],
     slug: propsData.slug || '',
   });
 
@@ -83,12 +93,12 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   }, [data.category, allSubCategory]);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
 
     setData((prev) => {
       return {
         ...prev,
-        [name]: value,
+        [name]: type === 'checkbox' ? checked : value,
       };
     });
   };
@@ -225,6 +235,27 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                 />
               </div>
 
+              {/* SKU Field - Read Only */}
+              <div className="grid gap-1">
+                <label htmlFor="sku" className="font-medium">
+                  SKU (Product Code)
+                </label>
+                <input
+                  id="sku"
+                  type="text"
+                  name="sku"
+                  value={data.sku}
+                  readOnly
+                  className="bg-gray-100 p-2 outline-none border border-gray-300 rounded cursor-not-allowed"
+                />
+                {!data.sku && (
+                  <p className="text-sm text-orange-600 mt-1">
+                    SKU not available. Update this product to generate a unique
+                    SKU.
+                  </p>
+                )}
+              </div>
+
               <div className="grid gap-1">
                 <label htmlFor="shortDescription" className="font-medium">
                   Short Description
@@ -261,7 +292,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
               </div>
 
               <div className="grid gap-1">
-                <label htmlFor="shortDescription" className="font-medium">
+                <label htmlFor="additionalInfo" className="font-medium">
                   Additional Information
                 </label>
                 <RichTextEditor
@@ -274,6 +305,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   }}
                 />
               </div>
+
               <div>
                 <p className="font-medium">Image</p>
                 <div>
@@ -340,10 +372,54 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   <option value="COFFEE">Coffee</option>
                   <option value="MACHINE">Machine</option>
                   <option value="ACCESSORIES">Accessories</option>
-                  <option value="COFFEE BEANS">Coffee Bean</option>
+                  <option value="COFFEE_BEANS">Coffee Beans</option>
                   <option value="TEA">Tea</option>
                   <option value="DRINKS">Drinks</option>
                 </select>
+              </div>
+
+              {/* Featured Checkbox */}
+              <div className="grid gap-1">
+                <label className="font-medium flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="featured"
+                    checked={data.featured}
+                    onChange={handleChange}
+                    className="w-4 h-4"
+                  />
+                  Featured Product
+                </label>
+              </div>
+
+              {/* Product Availability Checkbox */}
+              <div className="grid gap-1">
+                <label className="font-medium flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="productAvailability"
+                    checked={data.productAvailability}
+                    onChange={handleChange}
+                    className="w-4 h-4"
+                  />
+                  Product Available
+                </label>
+              </div>
+
+              {/* Roast Origin Input */}
+              <div className="grid gap-1">
+                <label htmlFor="roastOrigin" className="font-medium">
+                  Roast Origin
+                </label>
+                <input
+                  id="roastOrigin"
+                  type="text"
+                  placeholder="Enter roast origin"
+                  name="roastOrigin"
+                  value={data.roastOrigin}
+                  onChange={handleChange}
+                  className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+                />
               </div>
 
               {/* Blend Selection */}
@@ -382,6 +458,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   <option value="Espresso Blend">Espresso Blend</option>
                   <option value="Mocha-Java Blend">Mocha-Java Blend</option>
                   <option value="Mocha Italia">Mocha Italia</option>
+                  <option value="Cappuccino Blend">Cappuccino Blend</option>
                   <option value="African Blend">African Blend</option>
                   <option value="Latin American Blend">
                     Latin American Blend
@@ -432,7 +509,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                 />
               </div>
 
-              {/* Aromatic Profile Input */}
+              {/* Alcohol Level Input */}
               <div className="grid gap-1">
                 <label htmlFor="alcoholLevel" className="font-medium">
                   Alcohol Level
@@ -440,7 +517,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                 <input
                   id="alcoholLevel"
                   type="text"
-                  placeholder="Enter coffee Alcohol level"
+                  placeholder="Enter alcohol level"
                   name="alcoholLevel"
                   value={data.alcoholLevel}
                   onChange={handleChange}
@@ -654,6 +731,39 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                     placeholder="Enter sale price"
                     name="salePrice"
                     value={data.salePrice}
+                    onChange={handleChange}
+                    className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+                  />
+                </div>
+              </div>
+
+              {/* New Pricing Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid gap-1">
+                  <label htmlFor="price3weeksDelivery" className="font-medium">
+                    3 Weeks Delivery Price
+                  </label>
+                  <input
+                    id="price3weeksDelivery"
+                    type="number"
+                    placeholder="Enter 3 weeks delivery price"
+                    name="price3weeksDelivery"
+                    value={data.price3weeksDelivery}
+                    onChange={handleChange}
+                    className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
+                  />
+                </div>
+
+                <div className="grid gap-1">
+                  <label htmlFor="price5weeksDelivery" className="font-medium">
+                    5 Weeks Delivery Price
+                  </label>
+                  <input
+                    id="price5weeksDelivery"
+                    type="number"
+                    placeholder="Enter 5 weeks delivery price"
+                    name="price5weeksDelivery"
+                    value={data.price5weeksDelivery}
                     onChange={handleChange}
                     className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
                   />
@@ -934,11 +1044,27 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                 </select>
               </div>
 
-              {/* Remove duplicate stock field */}
-
-              {/* Remove duplicate price field */}
-
-              {/* Remove duplicate discount field */}
+              {/* Related Products Selection */}
+              <div className="grid gap-1">
+                <label className="font-medium">Related Products</label>
+                <div className="text-sm text-gray-600 mb-2">
+                  Related products will be managed separately through the
+                  product management interface.
+                </div>
+                <div className="bg-gray-50 p-2 rounded border">
+                  {Array.isArray(data.relatedProducts) &&
+                  data.relatedProducts.length > 0 ? (
+                    <div className="text-sm">
+                      {data.relatedProducts.length} related product(s)
+                      configured
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500">
+                      No related products configured
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Publish Status */}
               <div className="grid gap-1">

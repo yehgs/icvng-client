@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import Divider from './Divider';
@@ -7,13 +7,18 @@ import SummaryApi from '../common/SummaryApi';
 import { logout } from '../store/userSlice';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
-import { HiOutlineExternalLink } from 'react-icons/hi';
+import {
+  HiOutlineExternalLink,
+  HiChevronDown,
+  HiChevronRight,
+} from 'react-icons/hi';
 import isAdmin from '../utils/isAdmin';
 
 const UserMenu = ({ close }) => {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [expandedMenus, setExpandedMenus] = useState({});
 
   const handleLogout = async () => {
     try {
@@ -41,6 +46,57 @@ const UserMenu = ({ close }) => {
       close();
     }
   };
+
+  const toggleSubmenu = (menuKey) => {
+    setExpandedMenus((prev) => ({
+      ...prev,
+      [menuKey]: !prev[menuKey],
+    }));
+  };
+
+  const adminMenuItems = [
+    {
+      title: 'Product Management',
+      key: 'products',
+      items: [
+        { path: '/dashboard/upload-product', label: 'Upload Product' },
+        { path: '/dashboard/product', label: 'Products' },
+        { path: '/dashboard/product-request', label: 'Product Requests' },
+      ],
+    },
+    {
+      title: 'Categories & Brands',
+      key: 'categories',
+      items: [
+        { path: '/dashboard/category', label: 'Categories' },
+        { path: '/dashboard/subcategory', label: 'Sub Categories' },
+        { path: '/dashboard/brand', label: 'Brands' },
+        { path: '/dashboard/tags', label: 'Tags' },
+      ],
+    },
+    {
+      title: 'Attributes & Settings',
+      key: 'settings',
+      items: [
+        { path: '/dashboard/attributes', label: 'Attributes' },
+        { path: '/dashboard/roast-areas', label: 'Coffee Roast Areas' },
+        { path: '/dashboard/slider', label: 'Sliders' },
+        { path: '/dashboard/banners', label: 'Banner Settings' },
+      ],
+    },
+    {
+      title: 'User Management',
+      key: 'users',
+      items: [{ path: '/dashboard/ratings', label: 'User Ratings' }],
+    },
+  ];
+
+  const userMenuItems = [
+    { path: '/dashboard/myorders', label: 'My Orders' },
+    { path: '/dashboard/user-request', label: 'Your Requests' },
+    { path: '/dashboard/address', label: 'Saved Addresses' },
+  ];
+
   return (
     <div className="border rounded p-2 border-b-gray-500">
       <div className="font-semibold">My Account</div>
@@ -63,149 +119,59 @@ const UserMenu = ({ close }) => {
       <Divider />
 
       <div className="text-sm grid gap-1">
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/product-request'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Product Request
-          </Link>
-        )}
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/tags'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Tag
-          </Link>
-        )}
+        {/* Admin Submenus */}
+        {isAdmin(user.role) &&
+          adminMenuItems.map((menu) => (
+            <div key={menu.key}>
+              <button
+                onClick={() => toggleSubmenu(menu.key)}
+                className="w-full flex items-center justify-between px-2 hover:bg-orange-200 py-1 text-left"
+              >
+                <span>{menu.title}</span>
+                {expandedMenus[menu.key] ? (
+                  <HiChevronDown size={14} />
+                ) : (
+                  <HiChevronRight size={14} />
+                )}
+              </button>
 
-        {isAdmin(user.role) && (
+              {expandedMenus[menu.key] && (
+                <div className="ml-4 border-l border-gray-200 pl-2">
+                  {menu.items.map((item) => (
+                    <Link
+                      key={item.path}
+                      onClick={handleClose}
+                      to={item.path}
+                      className="block px-2 hover:bg-orange-100 py-1 text-gray-600 hover:text-gray-800"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+
+        {/* User Menu Items */}
+        <Divider />
+        <div className="font-medium text-xs text-gray-500 px-2 py-1">
+          Personal
+        </div>
+        {userMenuItems.map((item) => (
           <Link
+            key={item.path}
             onClick={handleClose}
-            to={'/dashboard/roast-areas'}
+            to={item.path}
             className="px-2 hover:bg-orange-200 py-1"
           >
-            Coffee Roast Area
+            {item.label}
           </Link>
-        )}
+        ))}
 
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/attributes'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Attributes
-          </Link>
-        )}
-
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/brand'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Brand
-          </Link>
-        )}
-
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/category'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Category
-          </Link>
-        )}
-
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/subcategory'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Sub Category
-          </Link>
-        )}
-
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/upload-product'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Upload Product
-          </Link>
-        )}
-
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/product'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Product
-          </Link>
-        )}
-
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/slider'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Slider
-          </Link>
-        )}
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/banners'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            Banner Settings
-          </Link>
-        )}
-        {isAdmin(user.role) && (
-          <Link
-            onClick={handleClose}
-            to={'/dashboard/ratings'}
-            className="px-2 hover:bg-orange-200 py-1"
-          >
-            User Ratings
-          </Link>
-        )}
-
-        <Link
-          onClick={handleClose}
-          to={'/dashboard/myorders'}
-          className="px-2 hover:bg-orange-200 py-1"
-        >
-          My Orders
-        </Link>
-
-        <Link
-          onClick={handleClose}
-          to={'/dashboard/user-request'}
-          className="px-2 hover:bg-orange-200 py-1"
-        >
-          Your Request
-        </Link>
-        <Link
-          onClick={handleClose}
-          to={'/dashboard/address'}
-          className="px-2 hover:bg-orange-200 py-1"
-        >
-          Save Address
-        </Link>
-
+        <Divider />
         <button
           onClick={handleLogout}
-          className="text-left px-2 hover:bg-orange-200 py-1"
+          className="text-left px-2 hover:bg-red-100 hover:text-red-700 py-1 font-medium"
         >
           Log Out
         </button>
