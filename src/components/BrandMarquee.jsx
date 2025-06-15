@@ -29,10 +29,10 @@ const BrandMarquee = ({ brands = [] }) => {
   // Skip rendering content if no brands, but keep the component structure
   if (!brands || brands.length === 0) {
     return (
-      <div className="w-full bg-gray-50 py-2 rounded-lg">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2 container mx-auto px-4">
+      <div className="w-full bg-gray-50 py-1 rounded-lg">
+        {/* <h2 className="text-2xl font-bold text-gray-800 mb-2 container mx-auto px-4">
           Our Brands
-        </h2>
+        </h2> */}
         <div className="flex flex-wrap justify-center gap-4 px-2">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div
@@ -68,7 +68,7 @@ const BrandMarquee = ({ brands = [] }) => {
   const displayBrands = needsMarquee ? [...brands, ...brands] : brands;
 
   return (
-    <div className="w-full bg-gray-50 py-6 rounded-lg overflow-hidden relative">
+    <div className="w-full bg-gray-50 py-1 rounded-lg overflow-hidden relative">
       <div className="relative px-8">
         {' '}
         {/* Added padding for nav buttons */}
@@ -89,7 +89,7 @@ const BrandMarquee = ({ brands = [] }) => {
               <Link
                 key={`${brand._id || index}-${index}`}
                 to={`/brand/${brand.slug || brand._id}`}
-                className="mx-2 mb-2 flex-shrink-0 bg-white rounded-lg p-2 flex items-center justify-center h-18 w-24 shadow hover:shadow-md transition-all transform hover:scale-105"
+                className="mx-2 flex-shrink-0 bg-white rounded-lg p-2 flex items-center justify-center h-18 w-24 shadow hover:shadow-md transition-all transform hover:scale-105"
                 title={`Browse ${brand.name} products`}
               >
                 <img

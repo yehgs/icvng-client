@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import HomeSlider from '../components/HomeSlider';
+import CustomerMarquee from '../components/CustomerMarquee';
 import BrandMarquee from '../components/BrandMarquee';
 import NewArrivalsSection from '../components/NewArrivalsSection';
 import FeaturedProductsSection from '../components/FeaturedProductsSection';
@@ -103,8 +104,12 @@ const Home = () => {
 
   return (
     <section className="bg-white">
+      {/* Customer Marquee */}
+      <div className="container mx-auto">
+        <CustomerMarquee customerCount={20} />
+      </div>
       {/* Main Banner Section with Side Banners */}
-      <div className="container mx-auto py-2">
+      <div className="container mx-auto py-1">
         <div className="flex flex-col md:flex-row gap-4">
           {/* HomeSlider Component - 3/4 width on desktop */}
           <div className="w-full md:w-3/4">
