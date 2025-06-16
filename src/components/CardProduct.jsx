@@ -3,7 +3,17 @@ import { Link } from 'react-router-dom';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
 import { valideURLConvert } from '../utils/valideURLConvert';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
-import { FaShoppingCart, FaStar, FaCoffee } from 'react-icons/fa';
+import {
+  FaShoppingCart,
+  FaStar,
+  FaCoffee,
+  FaShippingFast,
+  FaClock,
+  FaCalendarAlt,
+  FaSadTear,
+  FaShare,
+  FaBalanceScale,
+} from 'react-icons/fa';
 import { MdLocalCafe } from 'react-icons/md';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
@@ -11,10 +21,12 @@ import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useGlobalContext } from '../provider/GlobalProvider';
 import WishlistButton from './WishlistButton';
-import SimpleAddToCartButton from './SimpleAddToCartButton';
+import CompareButton from './CompareButton';
+import ProductRequestModal from './ProductRequestModal';
 
 const CardProduct = ({ data }) => {
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;
+  const [showRequestModal, setShowRequestModal] = useState(false);
 
   // Format product type for display
   const formatProductType = (type) => {
@@ -87,33 +99,148 @@ const CardProduct = ({ data }) => {
     return badges.slice(0, 2); // Limit to 2 badges to avoid overcrowding
   };
 
+  // Get pricing options based on stock availability
+  const getPricingOptions = () => {
+    const options = [];
+
+    // Only show regular price if stock > 0
+    if (data.stock > 0 && data.price > 0) {
+      options.push({
+        price: data.price,
+        label: 'Regular',
+        icon: <FaShippingFast className="w-3 h-3" />,
+        color: 'text-green-600',
+        bgColor: 'bg-green-50',
+      });
+    }
+
+    // Always show 3-week delivery if price exists
+    if (data.price3weeksDelivery > 0) {
+      options.push({
+        price: data.price3weeksDelivery,
+        label: '3 Weeks',
+        icon: <FaClock className="w-3 h-3" />,
+        color: 'text-orange-600',
+        bgColor: 'bg-orange-50',
+      });
+    }
+
+    // Always show 5-week delivery if price exists
+    if (data.price5weeksDelivery > 0) {
+      options.push({
+        price: data.price5weeksDelivery,
+        label: '5 Weeks',
+        icon: <FaCalendarAlt className="w-3 h-3" />,
+        color: 'text-red-600',
+        bgColor: 'bg-red-50',
+      });
+    }
+
+    return options;
+  };
+
+  // Handle share functionality
+  const handleShare = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: data.name,
+          text: `Check out this product: ${data.name}`,
+          url: window.location.origin + url,
+        });
+      } catch (error) {
+        // Fallback to clipboard
+        copyToClipboard();
+      }
+    } else {
+      copyToClipboard();
+    }
+  };
+
+  const copyToClipboard = () => {
+    const productUrl = window.location.origin + url;
+    navigator.clipboard
+      .writeText(productUrl)
+      .then(() => {
+        toast.success('Product link copied to clipboard!');
+      })
+      .catch(() => {
+        toast.error('Failed to copy link');
+      });
+  };
+
+  const handleBuyNowClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!data.productAvailability) {
+      setShowRequestModal(true);
+    } else {
+      // Navigate to product page for purchase
+      window.location.href = url;
+    }
+  };
+
   const roastInfo = getRoastLevelInfo();
   const intensityInfo = getIntensityLevel();
   const badges = getProductBadges();
+  const pricingOptions = getPricingOptions();
 
   return (
     <div className="group relative border hover:shadow-md transition-shadow duration-300 p-3 lg:p-4 flex flex-col rounded-lg cursor-pointer bg-white h-full">
-      {/* Wishlist Button */}
-      <div className="absolute top-2 right-2 z-10">
+      {/* Floating Action Buttons */}
+      <div className="absolute top-2 right-2 z-10 group">
+        {/* Main Wishlist Button */}
         <WishlistButton
           product={data}
           className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all"
           iconOnly={true}
         />
+
+        {/* Compare and Share Buttons - Animated on Hover */}
+        <div className="opacity-0 group-hover:opacity-100 transform translate-y-0 group-hover:translate-y-2 transition-all duration-300 ease-in-out">
+          <div className="mt-2 space-y-2">
+            {/* Compare Button */}
+            <CompareButton
+              product={data}
+              className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all w-10 h-10 flex items-center justify-center"
+              iconOnly={true}
+            />
+
+            {/* Share Button */}
+            <button
+              onClick={handleShare}
+              className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all w-10 h-10 flex items-center justify-center"
+              title="Share product"
+            >
+              <FaShare className="text-gray-500 hover:text-blue-600 transition-colors" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      {/* Badge Row */}
+      {/* Badge Row - Keep category at top left */}
       <div className="flex justify-between mb-2">
         {data.productType && (
           <span className="rounded-full text-xs px-2 py-0.5 bg-gray-100 text-gray-600">
             {formatProductType(data.productType)}
           </span>
         )}
-        {Boolean(data.discount) && (
-          <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full mr-7">
-            {data.discount}% OFF
-          </span>
-        )}
+        <div className="flex gap-1 mr-7">
+          {data.featured && (
+            <span className="text-white bg-yellow-500 px-2 py-0.5 text-xs font-medium rounded-full">
+              Featured
+            </span>
+          )}
+          {Boolean(data.discount) && (
+            <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full">
+              {data.discount}% OFF
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Image */}
@@ -132,9 +259,13 @@ const CardProduct = ({ data }) => {
             <span className="text-gray-400">No image</span>
           </div>
         )}
-        {data.stock <= 5 && data.stock > 0 && (
-          <div className="absolute top-0 left-0 bg-amber-500 text-white text-xs px-2 py-0.5">
-            Only {data.stock} left
+
+        {/* Stock display - positioned at bottom right of image */}
+        {data.stock > 0 && (
+          <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
+            {data.stock <= 5
+              ? `Only ${data.stock} left`
+              : `Stock: ${data.stock}`}
           </div>
         )}
       </Link>
@@ -145,6 +276,11 @@ const CardProduct = ({ data }) => {
           {data.name}
         </h3>
       </Link>
+
+      {/* SKU */}
+      {data.sku && (
+        <div className="text-xs text-gray-400 mb-1">SKU: {data.sku}</div>
+      )}
 
       {/* Brand/Producer if available */}
       {data.producer && (
@@ -208,27 +344,65 @@ const CardProduct = ({ data }) => {
         </div>
       )}
 
-      {/* Price and Add to Cart */}
-      <div className="mt-auto pt-2 border-t">
-        <div className="flex items-center justify-between mb-1">
-          <div>
-            <div className="font-bold text-gray-900">
-              {DisplayPriceInNaira(
-                pricewithDiscount(data.price, data.discount)
-              )}
-            </div>
-            {Boolean(data.discount) && (
-              <div className="text-xs text-gray-400 line-through">
-                {DisplayPriceInNaira(data.price)}
+      {/* Pricing Options - Show all available prices */}
+      {data.productAvailability && pricingOptions.length > 0 && (
+        <div className="space-y-2 mb-3">
+          {pricingOptions.map((option, index) => (
+            <div
+              key={index}
+              className={`flex items-center justify-between text-xs p-2 rounded ${option.bgColor}`}
+            >
+              <div className={`flex items-center gap-1 ${option.color}`}>
+                {option.icon}
+                <span className="font-medium">{option.label}</span>
               </div>
-            )}
-          </div>
-
-          <div className="w-20">
-            <SimpleAddToCartButton data={data} />
-          </div>
+              <div className={`font-bold ${option.color}`}>
+                {DisplayPriceInNaira(
+                  pricewithDiscount(option.price, data.discount)
+                )}
+                {Boolean(data.discount) && (
+                  <div className="text-xs text-gray-400 line-through">
+                    {DisplayPriceInNaira(option.price)}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
+      )}
+
+      {/* Action Buttons */}
+      <div className="mt-auto pt-2 border-t space-y-2">
+        {/* Buy Now Button */}
+        {!data.productAvailability ? (
+          /* Product discontinued */
+          <button
+            onClick={handleBuyNowClick}
+            className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-3 rounded-md transition flex items-center justify-center border border-yellow-300"
+          >
+            <FaSadTear className="mr-2 text-yellow-600" />
+            <span className="text-sm">Not in Production</span>
+          </button>
+        ) : (
+          /* Regular buy now button */
+          <button
+            onClick={handleBuyNowClick}
+            className="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
+          >
+            <FaShoppingCart className="mr-2" />
+            Buy Now
+          </button>
+        )}
       </div>
+
+      {/* Request Modal */}
+      {showRequestModal && (
+        <ProductRequestModal
+          product={data}
+          onClose={() => setShowRequestModal(false)}
+          isDiscontinued={!data.productAvailability}
+        />
+      )}
     </div>
   );
 };

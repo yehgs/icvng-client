@@ -12,10 +12,18 @@ import {
   FaTruck,
   FaShieldAlt,
   FaLeaf,
+  FaClock,
+  FaShippingFast,
+  FaCalendarAlt,
+  FaSadTear,
+  FaEdit,
 } from 'react-icons/fa';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import AddToCartButton from '../components/AddToCartButton';
+import ProductRequestModal from '../components/ProductRequestModal';
+import EditProductAdmin from '../components/EditProductAdmin';
+import { useSelector } from 'react-redux';
 
 // New components
 import RoastIndicator from '../components/RoastIndicator';
@@ -46,13 +54,25 @@ const ProductDisplayPage = () => {
     ratings: [],
     averageRating: 0,
     price: 0,
+    price3weeksDelivery: 0,
+    price5weeksDelivery: 0,
     discount: 0,
     stock: 0,
+    productAvailability: true,
+    sku: '',
+    featured: false,
   });
   const [image, setImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [selectedPriceOption, setSelectedPriceOption] = useState('regular');
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [openEditModal, setOpenEditModal] = useState(false);
+
+  // Get user role from Redux store
+  const user = useSelector((state) => state.user);
+  const isAdmin = user?.role === 'ADMIN';
 
   const fetchProductDetails = async () => {
     try {
@@ -105,6 +125,89 @@ const ProductDisplayPage = () => {
     return stars;
   };
 
+  // Get selected price based on delivery option
+  const getSelectedPrice = () => {
+    switch (selectedPriceOption) {
+      case '3weeks':
+        return data.price3weeksDelivery || data.price;
+      case '5weeks':
+        return data.price5weeksDelivery || data.price;
+      default:
+        return data.price;
+    }
+  };
+
+  // Price options configuration
+  const priceOptions = [
+    // Only show regular price if stock > 0
+    ...(data.stock > 0
+      ? [
+          {
+            key: 'regular',
+            label: 'Regular Price',
+            price: data.price,
+            icon: <FaShippingFast className="text-green-600" />,
+            color: 'text-green-600',
+            bgColor: 'bg-green-50',
+            borderColor: 'border-green-200',
+            description: 'Standard delivery (2-3 business days)',
+            delivery: 'Fast Delivery',
+          },
+        ]
+      : []),
+    // Always show 3-week option if price exists
+    ...(data.price3weeksDelivery > 0
+      ? [
+          {
+            key: '3weeks',
+            label: '3 Weeks Delivery',
+            price: data.price3weeksDelivery,
+            icon: <FaClock className="text-orange-600" />,
+            color: 'text-orange-600',
+            bgColor: 'bg-orange-50',
+            borderColor: 'border-orange-200',
+            description: 'Delivery in 3 weeks',
+            delivery: '3 Week Special Order',
+          },
+        ]
+      : []),
+    // Always show 5-week option if price exists
+    ...(data.price5weeksDelivery > 0
+      ? [
+          {
+            key: '5weeks',
+            label: '5 Weeks Delivery',
+            price: data.price5weeksDelivery,
+            icon: <FaCalendarAlt className="text-red-600" />,
+            color: 'text-red-600',
+            bgColor: 'bg-red-50',
+            borderColor: 'border-red-200',
+            description: 'Special order delivery in 5 weeks',
+            delivery: '5 Week Special Order',
+          },
+        ]
+      : []),
+  ];
+
+  // Set default selected option based on available options
+  useEffect(() => {
+    if (
+      priceOptions.length > 0 &&
+      !priceOptions.find((opt) => opt.key === selectedPriceOption)
+    ) {
+      setSelectedPriceOption(priceOptions[0].key);
+    }
+  }, [
+    data.stock,
+    data.price,
+    data.price3weeksDelivery,
+    data.price5weeksDelivery,
+  ]);
+
+  const handleRequestClick = () => {
+    setShowRequestModal(true);
+  };
+
   if (loading) {
     return (
       <div className="container mx-auto p-4 flex justify-center items-center min-h-screen">
@@ -117,8 +220,21 @@ const ProductDisplayPage = () => {
     <div className="bg-gray-50">
       <div className="container mx-auto p-4 pt-8">
         {/* Breadcrumb */}
-        <div className="text-sm mb-6 text-gray-500">
-          Home / {data.productType?.toLowerCase() || 'Products'} / {data.name}
+        <div className="flex items-center justify-between mb-6">
+          <div className="text-sm text-gray-500">
+            Home / {data.productType?.toLowerCase() || 'Products'} / {data.name}
+          </div>
+
+          {/* Admin Edit Button */}
+          {isAdmin && (
+            <button
+              onClick={() => setOpenEditModal(true)}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition flex items-center"
+            >
+              <FaEdit className="mr-2" />
+              Edit Product
+            </button>
+          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -152,30 +268,6 @@ const ProductDisplayPage = () => {
                   </div>
                 ))}
               </div>
-              {data.image.length > 4 && (
-                <div className="absolute top-0 right-0 left-0 flex justify-between items-center h-full pointer-events-none">
-                  <button
-                    onClick={() => {
-                      const container =
-                        document.querySelector('.scrollbar-thin');
-                      container.scrollLeft -= 100;
-                    }}
-                    className="bg-white rounded-full shadow-md p-2 hover:bg-gray-100 pointer-events-auto"
-                  >
-                    <FaAngleLeft />
-                  </button>
-                  <button
-                    onClick={() => {
-                      const container =
-                        document.querySelector('.scrollbar-thin');
-                      container.scrollLeft += 100;
-                    }}
-                    className="bg-white rounded-full shadow-md p-2 hover:bg-gray-100 pointer-events-auto"
-                  >
-                    <FaAngleRight />
-                  </button>
-                </div>
-              )}
             </div>
           </div>
 
@@ -199,6 +291,18 @@ const ProductDisplayPage = () => {
                 {data.name}
               </h1>
 
+              {/* SKU */}
+              {data.sku && (
+                <p className="text-sm text-gray-500 mt-1">SKU: {data.sku}</p>
+              )}
+
+              {/* Featured Badge */}
+              {data.featured && (
+                <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full mt-2">
+                  Featured Product
+                </span>
+              )}
+
               {/* Rating */}
               <div className="flex items-center mt-2">
                 <div className="flex mr-2">
@@ -216,37 +320,104 @@ const ProductDisplayPage = () => {
               <p className="text-gray-600">{data.shortDescription}</p>
             )}
 
-            {/* Price and Stock */}
-            <div className="space-y-2">
-              <div className="flex items-end gap-3">
-                <span className="text-3xl font-bold text-secondary-200">
-                  {DisplayPriceInNaira(
-                    pricewithDiscount(data.price, data.discount)
-                  )}
-                </span>
-                {data.discount > 0 && (
-                  <>
-                    <span className="text-lg text-gray-500 line-through">
-                      {DisplayPriceInNaira(data.price)}
-                    </span>
-                    <span className="bg-red-100 text-red-700 px-2 py-0.5 rounded text-sm font-medium">
-                      {data.discount}% OFF
-                    </span>
-                  </>
-                )}
-              </div>
+            {/* Price Options */}
+            {data.productAvailability ? (
+              <div className="space-y-4">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Choose Delivery Option
+                </h3>
+                <div className="space-y-3">
+                  {priceOptions.map((option) => (
+                    <label
+                      key={option.key}
+                      className={`block cursor-pointer p-2 px-2 rounded-lg border-2 transition-all ${
+                        selectedPriceOption === option.key
+                          ? `${option.borderColor} ${option.bgColor}`
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="priceOption"
+                        value={option.key}
+                        checked={selectedPriceOption === option.key}
+                        onChange={(e) => setSelectedPriceOption(e.target.value)}
+                        className="sr-only"
+                      />
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1">
+                          {option.icon}
+                          <div>
+                            {/* <div className={`font-semibold ${option.color}`}>
+                              {option.delivery}
+                            </div> */}
+                            <div className="text-sm text-gray-600">
+                              {option.description}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-xl font-bold ${option.color}`}>
+                            {DisplayPriceInNaira(
+                              pricewithDiscount(option.price, data.discount)
+                            )}
+                          </div>
+                          {data.discount > 0 && (
+                            <div className="text-sm text-gray-500 line-through">
+                              {DisplayPriceInNaira(option.price)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
 
-              <div className="flex items-center text-sm">
-                <span
-                  className={data.stock > 0 ? 'text-green-600' : 'text-red-500'}
-                >
-                  {data.stock > 0 ? 'In Stock' : 'Available on Request'}
-                </span>
-                {data.stock > 0 && (
-                  <span className="ml-2 text-gray-500">({data.stock})</span>
+                {/* Stock Status */}
+                <div className="flex items-center text-sm">
+                  <span
+                    className={
+                      data.stock > 0 ? 'text-green-600' : 'text-orange-600'
+                    }
+                  >
+                    {data.stock > 0 ? 'In Stock' : 'Available'}
+                  </span>
+                  {data.stock > 0 && (
+                    <span className="ml-2 text-gray-500">
+                      ({data.stock} units)
+                    </span>
+                  )}
+                </div>
+
+                {/* Discount Badge */}
+                {data.discount > 0 && (
+                  <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium inline-block">
+                    {data.discount}% OFF - Save{' '}
+                    {DisplayPriceInNaira(
+                      (getSelectedPrice() * data.discount) / 100
+                    )}
+                  </div>
                 )}
               </div>
-            </div>
+            ) : (
+              /* Product Not Available */
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+                <FaSadTear className="text-yellow-600 text-3xl mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                  Not in Production
+                </h3>
+                <p className="text-yellow-700 mb-4">
+                  This product is no longer being produced. You can request to
+                  be notified if it becomes available again in the future.
+                </p>
+                <button
+                  onClick={handleRequestClick}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition"
+                >
+                  Request Notification
+                </button>
+              </div>
+            )}
 
             {/* Coffee attributes section */}
             {data.productType === 'COFFEE' && (
@@ -281,6 +452,13 @@ const ProductDisplayPage = () => {
                   </div>
                 )}
 
+                {data.roastOrigin && (
+                  <div className="flex flex-col">
+                    <span className="text-gray-500 text-sm">Roast Origin</span>
+                    <span className="font-medium">{data.roastOrigin}</span>
+                  </div>
+                )}
+
                 {data.aromaticProfile && (
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-sm">Profile</span>
@@ -304,49 +482,62 @@ const ProductDisplayPage = () => {
               </div>
             )}
 
-            {/* Quantity and Add to Cart */}
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex items-center border rounded-md w-32">
-                <button
-                  className="px-3 py-2 text-gray-600 hover:bg-gray-100"
-                  onClick={() => handleQuantityChange(-1)}
-                  disabled={quantity <= 1}
-                >
-                  -
-                </button>
-                <input
-                  type="number"
-                  value={quantity}
-                  onChange={(e) => {
-                    const val = parseInt(e.target.value);
-                    if (!isNaN(val) && val > 0 && val <= data.stock) {
-                      setQuantity(val);
-                    }
-                  }}
-                  className="w-full text-center py-2 focus:outline-none"
-                  min="1"
-                  max={data.stock}
-                />
-                <button
-                  className="px-3 py-2 text-gray-600 hover:bg-gray-100"
-                  onClick={() => handleQuantityChange(1)}
-                  disabled={quantity >= data.stock}
-                >
-                  +
-                </button>
-              </div>
+            {/* Quantity and Add to Cart - Only show if product is available */}
+            {data.productAvailability && (
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex items-center border rounded-md w-32">
+                  <button
+                    className="px-3 py-2 text-gray-600 hover:bg-gray-100"
+                    onClick={() => handleQuantityChange(-1)}
+                    disabled={quantity <= 1}
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    value={quantity}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value);
+                      if (
+                        !isNaN(val) &&
+                        val > 0 &&
+                        val <= (data.stock || 999)
+                      ) {
+                        setQuantity(val);
+                      }
+                    }}
+                    className="w-full text-center py-2 focus:outline-none"
+                    min="1"
+                    max={data.stock || 999}
+                  />
+                  <button
+                    className="px-3 py-2 text-gray-600 hover:bg-gray-100"
+                    onClick={() => handleQuantityChange(1)}
+                    disabled={data.stock > 0 && quantity >= data.stock}
+                  >
+                    +
+                  </button>
+                </div>
 
-              <div className="flex-1">
-                <AddToCartButton data={data} quantity={quantity} />
+                <div className="flex-1">
+                  <AddToCartButton
+                    data={{
+                      ...data,
+                      selectedPriceOption,
+                      selectedPrice: getSelectedPrice(),
+                    }}
+                    quantity={quantity}
+                  />
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-4 border-t border-b py-4">
               <div className="flex flex-col items-center text-center">
                 <FaTruck className="text-green-700 text-2xl mb-2" />
                 <span className="text-sm font-medium">Fast Delivery</span>
-                <span className="text-xs text-gray-500">Within 48 hours</span>
+                <span className="text-xs text-gray-500">Multiple Options</span>
               </div>
               <div className="flex flex-col items-center text-center">
                 <FaShieldAlt className="text-green-700 text-2xl mb-2" />
@@ -380,16 +571,19 @@ const ProductDisplayPage = () => {
               >
                 Description
               </button>
-              <button
-                className={`inline-block p-4 font-medium text-sm border-b-2 ${
-                  activeTab === 'additionalInfo'
-                    ? 'border-green-700 text-green-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-                onClick={() => setActiveTab('additionalInfo')}
-              >
-                Additional Information
-              </button>
+              {/* Only show Additional Information tab if additionalInfo exists and is not empty */}
+              {data.additionalInfo && data.additionalInfo.trim() !== '' && (
+                <button
+                  className={`inline-block p-4 font-medium text-sm border-b-2 ${
+                    activeTab === 'additionalInfo'
+                      ? 'border-green-700 text-green-700'
+                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+                  onClick={() => setActiveTab('additionalInfo')}
+                >
+                  Additional Information
+                </button>
+              )}
               <button
                 className={`inline-block p-4 font-medium text-sm border-b-2 ${
                   activeTab === 'reviews'
@@ -464,6 +658,24 @@ const ProductDisplayPage = () => {
           </div>
         )}
       </div>
+
+      {/* Request Modal */}
+      {showRequestModal && (
+        <ProductRequestModal
+          product={data}
+          onClose={() => setShowRequestModal(false)}
+          isDiscontinued={!data.productAvailability}
+        />
+      )}
+
+      {/* Admin Edit Modal */}
+      {openEditModal && isAdmin && (
+        <EditProductAdmin
+          data={data}
+          close={() => setOpenEditModal(false)}
+          fetchProductData={fetchProductDetails}
+        />
+      )}
     </div>
   );
 };

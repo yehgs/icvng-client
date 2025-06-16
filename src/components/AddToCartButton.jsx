@@ -5,7 +5,7 @@ import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useSelector } from 'react-redux';
-import { FaMinus, FaPlus, FaShoppingCart } from 'react-icons/fa';
+import { FaMinus, FaPlus, FaShoppingCart, FaSadTear } from 'react-icons/fa';
 import { BsCart4 } from 'react-icons/bs';
 import ProductRequestModal from './ProductRequestModal';
 
@@ -25,12 +25,21 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
     try {
       setLoading(true);
 
+      // Prepare cart data with selected pricing option if available
+      const cartData = {
+        productId: data?._id,
+        quantity: quantity,
+      };
+
+      // Include selected price option if it exists
+      if (data.selectedPriceOption) {
+        cartData.priceOption = data.selectedPriceOption;
+        cartData.selectedPrice = data.selectedPrice;
+      }
+
       const response = await Axios({
         ...SummaryApi.addTocart,
-        data: {
-          productId: data?._id,
-          quantity: quantity,
-        },
+        data: cartData,
       });
 
       const { data: responseData } = response;
@@ -92,20 +101,46 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
     }
   };
 
-  if (data.stock <= 0) {
+  // Check if product is not available for production
+  if (!data.productAvailability) {
     return (
       <>
         <button
           onClick={handleRequestClick}
-          className="w-full bg-secondary-200 hover:bg-secondary-100 text-white text-sm font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
+          className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-3 px-6 rounded-md transition flex items-center justify-center border border-yellow-300"
         >
-          Available on Request
+          <FaSadTear className="mr-2" />
+          Not in Production - Request Notification
         </button>
 
         {showRequestModal && (
           <ProductRequestModal
             product={data}
             onClose={() => setShowRequestModal(false)}
+            isDiscontinued={true}
+          />
+        )}
+      </>
+    );
+  }
+
+  // Check if out of stock but still available for production
+  if (data.stock <= 0) {
+    return (
+      <>
+        <button
+          onClick={handleRequestClick}
+          className="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-3 px-6 rounded-md transition flex items-center justify-center"
+        >
+          <BsCart4 className="mr-2" />
+          Notify When Available
+        </button>
+
+        {showRequestModal && (
+          <ProductRequestModal
+            product={data}
+            onClose={() => setShowRequestModal(false)}
+            isDiscontinued={false}
           />
         )}
       </>

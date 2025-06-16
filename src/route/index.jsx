@@ -36,6 +36,8 @@ import ProductRequestPage from '../pages/ProductRequestPage';
 import UserProductRequests from '../pages/UserProductRequests.jsx';
 import AdminRatingsPage from '../pages/AdminRatingsPage.jsx';
 import BannerAdmin from '../pages/BannerAdmin.jsx';
+import WishListPage from '../pages/WishListPage.jsx';
+import ComparePage from '../pages/ComparePage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -233,6 +235,14 @@ const router = createBrowserRouter([
       {
         path: 'cancel',
         element: <Cancel />,
+      },
+      {
+        path: 'wishlist',
+        element: <WishListPage />,
+      },
+      {
+        path: 'compare',
+        element: <ComparePage />,
       },
       {
         path: '*',

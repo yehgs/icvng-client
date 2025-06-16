@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useWishlist } from '../provider/GlobalProvider';
-import { useGlobalContext } from '../provider/GlobalProvider';
+import { useSelector } from 'react-redux';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import { valideURLConvert } from '../utils/valideURLConvert';
+import { updateWishlistCount } from '../utils/eventUtils';
 import {
   FaHeart,
   FaRegHeart,
@@ -16,12 +16,45 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
+import Loading from '../components/Loading';
 
 const WishlistPage = () => {
-  const { wishlistItems, clearWishlist, removeFromWishlist } = useWishlist();
-  const { fetchCartItem } = useGlobalContext();
-  const [loading, setLoading] = useState(false);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState({});
+  const user = useSelector((state) => state.user);
+  const isLoggedIn = Boolean(user?._id);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchWishlist();
+    } else {
+      // Load from localStorage for non-logged-in users
+      const localWishlist = JSON.parse(
+        localStorage.getItem('wishlist') || '[]'
+      );
+      setWishlistItems(localWishlist);
+      setLoading(false);
+    }
+  }, [isLoggedIn]);
+
+  const fetchWishlist = async () => {
+    try {
+      setLoading(true);
+      const response = await Axios({
+        ...SummaryApi.getWishlist,
+      });
+
+      const { data: responseData } = response;
+      if (responseData.success) {
+        setWishlistItems(responseData.data);
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Add to cart handler
   const handleAddToCart = async (product) => {
@@ -40,9 +73,6 @@ const WishlistPage = () => {
 
       if (responseData.success) {
         toast.success(responseData.message);
-        if (fetchCartItem) {
-          fetchCartItem();
-        }
       }
     } catch (error) {
       AxiosToastError(error);
@@ -57,16 +87,18 @@ const WishlistPage = () => {
 
     setLoading(true);
     try {
-      // Filter out of stock items
-      const inStockItems = wishlistItems.filter((item) => item.stock > 0);
+      // Only filter out discontinued items
+      const availableItems = wishlistItems.filter(
+        (item) => item.productAvailability
+      );
 
-      if (inStockItems.length === 0) {
-        toast.error('No items in stock to add to cart');
+      if (availableItems.length === 0) {
+        toast.error('No available items to add to cart');
         return;
       }
 
-      // Add all items to cart one by one
-      for (const item of inStockItems) {
+      // Add all available items to cart one by one
+      for (const item of availableItems) {
         try {
           await Axios({
             ...SummaryApi.addTocart,
@@ -80,10 +112,10 @@ const WishlistPage = () => {
         }
       }
 
-      toast.success(`Added ${inStockItems.length} items to cart`);
-      if (fetchCartItem) {
-        fetchCartItem();
-      }
+      toast.success(`Added ${availableItems.length} items to cart`);
+
+      // Update cart count in header
+      // Note: You may want to create updateCartCount() if needed
     } catch (error) {
       toast.error('Failed to add all items to cart');
     } finally {
@@ -91,13 +123,76 @@ const WishlistPage = () => {
     }
   };
 
-  // Clear wishlist with confirmation
-  const handleClearWishlist = () => {
-    if (window.confirm('Are you sure you want to clear your wishlist?')) {
-      clearWishlist();
-      toast.success('Wishlist cleared');
+  // Remove from wishlist
+  const removeFromWishlist = async (productId) => {
+    if (isLoggedIn) {
+      try {
+        const response = await Axios({
+          ...SummaryApi.removeFromWishlist,
+          data: { productId },
+        });
+
+        const { data: responseData } = response;
+        if (responseData.success) {
+          setWishlistItems((prev) =>
+            prev.filter((item) => item._id !== productId)
+          );
+          toast.success('Product removed from wishlist');
+
+          // Update header count using event utils
+          updateWishlistCount();
+        }
+      } catch (error) {
+        AxiosToastError(error);
+      }
+    } else {
+      // Handle localStorage for non-logged-in users
+      const updatedList = wishlistItems.filter(
+        (item) => item._id !== productId
+      );
+      setWishlistItems(updatedList);
+      localStorage.setItem('wishlist', JSON.stringify(updatedList));
+      toast.success('Product removed from wishlist');
+
+      // Update header count using event utils
+      updateWishlistCount();
     }
   };
+
+  // Clear wishlist with confirmation
+  const handleClearWishlist = async () => {
+    if (window.confirm('Are you sure you want to clear your wishlist?')) {
+      if (isLoggedIn) {
+        try {
+          const response = await Axios({
+            ...SummaryApi.clearWishlist,
+          });
+
+          const { data: responseData } = response;
+          if (responseData.success) {
+            setWishlistItems([]);
+            toast.success('Wishlist cleared');
+
+            // Update header count using event utils
+            updateWishlistCount();
+          }
+        } catch (error) {
+          AxiosToastError(error);
+        }
+      } else {
+        setWishlistItems([]);
+        localStorage.setItem('wishlist', JSON.stringify([]));
+        toast.success('Wishlist cleared');
+
+        // Update header count using event utils
+        updateWishlistCount();
+      }
+    }
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -151,7 +246,7 @@ const WishlistPage = () => {
             </p>
             <Link
               to="/shop"
-              className="px-6 py-3 bg-secondary-200 text-white rounded-md hover:bg-secondary-100 transition"
+              className="px-6 py-3 bg-green-700 text-white rounded-md hover:bg-green-800 transition"
             >
               Continue Shopping
             </Link>
@@ -171,7 +266,7 @@ const WishlistPage = () => {
                       Price
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Stock Status
+                      Status
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
@@ -184,7 +279,7 @@ const WishlistPage = () => {
                       item.name
                     )}-${item._id}`;
                     const price = pricewithDiscount(item.price, item.discount);
-                    const isInStock = item.stock > 0;
+                    const isAvailable = item.productAvailability;
 
                     return (
                       <tr key={item._id}>
@@ -204,10 +299,15 @@ const WishlistPage = () => {
                             <div>
                               <Link
                                 to={productUrl}
-                                className="text-sm font-medium text-gray-900 hover:text-secondary-200"
+                                className="text-sm font-medium text-gray-900 hover:text-green-700"
                               >
                                 {item.name}
                               </Link>
+                              {item.sku && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  SKU: {item.sku}
+                                </p>
+                              )}
                               {item.productType && (
                                 <p className="text-xs text-gray-500 mt-1">
                                   {item.productType
@@ -232,22 +332,22 @@ const WishlistPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
                             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              isInStock
+                              isAvailable
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-red-100 text-red-800'
                             }`}
                           >
-                            {isInStock ? 'In Stock' : 'Out of Stock'}
+                            {isAvailable ? 'Available' : 'Discontinued'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
                           <div className="flex justify-end space-x-3">
                             <button
                               onClick={() => handleAddToCart(item)}
-                              disabled={!isInStock || addingToCart[item._id]}
+                              disabled={!isAvailable || addingToCart[item._id]}
                               className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md 
                                 ${
-                                  isInStock
+                                  isAvailable
                                     ? 'bg-green-700 text-white hover:bg-green-800'
                                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                 } transition`}
@@ -283,12 +383,11 @@ const WishlistPage = () => {
               You may also like
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* This would be populated with recommended products */}
-              <div className="bg-gray-50 rounded-lg p-6 text-center h-48 flex items-center justify-center">
+              {/* <div className="bg-gray-50 rounded-lg p-6 text-center h-48 flex items-center justify-center">
                 <p className="text-gray-500">
                   Recommended products would appear here
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

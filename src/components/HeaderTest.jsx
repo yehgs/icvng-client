@@ -14,11 +14,13 @@ import {
   ChevronRight,
   X,
 } from 'lucide-react';
+import { VscGitCompare } from 'react-icons/vsc';
 import SearchInput from './Search';
 import useMobile from '../hooks/useMobile';
+import { useWishlistCompare } from '../hooks/useWishlistCompare';
 import UserMenu from './UserMenu';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
-import { useGlobalContext, useWishlist } from '../provider/GlobalProvider';
+import { useGlobalContext } from '../provider/GlobalProvider';
 import DisplayCartItem from './DisplayCartItem';
 import HeaderNavigation from '../components/HeaderNavigation';
 
@@ -31,7 +33,6 @@ export default function Header() {
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart);
   const { totalPrice, totalQty } = useGlobalContext();
-  const { wishlistCount } = useWishlist(); // Get wishlist count from context
   const [openCartSection, setOpenCartSection] = useState(false);
   const categoryStructure = useSelector(
     (state) => state.product.categoryStructure
@@ -46,6 +47,9 @@ export default function Header() {
   const [expandedCategories, setExpandedCategories] = useState({});
   const [expandedSubcategories, setExpandedSubcategories] = useState({});
   const [isMobil, setIsMobil] = useState(false);
+
+  // Use the wishlist and compare hook
+  const { wishlistCount, compareCount } = useWishlistCompare();
 
   const menuRef = useRef(null);
 
@@ -235,24 +239,60 @@ export default function Header() {
                 <User size={24} className="cursor-pointer text-gray-700" />
               </button>
             )}
-            <button className="relative" onClick={navigateToWishlistPage}>
+
+            {/* Wishlist Button */}
+            <button
+              className="relative hover:scale-105 transition-transform"
+              onClick={navigateToWishlistPage}
+              title="My Wishlist"
+            >
               <Heart size={24} className="cursor-pointer text-gray-700" />
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                {wishlistCount}
-              </span>
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
+                  {wishlistCount > 99 ? '99+' : wishlistCount}
+                </span>
+              )}
             </button>
-            <button className="relative">
+
+            {/* Compare Button */}
+            <button
+              className="relative hover:scale-105 transition-transform"
+              onClick={navigateToComparisonPage}
+              title="Compare Products"
+              e
+            >
+              <VscGitCompare
+                size={24}
+                className="cursor-pointer text-gray-700"
+              />
+              {compareCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-purple-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
+                  {compareCount}
+                </span>
+              )}
+            </button>
+
+            {/* Cart Button */}
+            <button
+              className="relative hover:scale-105 transition-transform"
+              onClick={() => setOpenCartSection(true)}
+              title="Shopping Cart"
+            >
               <ShoppingCart
                 size={24}
                 className="cursor-pointer text-gray-700"
               />
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                {cartItem.length > 0 ? totalQty : 0}
-              </span>
+              {totalQty > 0 && (
+                <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
+                  {totalQty > 99 ? '99+' : totalQty}
+                </span>
+              )}
             </button>
+
+            {/* Cart Summary Button */}
             <button
               onClick={() => setOpenCartSection(true)}
-              className="flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white"
+              className="flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
             >
               <div className="font-semibold text-sm">
                 {cartItem.length > 0 ? (
@@ -261,7 +301,7 @@ export default function Header() {
                     <p>{DisplayPriceInNaira(totalPrice)}</p>
                   </div>
                 ) : (
-                  <Link>My Cart</Link>
+                  <span>My Cart</span>
                 )}
               </div>
             </button>

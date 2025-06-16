@@ -305,6 +305,57 @@ const SummaryApi = {
     url: '/api/banner/delete',
     method: 'delete',
   },
+
+  addToWishlist: {
+    url: '/api/wishlist/add',
+    method: 'POST',
+  },
+  removeFromWishlist: {
+    url: '/api/wishlist/remove',
+    method: 'DELETE',
+  },
+  getWishlist: {
+    url: '/api/wishlist/get',
+    method: 'GET',
+  },
+  toggleWishlist: {
+    url: '/api/wishlist/toggle',
+    method: 'POST',
+  },
+  clearWishlist: {
+    url: '/api/wishlist/clear',
+    method: 'DELETE',
+  },
+  checkWishlist: (productId) => ({
+    url: `/api/wishlist/check/${productId}`,
+    method: 'GET',
+  }),
+
+  // Compare endpoints
+  addToCompare: {
+    url: '/api/compare/add',
+    method: 'POST',
+  },
+  removeFromCompare: {
+    url: '/api/compare/remove',
+    method: 'DELETE',
+  },
+  getCompareList: {
+    url: '/api/compare/get',
+    method: 'GET',
+  },
+  toggleCompare: {
+    url: '/api/compare/toggle',
+    method: 'POST',
+  },
+  clearCompareList: {
+    url: '/api/compare/clear',
+    method: 'DELETE',
+  },
+  checkCompare: (productId) => ({
+    url: `/api/compare/check/${productId}`,
+    method: 'GET',
+  }),
 };
 
 export default SummaryApi;
