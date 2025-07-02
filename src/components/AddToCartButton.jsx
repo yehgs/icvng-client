@@ -125,7 +125,7 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
   }
 
   // Check if out of stock but still available for production
-  if (data.stock <= 0) {
+  if (!data.productAvailability) {
     return (
       <>
         <button

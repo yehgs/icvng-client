@@ -99,12 +99,24 @@ const CardProduct = ({ data }) => {
     return badges.slice(0, 2); // Limit to 2 badges to avoid overcrowding
   };
 
+  const getEffectiveOnlineStock = () => {
+    // Priority: warehouseStock.onlineStock > stock
+    if (
+      data.warehouseStock?.enabled &&
+      data.warehouseStock.onlineStock !== undefined
+    ) {
+      return data.warehouseStock.onlineStock;
+    }
+    return data.stock || 0;
+  };
+
   // Get pricing options based on stock availability
   const getPricingOptions = () => {
     const options = [];
+    const onlineStock = getEffectiveOnlineStock();
 
-    // Only show regular price if stock > 0
-    if (data.stock > 0 && data.price > 0) {
+    // Only show regular price if online stock > 0
+    if (onlineStock > 0 && data.price > 0) {
       options.push({
         price: data.price,
         label: 'Regular',
@@ -261,11 +273,11 @@ const CardProduct = ({ data }) => {
         )}
 
         {/* Stock display - positioned at bottom right of image */}
-        {data.stock > 0 && (
+        {getEffectiveOnlineStock() > 0 && (
           <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
-            {data.stock <= 5
-              ? `Only ${data.stock} left`
-              : `Stock: ${data.stock}`}
+            {getEffectiveOnlineStock() <= 5
+              ? `Only ${getEffectiveOnlineStock()} left`
+              : `Stock: ${getEffectiveOnlineStock()}`}
           </div>
         )}
       </Link>

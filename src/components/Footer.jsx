@@ -13,6 +13,7 @@ import {
 import banner1 from '../assets/web-mix-small.png';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
+import toast from 'react-hot-toast';
 
 const PreFooter = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +23,7 @@ const PreFooter = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     // Handle subscription logic here
-    alert(`Thank you for subscribing with ${email}!`);
+    toast(`Thank you for subscribing with ${email}!`);
     setEmail('');
   };
 

@@ -4,8 +4,6 @@ import SummaryApi from '../common/SummaryApi';
 import Axios from '../utils/Axios';
 import AxiosToastError from '../utils/AxiosToastError';
 import {
-  FaAngleRight,
-  FaAngleLeft,
   FaStar,
   FaStarHalfAlt,
   FaRegStar,
@@ -74,6 +72,17 @@ const ProductDisplayPage = () => {
   const user = useSelector((state) => state.user);
   const isAdmin = user?.role === 'ADMIN';
 
+  const getEffectiveOnlineStock = () => {
+    // Priority: warehouseStock.onlineStock > stock
+    if (
+      data.warehouseStock?.enabled &&
+      data.warehouseStock.onlineStock !== undefined
+    ) {
+      return data.warehouseStock.onlineStock;
+    }
+    return data.stock || 0;
+  };
+
   const fetchProductDetails = async () => {
     try {
       const response = await Axios({
@@ -84,6 +93,8 @@ const ProductDisplayPage = () => {
       });
 
       const { data: responseData } = response;
+
+      console.log(responseData);
 
       if (responseData.success) {
         setData(responseData.data);
@@ -102,7 +113,8 @@ const ProductDisplayPage = () => {
 
   const handleQuantityChange = (amount) => {
     const newQuantity = quantity + amount;
-    if (newQuantity > 0 && newQuantity <= data.stock) {
+    const availableStock = getEffectiveOnlineStock();
+    if (newQuantity > 0 && newQuantity <= availableStock) {
       setQuantity(newQuantity);
     }
   };
@@ -139,8 +151,8 @@ const ProductDisplayPage = () => {
 
   // Price options configuration
   const priceOptions = [
-    // Only show regular price if stock > 0
-    ...(data.stock > 0
+    // Only show regular price if online stock > 0
+    ...(getEffectiveOnlineStock() > 0
       ? [
           {
             key: 'regular',
@@ -198,6 +210,7 @@ const ProductDisplayPage = () => {
       setSelectedPriceOption(priceOptions[0].key);
     }
   }, [
+    data.warehouseStock, // Add this dependency
     data.stock,
     data.price,
     data.price3weeksDelivery,
@@ -377,14 +390,16 @@ const ProductDisplayPage = () => {
                 <div className="flex items-center text-sm">
                   <span
                     className={
-                      data.stock > 0 ? 'text-green-600' : 'text-orange-600'
+                      getEffectiveOnlineStock() > 0
+                        ? 'text-green-600'
+                        : 'text-orange-600'
                     }
                   >
-                    {data.stock > 0 ? 'In Stock' : 'Available'}
+                    {getEffectiveOnlineStock() > 0 ? 'In Stock' : 'Available'}
                   </span>
-                  {data.stock > 0 && (
+                  {getEffectiveOnlineStock() > 0 && (
                     <span className="ml-2 text-gray-500">
-                      ({data.stock} units)
+                      ({getEffectiveOnlineStock()} units available)
                     </span>
                   )}
                 </div>
@@ -498,22 +513,26 @@ const ProductDisplayPage = () => {
                     value={quantity}
                     onChange={(e) => {
                       const val = parseInt(e.target.value);
+                      const availableStock = getEffectiveOnlineStock();
                       if (
                         !isNaN(val) &&
                         val > 0 &&
-                        val <= (data.stock || 999)
+                        val <= (availableStock || 999)
                       ) {
                         setQuantity(val);
                       }
                     }}
                     className="w-full text-center py-2 focus:outline-none"
                     min="1"
-                    max={data.stock || 999}
+                    max={getEffectiveOnlineStock() || 999}
                   />
                   <button
                     className="px-3 py-2 text-gray-600 hover:bg-gray-100"
                     onClick={() => handleQuantityChange(1)}
-                    disabled={data.stock > 0 && quantity >= data.stock}
+                    disabled={
+                      getEffectiveOnlineStock() > 0 &&
+                      quantity >= getEffectiveOnlineStock()
+                    }
                   >
                     +
                   </button>

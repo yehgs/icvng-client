@@ -699,7 +699,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   name="stock"
                   value={data.stock}
                   onChange={handleChange}
-                  required
                   className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
                 />
               </div>
@@ -716,7 +715,6 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                     name="price"
                     value={data.price}
                     onChange={handleChange}
-                    required
                     className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
                   />
                 </div>
