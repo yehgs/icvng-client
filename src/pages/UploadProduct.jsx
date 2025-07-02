@@ -41,14 +41,7 @@ const UploadProduct = () => {
     attributes: [],
     unit: '',
     packaging: '',
-    stock: '',
     productAvailability: true,
-    price: '',
-    salePrice: '',
-    price3weeksDelivery: '',
-    price5weeksDelivery: '',
-    btbPrice: '',
-    btcPrice: '',
     discount: '',
     description: '',
     shortDescription: '',
@@ -226,14 +219,7 @@ const UploadProduct = () => {
           attributes: [],
           unit: '',
           packaging: '',
-          stock: '',
           productAvailability: true,
-          price: '',
-          salePrice: '',
-          price3weeksDelivery: '',
-          price5weeksDelivery: '',
-          btbPrice: '',
-          btcPrice: '',
           discount: '',
           description: '',
           shortDescription: '',
@@ -727,119 +713,6 @@ const UploadProduct = () => {
               onChange={handleChange}
               className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
             />
-          </div>
-
-          <div className="grid gap-1">
-            <label htmlFor="stock" className="font-medium">
-              Number of Stock
-            </label>
-            <input
-              id="stock"
-              type="number"
-              placeholder="Enter product stock"
-              name="stock"
-              value={data.stock}
-              onChange={handleChange}
-              className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid gap-1">
-              <label htmlFor="price" className="font-medium">
-                Regular Price
-              </label>
-              <input
-                id="price"
-                type="number"
-                placeholder="Enter product price"
-                name="price"
-                value={data.price}
-                onChange={handleChange}
-                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
-              />
-            </div>
-
-            <div className="grid gap-1">
-              <label htmlFor="salePrice" className="font-medium">
-                Sale Price
-              </label>
-              <input
-                id="salePrice"
-                type="number"
-                placeholder="Enter sale price"
-                name="salePrice"
-                value={data.salePrice}
-                onChange={handleChange}
-                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
-              />
-            </div>
-          </div>
-
-          {/* New Pricing Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid gap-1">
-              <label htmlFor="price3weeksDelivery" className="font-medium">
-                3 Weeks Delivery Price
-              </label>
-              <input
-                id="price3weeksDelivery"
-                type="number"
-                placeholder="Enter 3 weeks delivery price"
-                name="price3weeksDelivery"
-                value={data.price3weeksDelivery}
-                re
-                onChange={handleChange}
-                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
-              />
-            </div>
-
-            <div className="grid gap-1">
-              <label htmlFor="price5weeksDelivery" className="font-medium">
-                5 Weeks Delivery Price
-              </label>
-              <input
-                id="price5weeksDelivery"
-                type="number"
-                placeholder="Enter 5 weeks delivery price"
-                name="price5weeksDelivery"
-                value={data.price5weeksDelivery}
-                onChange={handleChange}
-                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="grid gap-1">
-              <label htmlFor="btbPrice" className="font-medium">
-                Business to Business Price
-              </label>
-              <input
-                id="btbPrice"
-                type="number"
-                placeholder="Enter B2B price"
-                name="btbPrice"
-                value={data.btbPrice}
-                onChange={handleChange}
-                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
-              />
-            </div>
-
-            <div className="grid gap-1">
-              <label htmlFor="btcPrice" className="font-medium">
-                Business to Customer Price
-              </label>
-              <input
-                id="btcPrice"
-                type="number"
-                placeholder="Enter B2C price"
-                name="btcPrice"
-                value={data.btcPrice}
-                onChange={handleChange}
-                className="bg-blue-50 p-2 outline-none border focus-within:border-primary-200 rounded"
-              />
-            </div>
           </div>
 
           <div className="grid gap-1">
