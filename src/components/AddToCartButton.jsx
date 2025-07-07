@@ -9,14 +9,22 @@ import { FaMinus, FaPlus, FaShoppingCart, FaSadTear } from 'react-icons/fa';
 import { BsCart4 } from 'react-icons/bs';
 import ProductRequestModal from './ProductRequestModal';
 
-const AddToCartButton = ({ data, quantity = 1 }) => {
-  const { fetchCartItem, updateCartItem, deleteCartItem } = useGlobalContext();
+const AddToCartButton = ({
+  data,
+  quantity = 1,
+  selectedPriceOption = null,
+}) => {
+  const { fetchCartItem, updateCartItem, deleteCartItem, getEffectiveStock } =
+    useGlobalContext();
   const [loading, setLoading] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart);
   const [isAvailableCart, setIsAvailableCart] = useState(false);
   const [qty, setQty] = useState(0);
   const [cartItemDetails, setCartItemsDetails] = useState();
   const [showRequestModal, setShowRequestModal] = useState(false);
+
+  // Get effective stock using the global function
+  const effectiveStock = getEffectiveStock(data);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
@@ -32,9 +40,8 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
       };
 
       // Include selected price option if it exists
-      if (data.selectedPriceOption) {
-        cartData.priceOption = data.selectedPriceOption;
-        cartData.selectedPrice = data.selectedPrice;
+      if (selectedPriceOption) {
+        cartData.priceOption = selectedPriceOption;
       }
 
       const response = await Axios({
@@ -78,6 +85,12 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
   const increaseQty = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Check if we can increase quantity based on effective stock
+    if (qty >= effectiveStock) {
+      toast.error('Cannot add more items than available stock');
+      return;
+    }
 
     const response = await updateCartItem(cartItemDetails?._id, qty + 1);
 
@@ -124,29 +137,6 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
     );
   }
 
-  // Check if out of stock but still available for production
-  if (!data.productAvailability) {
-    return (
-      <>
-        <button
-          onClick={handleRequestClick}
-          className="w-full bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium py-3 px-6 rounded-md transition flex items-center justify-center"
-        >
-          <BsCart4 className="mr-2" />
-          Notify When Available
-        </button>
-
-        {showRequestModal && (
-          <ProductRequestModal
-            product={data}
-            onClose={() => setShowRequestModal(false)}
-            isDiscontinued={false}
-          />
-        )}
-      </>
-    );
-  }
-
   return (
     <div className="w-full">
       {isAvailableCart ? (
@@ -169,7 +159,7 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
           <button
             onClick={increaseQty}
             className="bg-green-700 hover:bg-green-800 text-white h-12 w-12 rounded-r-md flex items-center justify-center transition"
-            disabled={qty >= data.stock}
+            disabled={qty >= effectiveStock}
           >
             <FaPlus />
           </button>
@@ -188,6 +178,15 @@ const AddToCartButton = ({ data, quantity = 1 }) => {
             </>
           )}
         </button>
+      )}
+
+      {/* Stock indicator */}
+      {effectiveStock > 0 && effectiveStock <= 5 && (
+        <div className="mt-2 text-center">
+          <span className="text-xs text-orange-600 font-medium">
+            Only {effectiveStock} left in stock
+          </span>
+        </div>
       )}
     </div>
   );

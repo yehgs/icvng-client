@@ -53,6 +53,8 @@ const UploadProduct = () => {
     relatedProducts: [],
   });
 
+  console.log(data);
+
   const [imageLoading, setImageLoading] = useState(false);
   const [ViewImageURL, setViewImageURL] = useState('');
   const [filteredSubCategories, setFilteredSubCategories] = useState([]);

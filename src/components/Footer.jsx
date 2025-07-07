@@ -163,9 +163,7 @@ const Footer = () => {
           <div className="flex flex-wrap">
             {/* Company Info */}
             <div className="w-full md:w-2/5 mb-8 md:mb-0">
-              <h3 className="text-xl font-bold mb-4">
-                Italian Coffee Ventures
-              </h3>
+              <h3 className="text-xl font-bold mb-4">I-Coffee.ng</h3>
               <p className="mb-4">
                 Premium coffee products and accessories for coffee enthusiasts
                 and professionals.
@@ -264,7 +262,7 @@ const Footer = () => {
           <div className="mt-12 pt-6 border-t border-secondary-100">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-sm mb-4 md:mb-0">
-                © 2025 Italian Coffee Ventures. All rights reserved.
+                © 2025 I-Coffee.ng. All rights reserved.
               </div>
               <div className="flex items-center">
                 <span className="mr-2 text-sm">Payment Methods:</span>

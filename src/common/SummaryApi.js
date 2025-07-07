@@ -217,6 +217,10 @@ const SummaryApi = {
     url: '/api/order/checkout',
     method: 'post',
   },
+  flutterwave_payment: {
+    url: '/api/order/flutterwave-payment',
+    method: 'post',
+  },
   getOrderItems: {
     url: '/api/order/order-list',
     method: 'get',
@@ -356,6 +360,48 @@ const SummaryApi = {
     url: `/api/compare/check/${productId}`,
     method: 'GET',
   }),
+
+  // Exchange Rate endpoints
+  getExchangeRates: {
+    url: '/api/exchange-rate/get',
+    method: 'GET',
+  },
+  fetchRatesFromAPI: {
+    url: '/api/exchange-rate/fetch-api',
+    method: 'POST',
+  },
+  createOrUpdateRate: {
+    url: '/api/exchange-rate/create-update',
+    method: 'POST',
+  },
+  getSpecificRate: (baseCurrency, targetCurrency) => ({
+    url: `/api/exchange-rate/rate/${baseCurrency}/${targetCurrency}`,
+    method: 'GET',
+  }),
+  deleteExchangeRate: {
+    url: '/api/exchange-rate/delete',
+    method: 'DELETE',
+  },
+  getSupportedCurrencies: {
+    url: '/api/exchange-rate/currencies',
+    method: 'GET',
+  },
+  convertCurrency: {
+    url: '/api/exchange-rate/convert',
+    method: 'POST',
+  },
+  getExchangeRateStats: {
+    url: '/api/exchange-rate/stats',
+    method: 'GET',
+  },
+  getStaleRates: {
+    url: '/api/exchange-rate/stale',
+    method: 'GET',
+  },
+  bulkUpdateRates: {
+    url: '/api/exchange-rate/bulk-update',
+    method: 'POST',
+  },
 };
 
 export default SummaryApi;

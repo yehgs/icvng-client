@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import logo from '../assets/web-logo.png';
+import logo from '../assets/web-logo.svg';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import {
@@ -188,22 +188,24 @@ export default function Header() {
       {/* Middle Bar */}
       <header className="bg-white py-4 px-4 shadow-md">
         <div className="container mx-auto flex flex-wrap items-center justify-between">
-          <div className="flex items-center">
+          <div className="flex just items-center justify-center md:w-fit w-[100%]">
             <div className="text-2xl font-bold text-brown-600">
-              <Link to={'/'} className="h-100 flex justify-center items-center">
+              <Link
+                to={'/'}
+                className="flex justify-center md:justify-start items-center"
+              >
                 <img
                   src={logo}
-                  width={126}
-                  height={51}
+                  height={50}
+                  width={200}
                   alt="logo"
                   className="hidden lg:block"
                 />
                 <img
                   src={logo}
-                  width={120}
-                  height={60}
                   alt="logo"
-                  className="lg:hidden"
+                  className="lg:hidden w-[55%] mb-2"
+                  width={50}
                 />
               </Link>
             </div>
@@ -214,7 +216,7 @@ export default function Header() {
           </div>
 
           {/* Icons and Actions */}
-          <div className="flex items-center space-x-6">
+          <div className="flex justify-center items-center space-x-6 w-[100%] md:w-fit">
             {user?._id ? (
               <div className="relative">
                 <div

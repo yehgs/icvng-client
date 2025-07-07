@@ -24,6 +24,17 @@ export const useWishlist = () => {
   return context;
 };
 
+// Currency context
+export const CurrencyContext = createContext();
+
+export const useCurrency = () => {
+  const context = useContext(CurrencyContext);
+  if (context === undefined) {
+    throw new Error('useCurrency must be used within GlobalProvider');
+  }
+  return context;
+};
+
 const GlobalProvider = ({ children }) => {
   const dispatch = useDispatch();
   const [totalPrice, setTotalPrice] = useState(0);
@@ -35,6 +46,30 @@ const GlobalProvider = ({ children }) => {
   // Wishlist state
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistLoading, setWishlistLoading] = useState(true);
+
+  // Currency state
+  const [selectedCurrency, setSelectedCurrency] = useState('NGN');
+  const [exchangeRates, setExchangeRates] = useState({});
+  const [currencyLoading, setCurrencyLoading] = useState(false);
+
+  // Available currencies
+  const availableCurrencies = [
+    { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', isBase: true },
+    { code: 'USD', name: 'US Dollar', symbol: '$', isBase: false },
+    { code: 'EUR', name: 'Euro', symbol: '€', isBase: false },
+    { code: 'GBP', name: 'British Pound', symbol: '£', isBase: false },
+  ];
+
+  // Get effective stock for a product
+  const getEffectiveStock = (product) => {
+    if (
+      product.warehouseStock?.enabled &&
+      product.warehouseStock.onlineStock !== undefined
+    ) {
+      return product.warehouseStock.onlineStock;
+    }
+    return product.stock || 0;
+  };
 
   // Cart functions
   const fetchCartItem = async () => {
@@ -65,7 +100,6 @@ const GlobalProvider = ({ children }) => {
       const { data: responseData } = response;
 
       if (responseData.success) {
-        // toast.success(responseData.message)
         fetchCartItem();
         return responseData;
       }
@@ -94,8 +128,69 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
+  // Currency functions
+  const fetchExchangeRates = async () => {
+    try {
+      setCurrencyLoading(true);
+      const response = await Axios({
+        ...SummaryApi.getExchangeRates,
+        params: { baseCurrency: 'NGN' },
+      });
+
+      const { data: responseData } = response;
+
+      if (responseData.success) {
+        const rates = {};
+        responseData.data.forEach((rate) => {
+          rates[rate.targetCurrency] = rate.rate;
+        });
+        // Add NGN to NGN rate
+        rates['NGN'] = 1;
+        setExchangeRates(rates);
+      }
+    } catch (error) {
+      console.error('Error fetching exchange rates:', error);
+      // Set fallback rates
+      setExchangeRates({
+        NGN: 1,
+        USD: 0.00217,
+        EUR: 0.00185,
+        GBP: 0.00159,
+      });
+    } finally {
+      setCurrencyLoading(false);
+    }
+  };
+
+  const convertPrice = (priceInNGN, targetCurrency = selectedCurrency) => {
+    if (targetCurrency === 'NGN') return priceInNGN;
+    const rate = exchangeRates[targetCurrency];
+    if (!rate) return priceInNGN;
+    return priceInNGN * rate;
+  };
+
+  const formatPrice = (price, currency = selectedCurrency) => {
+    const convertedPrice = convertPrice(price, currency);
+    const currencyData = availableCurrencies.find((c) => c.code === currency);
+
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: currency === 'NGN' ? 0 : 2,
+    }).format(convertedPrice);
+  };
+
+  const changeCurrency = (currencyCode) => {
+    setSelectedCurrency(currencyCode);
+    localStorage.setItem('selectedCurrency', currencyCode);
+  };
+
+  // Get payment method based on currency
+  const getPaymentMethod = (currency = selectedCurrency) => {
+    return currency === 'NGN' ? 'flutterwave' : 'stripe';
+  };
+
   // Wishlist functions
-  // Load wishlist from localStorage on initial render
   const loadWishlist = () => {
     try {
       const savedWishlist = localStorage.getItem('wishlist');
@@ -109,12 +204,10 @@ const GlobalProvider = ({ children }) => {
     }
   };
 
-  // Check if a product is in wishlist
   const isInWishlist = (productId) => {
     return wishlistItems.some((item) => item._id === productId);
   };
 
-  // Add product to wishlist
   const addToWishlist = (product) => {
     if (!isInWishlist(product._id)) {
       setWishlistItems((prev) => [...prev, product]);
@@ -123,24 +216,21 @@ const GlobalProvider = ({ children }) => {
     return false;
   };
 
-  // Remove product from wishlist
   const removeFromWishlist = (productId) => {
     setWishlistItems((prev) => prev.filter((item) => item._id !== productId));
     return true;
   };
 
-  // Toggle product in wishlist
   const toggleWishlist = (product) => {
     if (isInWishlist(product._id)) {
       removeFromWishlist(product._id);
-      return false; // Removed from wishlist
+      return false;
     } else {
       addToWishlist(product);
-      return true; // Added to wishlist
+      return true;
     }
   };
 
-  // Clear all wishlist items
   const clearWishlist = () => {
     setWishlistItems([]);
   };
@@ -177,7 +267,8 @@ const GlobalProvider = ({ children }) => {
   const handleLogoutOut = () => {
     localStorage.clear();
     dispatch(handleAddItemCart([]));
-    setWishlistItems([]); // Clear wishlist on logout
+    setWishlistItems([]);
+    setSelectedCurrency('NGN');
   };
 
   const fetchAddress = async () => {
@@ -212,9 +303,19 @@ const GlobalProvider = ({ children }) => {
 
   useEffect(() => {
     fetchCartItem();
-    loadWishlist(); // Load wishlist on initial render
+    loadWishlist();
     fetchAddress();
     fetchOrder();
+    fetchExchangeRates();
+
+    // Load saved currency
+    const savedCurrency = localStorage.getItem('selectedCurrency');
+    if (
+      savedCurrency &&
+      availableCurrencies.some((c) => c.code === savedCurrency)
+    ) {
+      setSelectedCurrency(savedCurrency);
+    }
   }, []);
 
   useEffect(() => {
@@ -222,6 +323,12 @@ const GlobalProvider = ({ children }) => {
       handleLogoutOut();
     }
   }, [user]);
+
+  // Fetch exchange rates periodically (every 30 minutes)
+  useEffect(() => {
+    const interval = setInterval(fetchExchangeRates, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Wishlist context value
   const wishlistContextValue = {
@@ -235,6 +342,19 @@ const GlobalProvider = ({ children }) => {
     clearWishlist,
   };
 
+  // Currency context value
+  const currencyContextValue = {
+    selectedCurrency,
+    availableCurrencies,
+    exchangeRates,
+    currencyLoading,
+    convertPrice,
+    formatPrice,
+    changeCurrency,
+    getPaymentMethod,
+    fetchExchangeRates,
+  };
+
   // Global context value
   const globalContextValue = {
     fetchCartItem,
@@ -245,12 +365,15 @@ const GlobalProvider = ({ children }) => {
     totalQty,
     notDiscountTotalPrice,
     fetchOrder,
+    getEffectiveStock,
   };
 
   return (
     <GlobalContext.Provider value={globalContextValue}>
       <WishlistContext.Provider value={wishlistContextValue}>
-        {children}
+        <CurrencyContext.Provider value={currencyContextValue}>
+          {children}
+        </CurrencyContext.Provider>
       </WishlistContext.Provider>
     </GlobalContext.Provider>
   );
