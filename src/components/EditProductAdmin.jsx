@@ -436,11 +436,23 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   <option value="Arabica/Robusta Blend (80/20)">
                     Arabica/Robusta Blend (80/20)
                   </option>
+                  <option value="Arabica/Robusta Blend (20/80)">
+                    Arabica/Robusta Blend (20/80)
+                  </option>
                   <option value="Arabica/Robusta Blend (40/60)">
                     Arabica/Robusta Blend (40/60)
                   </option>
                   <option value="Arabica/Robusta Blend (60/40)">
                     Arabica/Robusta Blend (60/40)
+                  </option>
+                  <option value="Arabica/Robusta Blend (50/50)">
+                    Arabica/Robusta Blend (50/50)
+                  </option>
+                  <option value="Arabica/Robusta Blend (90/10)">
+                    Arabica/Robusta Blend (90/10)
+                  </option>
+                  <option value="Arabica/Robusta Blend (10/90)">
+                    Arabica/Robusta Blend (10/90)
                   </option>
                   <option value="Single Origin Arabica">
                     Single Origin Arabica
