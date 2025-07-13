@@ -35,7 +35,7 @@ export const CurrencyProvider = ({ children }) => {
   // Fetch exchange rates from API
   const fetchExchangeRates = async () => {
     try {
-      const response = await fetch('/api/exchange-rate/get');
+      const response = await fetch('/api/exchange-rates/get');
       const data = await response.json();
       if (data.success) {
         const rates = {};

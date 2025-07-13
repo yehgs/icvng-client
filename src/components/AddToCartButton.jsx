@@ -14,8 +14,18 @@ const AddToCartButton = ({
   quantity = 1,
   selectedPriceOption = null,
 }) => {
-  const { fetchCartItem, updateCartItem, deleteCartItem, getEffectiveStock } =
-    useGlobalContext();
+  const {
+    fetchCartItem,
+    updateCartItem,
+    deleteCartItem,
+    getEffectiveStock,
+    isLoggedIn,
+    guestCart,
+    addToGuestCart,
+    updateGuestCartItem,
+    removeFromGuestCart,
+  } = useGlobalContext();
+
   const [loading, setLoading] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart);
   const [isAvailableCart, setIsAvailableCart] = useState(false);
@@ -23,7 +33,7 @@ const AddToCartButton = ({
   const [cartItemDetails, setCartItemsDetails] = useState();
   const [showRequestModal, setShowRequestModal] = useState(false);
 
-  // Get effective stock using the global function
+  // Get effective stock for display purposes only
   const effectiveStock = getEffectiveStock(data);
 
   const handleAddToCart = async (e) => {
@@ -33,9 +43,29 @@ const AddToCartButton = ({
     try {
       setLoading(true);
 
+      if (!isLoggedIn) {
+        // Handle guest user cart
+        const cartData = {
+          productId: data._id,
+          quantity: quantity,
+          priceOption: selectedPriceOption || 'regular',
+          price: data.price,
+          discount: data.discount || 0,
+          name: data.name,
+          image: data.image,
+        };
+
+        addToGuestCart(cartData);
+        toast.success('Item added to cart');
+
+        // Trigger header count update
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+        return;
+      }
+
       // Prepare cart data with selected pricing option if available
       const cartData = {
-        productId: data?._id,
+        productId: data._id,
         quantity: quantity,
       };
 
@@ -56,6 +86,8 @@ const AddToCartButton = ({
         if (fetchCartItem) {
           fetchCartItem();
         }
+        // Trigger header count update
+        window.dispatchEvent(new CustomEvent('cart-updated'));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -70,32 +102,45 @@ const AddToCartButton = ({
     setShowRequestModal(true);
   };
 
-  // Checking if this item is in cart or not
+  // Check if item is in cart
   useEffect(() => {
-    const checkingItem = cartItem.some(
-      (item) => item.productId._id === data._id
-    );
-    setIsAvailableCart(checkingItem);
+    if (isLoggedIn) {
+      // Check database cart
+      const checkingItem = cartItem.some(
+        (item) => item.productId._id === data._id
+      );
+      setIsAvailableCart(checkingItem);
 
-    const product = cartItem.find((item) => item.productId._id === data._id);
-    setQty(product?.quantity || 0);
-    setCartItemsDetails(product);
-  }, [data, cartItem]);
+      const product = cartItem.find((item) => item.productId._id === data._id);
+      setQty(product?.quantity || 0);
+      setCartItemsDetails(product);
+    } else {
+      // Check guest cart
+      const guestItem = guestCart.find((item) => item.productId === data._id);
+      setIsAvailableCart(!!guestItem);
+      setQty(guestItem?.quantity || 0);
+      setCartItemsDetails(guestItem);
+    }
+  }, [data, cartItem, guestCart, isLoggedIn]);
 
   const increaseQty = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Check if we can increase quantity based on effective stock
-    if (qty >= effectiveStock) {
-      toast.error('Cannot add more items than available stock');
+    if (!isLoggedIn) {
+      // Handle guest cart
+      updateGuestCartItem(data._id, qty + 1);
+      toast.success('Item added');
+      window.dispatchEvent(new CustomEvent('cart-updated'));
       return;
     }
 
+    // Handle logged-in user cart
     const response = await updateCartItem(cartItemDetails?._id, qty + 1);
 
     if (response.success) {
       toast.success('Item added');
+      window.dispatchEvent(new CustomEvent('cart-updated'));
     }
   };
 
@@ -103,6 +148,20 @@ const AddToCartButton = ({
     e.preventDefault();
     e.stopPropagation();
 
+    if (!isLoggedIn) {
+      // Handle guest cart
+      if (qty === 1) {
+        removeFromGuestCart(data._id);
+        toast.success('Item removed from cart');
+      } else {
+        updateGuestCartItem(data._id, qty - 1);
+        toast.success('Item removed');
+      }
+      window.dispatchEvent(new CustomEvent('cart-updated'));
+      return;
+    }
+
+    // Handle logged-in user cart
     if (qty === 1) {
       deleteCartItem(cartItemDetails?._id);
     } else {
@@ -112,6 +171,7 @@ const AddToCartButton = ({
         toast.success('Item removed');
       }
     }
+    window.dispatchEvent(new CustomEvent('cart-updated'));
   };
 
   // Check if product is not available for production
@@ -143,14 +203,14 @@ const AddToCartButton = ({
         <div className="flex items-center w-full">
           <button
             onClick={decreaseQty}
-            className="bg-green-700 hover:bg-green-800 text-white h-12 w-12 rounded-l-md flex items-center justify-center transition"
+            className="bg-green-700 hover:bg-green-800 text-white h-8 w-8 rounded-l-md flex items-center justify-center transition"
           >
             <FaMinus />
           </button>
 
-          <div className="flex-1 h-12 bg-white border-t border-b border-gray-200 font-semibold flex items-center justify-center">
+          <div className="flex-1 h-8 w-8 bg-white border-t border-b border-gray-200 font-semibold flex items-center justify-center">
             {loading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-green-700"></div>
+              <div className="animate-spin rounded-full h-6 w-5 border-t-2 border-green-700"></div>
             ) : (
               qty
             )}
@@ -158,8 +218,7 @@ const AddToCartButton = ({
 
           <button
             onClick={increaseQty}
-            className="bg-green-700 hover:bg-green-800 text-white h-12 w-12 rounded-r-md flex items-center justify-center transition"
-            disabled={qty >= effectiveStock}
+            className="bg-green-700 hover:bg-green-800 text-white h-8 w-8 rounded-r-md flex items-center justify-center transition"
           >
             <FaPlus />
           </button>
@@ -180,7 +239,7 @@ const AddToCartButton = ({
         </button>
       )}
 
-      {/* Stock indicator */}
+      {/* Stock indicator for information only */}
       {effectiveStock > 0 && effectiveStock <= 5 && (
         <div className="mt-2 text-center">
           <span className="text-xs text-orange-600 font-medium">

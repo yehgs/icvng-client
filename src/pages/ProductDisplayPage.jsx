@@ -16,12 +16,12 @@ import {
   FaSadTear,
   FaEdit,
 } from 'react-icons/fa';
-import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import AddToCartButton from '../components/AddToCartButton';
 import ProductRequestModal from '../components/ProductRequestModal';
 import EditProductAdmin from '../components/EditProductAdmin';
 import { useSelector } from 'react-redux';
+import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
 
 // New components
 import RoastIndicator from '../components/RoastIndicator';
@@ -72,16 +72,26 @@ const ProductDisplayPage = () => {
   const user = useSelector((state) => state.user);
   const isAdmin = user?.role === 'ADMIN';
 
+  // Get currency context
+  const { formatPrice, selectedCurrency } = useCurrency();
+  const { getEffectiveStock } = useGlobalContext();
+
+  // Get effective online stock
   const getEffectiveOnlineStock = () => {
-    // Priority: warehouseStock.onlineStock > stock
-    if (
-      data.warehouseStock?.enabled &&
-      data.warehouseStock.onlineStock !== undefined
-    ) {
-      return data.warehouseStock.onlineStock;
-    }
-    return data.stock || 0;
+    return getEffectiveStock(data);
   };
+
+  // Listen for currency changes
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      // Force re-render when currency changes
+      setSelectedPriceOption(selectedPriceOption);
+    };
+
+    window.addEventListener('currency-changed', handleCurrencyChange);
+    return () =>
+      window.removeEventListener('currency-changed', handleCurrencyChange);
+  }, [selectedPriceOption]);
 
   const fetchProductDetails = async () => {
     try {
@@ -111,11 +121,19 @@ const ProductDisplayPage = () => {
     fetchProductDetails();
   }, [params]);
 
+  // Fixed quantity change handler
   const handleQuantityChange = (amount) => {
     const newQuantity = quantity + amount;
-    const availableStock = getEffectiveOnlineStock();
-    if (newQuantity > 0 && newQuantity <= availableStock) {
+    if (newQuantity > 0) {
       setQuantity(newQuantity);
+    }
+  };
+
+  // Handle direct quantity input
+  const handleQuantityInput = (e) => {
+    const val = parseInt(e.target.value) || 1;
+    if (val > 0) {
+      setQuantity(val);
     }
   };
 
@@ -210,7 +228,7 @@ const ProductDisplayPage = () => {
       setSelectedPriceOption(priceOptions[0].key);
     }
   }, [
-    data.warehouseStock, // Add this dependency
+    data.warehouseStock,
     data.stock,
     data.price,
     data.price3weeksDelivery,
@@ -361,9 +379,6 @@ const ProductDisplayPage = () => {
                         <div className="flex items-center space-x-1">
                           {option.icon}
                           <div>
-                            {/* <div className={`font-semibold ${option.color}`}>
-                              {option.delivery}
-                            </div> */}
                             <div className="text-sm text-gray-600">
                               {option.description}
                             </div>
@@ -371,13 +386,13 @@ const ProductDisplayPage = () => {
                         </div>
                         <div className="text-right">
                           <div className={`text-xl font-bold ${option.color}`}>
-                            {DisplayPriceInNaira(
+                            {formatPrice(
                               pricewithDiscount(option.price, data.discount)
                             )}
                           </div>
                           {data.discount > 0 && (
                             <div className="text-sm text-gray-500 line-through">
-                              {DisplayPriceInNaira(option.price)}
+                              {formatPrice(option.price)}
                             </div>
                           )}
                         </div>
@@ -395,11 +410,18 @@ const ProductDisplayPage = () => {
                         : 'text-orange-600'
                     }
                   >
-                    {getEffectiveOnlineStock() > 0 ? 'In Stock' : 'Available'}
+                    {getEffectiveOnlineStock() > 0
+                      ? 'In Stock'
+                      : 'Available for Order'}
                   </span>
                   {getEffectiveOnlineStock() > 0 && (
                     <span className="ml-2 text-gray-500">
                       ({getEffectiveOnlineStock()} units available)
+                    </span>
+                  )}
+                  {getEffectiveOnlineStock() === 0 && (
+                    <span className="ml-2 text-orange-600 text-xs">
+                      (Order will be processed by admin)
                     </span>
                   )}
                 </div>
@@ -408,9 +430,7 @@ const ProductDisplayPage = () => {
                 {data.discount > 0 && (
                   <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium inline-block">
                     {data.discount}% OFF - Save{' '}
-                    {DisplayPriceInNaira(
-                      (getSelectedPrice() * data.discount) / 100
-                    )}
+                    {formatPrice((getSelectedPrice() * data.discount) / 100)}
                   </div>
                 )}
               </div>
@@ -502,7 +522,7 @@ const ProductDisplayPage = () => {
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex items-center border rounded-md w-32">
                   <button
-                    className="px-3 py-2 text-gray-600 hover:bg-gray-100"
+                    className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition"
                     onClick={() => handleQuantityChange(-1)}
                     disabled={quantity <= 1}
                   >
@@ -511,28 +531,13 @@ const ProductDisplayPage = () => {
                   <input
                     type="number"
                     value={quantity}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value);
-                      const availableStock = getEffectiveOnlineStock();
-                      if (
-                        !isNaN(val) &&
-                        val > 0 &&
-                        val <= (availableStock || 999)
-                      ) {
-                        setQuantity(val);
-                      }
-                    }}
+                    onChange={handleQuantityInput}
                     className="w-full text-center py-2 focus:outline-none"
                     min="1"
-                    max={getEffectiveOnlineStock() || 999}
                   />
                   <button
-                    className="px-3 py-2 text-gray-600 hover:bg-gray-100"
+                    className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition"
                     onClick={() => handleQuantityChange(1)}
-                    disabled={
-                      getEffectiveOnlineStock() > 0 &&
-                      quantity >= getEffectiveOnlineStock()
-                    }
                   >
                     +
                   </button>
@@ -540,12 +545,9 @@ const ProductDisplayPage = () => {
 
                 <div className="flex-1">
                   <AddToCartButton
-                    data={{
-                      ...data,
-                      selectedPriceOption,
-                      selectedPrice: getSelectedPrice(),
-                    }}
+                    data={data}
                     quantity={quantity}
+                    selectedPriceOption={selectedPriceOption}
                   />
                 </div>
               </div>

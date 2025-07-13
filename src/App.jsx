@@ -30,8 +30,16 @@ function App() {
   const location = useLocation();
 
   const fetchUser = async () => {
-    const userData = await fetchUserDetails();
-    dispatch(setUserDetails(userData.data));
+    try {
+      const userData = await fetchUserDetails();
+      if (userData && userData.data) {
+        dispatch(setUserDetails(userData.data));
+      }
+    } catch (error) {
+      console.log('User not authenticated or session expired');
+      // Don't show error toast for unauthenticated users
+      // This is normal for guest users
+    }
   };
 
   const fetchCategory = async () => {
@@ -50,6 +58,7 @@ function App() {
         );
       }
     } catch (error) {
+      console.error('Error fetching categories:', error);
     } finally {
       dispatch(setLoadingCategory(false));
     }
@@ -69,7 +78,9 @@ function App() {
           )
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error fetching subcategories:', error);
+    }
   };
 
   const fetchBrands = async () => {
@@ -86,7 +97,9 @@ function App() {
           )
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error fetching brands:', error);
+    }
   };
 
   const fetchTags = async () => {
@@ -103,7 +116,9 @@ function App() {
           )
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error fetching tags:', error);
+    }
   };
 
   const fetchAttributes = async () => {
@@ -120,7 +135,9 @@ function App() {
           )
         );
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error('Error fetching attributes:', error);
+    }
   };
 
   const fetchCategoryStructure = async () => {
@@ -153,8 +170,6 @@ function App() {
       }
     } catch (error) {
       console.error('Error fetching coffee roast structure:', error);
-    } finally {
-      dispatch(setLoadingCategoryStructure(false));
     }
   };
 

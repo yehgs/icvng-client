@@ -1,3 +1,4 @@
+//client
 export const baseURL = import.meta.env.VITE_API_URL;
 
 const SummaryApi = {
@@ -177,6 +178,7 @@ const SummaryApi = {
     url: '/api/product/search-product',
     method: 'post',
   },
+  // Cart endpoints
   addTocart: {
     url: '/api/cart/create',
     method: 'post',
@@ -192,6 +194,10 @@ const SummaryApi = {
   deleteCartItem: {
     url: '/api/cart/delete-cart-item',
     method: 'delete',
+  },
+  validateCart: {
+    url: '/api/cart/validate',
+    method: 'get',
   },
   createAddress: {
     url: '/api/address/create',
@@ -209,15 +215,16 @@ const SummaryApi = {
     url: '/api/address/disable',
     method: 'delete',
   },
-  CashOnDeliveryOrder: {
-    url: '/api/order/cash-on-delivery',
+  // Payment and Order endpoints
+  directBankTransferOrder: {
+    url: '/api/order/direct-bank-transfer',
     method: 'post',
   },
   payment_url: {
     url: '/api/order/checkout',
     method: 'post',
   },
-  flutterwave_payment: {
+  flutterwavePaymentController: {
     url: '/api/order/flutterwave-payment',
     method: 'post',
   },
@@ -367,7 +374,7 @@ const SummaryApi = {
     method: 'GET',
   },
   fetchRatesFromAPI: {
-    url: '/api/exchange-rate/fetch-api',
+    url: '/api/exchange-rate/fetch-api-rates',
     method: 'POST',
   },
   createOrUpdateRate: {
@@ -375,31 +382,31 @@ const SummaryApi = {
     method: 'POST',
   },
   getSpecificRate: (baseCurrency, targetCurrency) => ({
-    url: `/api/exchange-rate/rate/${baseCurrency}/${targetCurrency}`,
+    url: `/api/exchange-rates/rate/${baseCurrency}/${targetCurrency}`,
     method: 'GET',
   }),
   deleteExchangeRate: {
-    url: '/api/exchange-rate/delete',
+    url: '/api/exchange-rates/delete',
     method: 'DELETE',
   },
   getSupportedCurrencies: {
-    url: '/api/exchange-rate/currencies',
+    url: '/api/exchange-rates/currencies',
     method: 'GET',
   },
   convertCurrency: {
-    url: '/api/exchange-rate/convert',
+    url: '/api/exchange-rates/convert',
     method: 'POST',
   },
   getExchangeRateStats: {
-    url: '/api/exchange-rate/stats',
+    url: '/api/exchange-rates/stats',
     method: 'GET',
   },
   getStaleRates: {
-    url: '/api/exchange-rate/stale',
+    url: '/api/exchange-rates/stale',
     method: 'GET',
   },
   bulkUpdateRates: {
-    url: '/api/exchange-rate/bulk-update',
+    url: '/api/exchange-rates/bulk-update',
     method: 'POST',
   },
 };

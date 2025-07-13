@@ -38,6 +38,7 @@ import AdminRatingsPage from '../pages/AdminRatingsPage.jsx';
 import BannerAdmin from '../pages/BannerAdmin.jsx';
 import WishListPage from '../pages/WishListPage.jsx';
 import ComparePage from '../pages/ComparePage.jsx';
+import BankTransferInstructionsPage from '../pages/BankTransferInstructionPage.jsx';
 
 const router = createBrowserRouter([
   {
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
       {
         path: 'verification-otp',
         element: <OtpVerification />,
+      },
+      {
+        path: '/bank-transfer-instructions',
+        element: <BankTransferInstructionsPage />,
       },
       {
         path: 'reset-password',

@@ -1,3 +1,4 @@
+// client/src/components/Header.jsx
 import React, { useState, useRef, useEffect } from 'react';
 import logo from '../assets/web-logo.svg';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -19,101 +20,83 @@ import SearchInput from './Search';
 import useMobile from '../hooks/useMobile';
 import { useWishlistCompare } from '../hooks/useWishlistCompare';
 import UserMenu from './UserMenu';
-import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
-import { useGlobalContext } from '../provider/GlobalProvider';
+import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
 import DisplayCartItem from './DisplayCartItem';
 import HeaderNavigation from '../components/HeaderNavigation';
+import CurrencySelector from '../components/CurrencySelector';
 
 export default function Header() {
   const [isMobile] = useMobile();
   const location = useLocation();
-  const isSearchPage = location.pathname === '/search';
   const navigate = useNavigate();
   const user = useSelector((state) => state?.user);
   const [openUserMenu, setOpenUserMenu] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart);
-  const { totalPrice, totalQty } = useGlobalContext();
+  const { totalPrice, totalQty, isLoggedIn, guestCart } = useGlobalContext();
+  const { formatPrice } = useCurrency();
   const [openCartSection, setOpenCartSection] = useState(false);
-  const categoryStructure = useSelector(
-    (state) => state.product.categoryStructure
-  );
-  const loadingCategoryStructure = useSelector(
-    (state) => state.product.loadingCategoryStructure
-  );
-  const [activeCategory, setActiveCategory] = useState(null);
-  const [verticalMenuActive, setVerticalMenuActive] = useState(false);
-  const [verticalCategory, setVerticalCategory] = useState(null);
-  const [verticalSubcategory, setVerticalSubcategory] = useState(null);
-  const [expandedCategories, setExpandedCategories] = useState({});
-  const [expandedSubcategories, setExpandedSubcategories] = useState({});
-  const [isMobil, setIsMobil] = useState(false);
 
-  // Use the wishlist and compare hook
+  // Real-time counters
+  const [localWishlistCount, setLocalWishlistCount] = useState(0);
+  const [localCompareCount, setLocalCompareCount] = useState(0);
+  const [localCartCount, setLocalCartCount] = useState(0);
+
+  // Use the wishlist and compare hook for logged-in users
   const { wishlistCount, compareCount } = useWishlistCompare();
 
   const menuRef = useRef(null);
 
-  // Check if we're on mobil
-  useEffect(() => {
-    const checkIfMobil = () => {
-      setIsMobil(window.innerWidth <= 768);
-    };
+  // Function to update local counts
+  const updateLocalCounts = () => {
+    if (!isLoggedIn) {
+      // For guest users, get from localStorage
+      const localWishlist = JSON.parse(
+        localStorage.getItem('wishlist') || '[]'
+      );
+      const localCompareList = JSON.parse(
+        localStorage.getItem('compareList') || '[]'
+      );
+      const localGuestCart = JSON.parse(
+        localStorage.getItem('guestCart') || '[]'
+      );
 
-    checkIfMobil();
-    window.addEventListener('resize', checkIfMobil);
-
-    return () => {
-      window.removeEventListener('resize', checkIfMobil);
-    };
-  }, []);
-
-  // Close menu when clicked outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setVerticalMenuActive(false);
-      }
-    };
-
-    if (verticalMenuActive) {
-      document.addEventListener('mousedown', handleClickOutside);
+      setLocalWishlistCount(localWishlist.length);
+      setLocalCompareCount(localCompareList.length);
+      setLocalCartCount(
+        localGuestCart.reduce((total, item) => total + (item.quantity || 0), 0)
+      );
     } else {
-      document.removeEventListener('mousedown', handleClickOutside);
+      // For logged-in users, use the hook values and cart from Redux
+      setLocalWishlistCount(wishlistCount);
+      setLocalCompareCount(compareCount);
+      setLocalCartCount(totalQty);
     }
+  };
+
+  // Update counts on mount and when login status changes
+  useEffect(() => {
+    updateLocalCounts();
+  }, [isLoggedIn, wishlistCount, compareCount, totalQty, guestCart]);
+
+  // Listen for real-time updates
+  useEffect(() => {
+    const handleUpdate = () => {
+      updateLocalCounts();
+    };
+
+    // Listen for custom events and storage changes
+    window.addEventListener('wishlist-updated', handleUpdate);
+    window.addEventListener('compare-updated', handleUpdate);
+    window.addEventListener('cart-updated', handleUpdate);
+    window.addEventListener('storage', handleUpdate);
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('wishlist-updated', handleUpdate);
+      window.removeEventListener('compare-updated', handleUpdate);
+      window.removeEventListener('cart-updated', handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
     };
-  }, [verticalMenuActive]);
-
-  const toggleCategoryExpansion = (categoryId) => {
-    setExpandedCategories({
-      ...expandedCategories,
-      [categoryId]: !expandedCategories[categoryId],
-    });
-
-    // Reset subcategory expansions when closing a category
-    if (expandedCategories[categoryId]) {
-      const newExpandedSubcategories = { ...expandedSubcategories };
-
-      // Find the category and clear its subcategories
-      const category = categoryStructure.find((cat) => cat._id === categoryId);
-      if (category && category.subcategories) {
-        category.subcategories.forEach((sub) => {
-          delete newExpandedSubcategories[sub._id];
-        });
-      }
-
-      setExpandedSubcategories(newExpandedSubcategories);
-    }
-  };
-
-  const toggleSubcategoryExpansion = (subcategoryId) => {
-    setExpandedSubcategories({
-      ...expandedSubcategories,
-      [subcategoryId]: !expandedSubcategories[subcategoryId],
-    });
-  };
+  }, [isLoggedIn, wishlistCount, compareCount, totalQty]);
 
   // Navigate to wishlist page
   const navigateToWishlistPage = () => {
@@ -137,38 +120,7 @@ export default function Header() {
       navigate('/login');
       return;
     }
-
     navigate('/user');
-  };
-
-  const navigateToCategory = (categoryId, categorySlug) => {
-    navigate(`shop/category/${categorySlug}`);
-    setVerticalMenuActive(false);
-  };
-
-  const navigateToSubcategory = (
-    subcategoryId,
-    categorySlug,
-    subcategorySlug
-  ) => {
-    navigate(`shop/category/${categorySlug}/subcategory/${subcategorySlug}`);
-    setVerticalMenuActive(false);
-  };
-
-  const navigateToCategoryBrand = (brandId, categorySlug, brandSlug) => {
-    navigate(`shop/category/${categorySlug}/brand/${brandSlug}`);
-    setVerticalMenuActive(false);
-  };
-  const navigateToSubcategoryBrand = (
-    brandId,
-    categorySlug,
-    subcategorySlug,
-    brandSlug
-  ) => {
-    navigate(
-      `shop/category/${categorySlug}/subcategory/${subcategorySlug}/brand/${brandSlug}`
-    );
-    setVerticalMenuActive(false);
   };
 
   return (
@@ -188,7 +140,7 @@ export default function Header() {
       {/* Middle Bar */}
       <header className="bg-white py-4 px-4 shadow-md">
         <div className="container mx-auto flex flex-wrap items-center justify-between">
-          <div className="flex just items-center justify-center md:w-fit w-[100%]">
+          <div className="flex items-center justify-center md:w-fit w-[100%]">
             <div className="text-2xl font-bold text-brown-600">
               <Link
                 to={'/'}
@@ -216,7 +168,13 @@ export default function Header() {
           </div>
 
           {/* Icons and Actions */}
-          <div className="flex justify-center items-center space-x-6 w-[100%] md:w-fit">
+          <div className="flex justify-center items-center space-x-4 w-[100%] md:w-fit">
+            {/* Currency Selector */}
+            <div className="hidden md:block">
+              <CurrencySelector />
+            </div>
+
+            {/* User Menu */}
             {user?._id ? (
               <div className="relative">
                 <div
@@ -249,9 +207,9 @@ export default function Header() {
               title="My Wishlist"
             >
               <Heart size={24} className="cursor-pointer text-gray-700" />
-              {wishlistCount > 0 && (
+              {localWishlistCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                  {wishlistCount > 99 ? '99+' : wishlistCount}
+                  {localWishlistCount > 99 ? '99+' : localWishlistCount}
                 </span>
               )}
             </button>
@@ -261,15 +219,14 @@ export default function Header() {
               className="relative hover:scale-105 transition-transform"
               onClick={navigateToComparisonPage}
               title="Compare Products"
-              e
             >
               <VscGitCompare
                 size={24}
                 className="cursor-pointer text-gray-700"
               />
-              {compareCount > 0 && (
+              {localCompareCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-purple-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                  {compareCount}
+                  {localCompareCount > 99 ? '99+' : localCompareCount}
                 </span>
               )}
             </button>
@@ -284,9 +241,9 @@ export default function Header() {
                 size={24}
                 className="cursor-pointer text-gray-700"
               />
-              {totalQty > 0 && (
+              {localCartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                  {totalQty > 99 ? '99+' : totalQty}
+                  {localCartCount > 99 ? '99+' : localCartCount}
                 </span>
               )}
             </button>
@@ -294,29 +251,50 @@ export default function Header() {
             {/* Cart Summary Button */}
             <button
               onClick={() => setOpenCartSection(true)}
-              className="flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
+              className="hidden md:flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
             >
               <div className="font-semibold text-sm">
-                {cartItem.length > 0 ? (
+                {localCartCount > 0 ? (
                   <div>
-                    <p>{totalQty} Items</p>
-                    <p>{DisplayPriceInNaira(totalPrice)}</p>
+                    <p>{localCartCount} Items</p>
+                    <p>{formatPrice(totalPrice)}</p>
                   </div>
                 ) : (
                   <span>My Cart</span>
                 )}
               </div>
             </button>
+
+            {/* Mobile Cart Link */}
+            <Link
+              to="/cart"
+              className="md:hidden bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+            >
+              <ShoppingCart size={18} />
+              <span>Cart</span>
+              {localCartCount > 0 && (
+                <span className="bg-green-800 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
+                  {localCartCount}
+                </span>
+              )}
+            </Link>
           </div>
 
+          {/* Cart Sidebar */}
           {openCartSection && (
             <DisplayCartItem close={() => setOpenCartSection(false)} />
           )}
         </div>
 
-        {/* Responsive search for mobil */}
-        <div className="mt-4 md:hidden">
+        {/* Responsive elements for mobile */}
+        <div className="mt-4 md:hidden space-y-2">
+          {/* Mobile Search */}
           <SearchInput />
+
+          {/* Mobile Currency Selector */}
+          <div className="flex justify-center">
+            <CurrencySelector />
+          </div>
         </div>
       </header>
 

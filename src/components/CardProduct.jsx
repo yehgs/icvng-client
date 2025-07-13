@@ -2,10 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { valideURLConvert } from '../utils/valideURLConvert';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
-import {
-  DisplayPriceInCurrency,
-  getCurrencySymbol,
-} from '../utils/DisplayPriceInCurrency';
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
 import { useSelector } from 'react-redux';
 import {
@@ -16,7 +12,6 @@ import {
   FaCalendarAlt,
   FaSadTear,
   FaShare,
-  FaBalanceScale,
   FaPlus,
   FaMinus,
 } from 'react-icons/fa';
@@ -39,40 +34,64 @@ const CardProduct = ({ data }) => {
   const [cartItemId, setCartItemId] = useState(null);
 
   const navigate = useNavigate();
-  const { getEffectiveStock, fetchCartItem, updateCartItem, deleteCartItem } =
-    useGlobalContext();
-  const { formatPrice } = useCurrency();
+  const {
+    getEffectiveStock,
+    fetchCartItem,
+    updateCartItem,
+    deleteCartItem,
+    isLoggedIn,
+    guestCart,
+    addToGuestCart,
+    updateGuestCartItem,
+    removeFromGuestCart,
+  } = useGlobalContext();
+  const { formatPrice, selectedCurrency } = useCurrency();
   const cartItem = useSelector((state) => state.cartItem.cart);
 
-  // Get effective stock
+  // Get effective stock for display purposes only
   const effectiveStock = getEffectiveStock(data);
 
-  // Check if item is in cart
+  // Check if item is in cart (both guest and logged-in)
   useEffect(() => {
-    const cartProduct = cartItem.find(
-      (item) => item.productId._id === data._id
-    );
-    if (cartProduct) {
-      setIsInCart(true);
-      setQuickCartQty(cartProduct.quantity);
-      setCartItemId(cartProduct._id);
+    if (isLoggedIn) {
+      const cartProduct = cartItem.find(
+        (item) => item.productId._id === data._id
+      );
+      if (cartProduct) {
+        setIsInCart(true);
+        setQuickCartQty(cartProduct.quantity);
+        setCartItemId(cartProduct._id);
+      } else {
+        setIsInCart(false);
+        setQuickCartQty(0);
+        setCartItemId(null);
+      }
     } else {
-      setIsInCart(false);
-      setQuickCartQty(0);
-      setCartItemId(null);
+      const guestItem = guestCart.find((item) => item.productId === data._id);
+      if (guestItem) {
+        setIsInCart(true);
+        setQuickCartQty(guestItem.quantity);
+        setCartItemId(null); // Guest cart doesn't have _id
+      } else {
+        setIsInCart(false);
+        setQuickCartQty(0);
+        setCartItemId(null);
+      }
     }
-  }, [cartItem, data._id]);
+  }, [cartItem, guestCart, data._id, isLoggedIn]);
 
-  // Format product type for display
-  const formatProductType = (type) => {
-    if (!type) return '';
-    return type
-      .replace('_', ' ')
-      .toLowerCase()
-      .replace(/\b\w/g, (l) => l.toUpperCase());
-  };
+  // Listen for currency changes
+  useEffect(() => {
+    const handleCurrencyChange = () => {
+      // Force re-render when currency changes
+      setSelectedPriceOption(selectedPriceOption);
+    };
 
-  // Get roast level icon and label
+    window.addEventListener('currency-changed', handleCurrencyChange);
+    return () =>
+      window.removeEventListener('currency-changed', handleCurrencyChange);
+  }, [selectedPriceOption]);
+
   const getRoastLevelInfo = () => {
     if (!data.roastLevel) return null;
 
@@ -85,7 +104,6 @@ const CardProduct = ({ data }) => {
     return levels[data.roastLevel] || null;
   };
 
-  // Format coffee intensity level for display
   const getIntensityLevel = () => {
     if (!data.intensity) return null;
 
@@ -95,7 +113,6 @@ const CardProduct = ({ data }) => {
     return { level, total };
   };
 
-  // Format product details
   const getProductInfo = () => {
     let details = [];
 
@@ -106,7 +123,6 @@ const CardProduct = ({ data }) => {
     return details.join(' • ');
   };
 
-  // Get product badges and features
   const getProductBadges = () => {
     const badges = [];
 
@@ -124,22 +140,15 @@ const CardProduct = ({ data }) => {
       });
     }
 
-    if (data.aromaticProfile) {
-      badges.push({
-        label: data.aromaticProfile,
-        class: 'bg-indigo-50 text-indigo-800',
-      });
-    }
-
     return badges.slice(0, 2);
   };
 
-  // Get pricing options based on stock availability
+  // Get pricing options - all options available regardless of stock
   const getPricingOptions = () => {
     const options = [];
 
-    // Only show regular price if online stock > 0
-    if (effectiveStock > 0 && data.price > 0) {
+    // Regular price option
+    if (data.price > 0) {
       options.push({
         price: data.price,
         label: 'Regular',
@@ -150,7 +159,7 @@ const CardProduct = ({ data }) => {
       });
     }
 
-    // Always show 3-week delivery if price exists
+    // 3-week delivery if price exists
     if (data.price3weeksDelivery > 0) {
       options.push({
         price: data.price3weeksDelivery,
@@ -162,7 +171,7 @@ const CardProduct = ({ data }) => {
       });
     }
 
-    // Always show 5-week delivery if price exists
+    // 5-week delivery if price exists
     if (data.price5weeksDelivery > 0) {
       options.push({
         price: data.price5weeksDelivery,
@@ -177,13 +186,31 @@ const CardProduct = ({ data }) => {
     return options;
   };
 
-  // Quick add to cart functionality
+  // Quick add to cart functionality - no stock validation
   const handleQuickAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     try {
       setQuickCartLoading(true);
+
+      if (!isLoggedIn) {
+        // Handle guest cart
+        const cartData = {
+          productId: data._id,
+          quantity: 1,
+          priceOption: selectedPriceOption || 'regular',
+          price: data.price,
+          discount: data.discount || 0,
+          name: data.name,
+          image: data.image,
+        };
+
+        addToGuestCart(cartData);
+        toast.success('Added to cart');
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+        return;
+      }
 
       const cartData = {
         productId: data._id,
@@ -204,6 +231,7 @@ const CardProduct = ({ data }) => {
       if (responseData.success) {
         toast.success('Added to cart');
         fetchCartItem();
+        window.dispatchEvent(new CustomEvent('cart-updated'));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -216,16 +244,19 @@ const CardProduct = ({ data }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (quickCartQty >= effectiveStock) {
-      toast.error('Cannot add more than available stock');
-      return;
-    }
-
     try {
       setQuickCartLoading(true);
-      const response = await updateCartItem(cartItemId, quickCartQty + 1);
-      if (response.success) {
+
+      if (!isLoggedIn) {
+        updateGuestCartItem(data._id, quickCartQty + 1);
         toast.success('Quantity updated');
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      } else {
+        const response = await updateCartItem(cartItemId, quickCartQty + 1);
+        if (response.success) {
+          toast.success('Quantity updated');
+          window.dispatchEvent(new CustomEvent('cart-updated'));
+        }
       }
     } catch (error) {
       AxiosToastError(error);
@@ -240,14 +271,27 @@ const CardProduct = ({ data }) => {
 
     try {
       setQuickCartLoading(true);
-      if (quickCartQty === 1) {
-        await deleteCartItem(cartItemId);
-        toast.success('Removed from cart');
-      } else {
-        const response = await updateCartItem(cartItemId, quickCartQty - 1);
-        if (response.success) {
+
+      if (!isLoggedIn) {
+        if (quickCartQty === 1) {
+          removeFromGuestCart(data._id);
+          toast.success('Removed from cart');
+        } else {
+          updateGuestCartItem(data._id, quickCartQty - 1);
           toast.success('Quantity updated');
         }
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      } else {
+        if (quickCartQty === 1) {
+          await deleteCartItem(cartItemId);
+          toast.success('Removed from cart');
+        } else {
+          const response = await updateCartItem(cartItemId, quickCartQty - 1);
+          if (response.success) {
+            toast.success('Quantity updated');
+          }
+        }
+        window.dispatchEvent(new CustomEvent('cart-updated'));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -288,17 +332,6 @@ const CardProduct = ({ data }) => {
       });
   };
 
-  const handleBuyNowClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!data.productAvailability) {
-      setShowRequestModal(true);
-    } else {
-      navigate(url);
-    }
-  };
-
   const handleQuickCheckout = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -312,10 +345,20 @@ const CardProduct = ({ data }) => {
     navigate('/checkout');
   };
 
+  const pricingOptions = getPricingOptions();
   const roastInfo = getRoastLevelInfo();
   const intensityInfo = getIntensityLevel();
   const badges = getProductBadges();
-  const pricingOptions = getPricingOptions();
+
+  //product details
+  // Format product type for display
+  const formatProductType = (type) => {
+    if (!type) return '';
+    return type
+      .replace('_', ' ')
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
+  };
 
   return (
     <div className="group relative border hover:shadow-md transition-shadow duration-300 p-3 lg:p-4 flex flex-col rounded-lg cursor-pointer bg-white h-full">
@@ -384,7 +427,7 @@ const CardProduct = ({ data }) => {
           </div>
         )}
 
-        {/* Stock display */}
+        {/* Stock display - informational only */}
         {effectiveStock > 0 && (
           <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
             {effectiveStock <= 5
@@ -392,6 +435,12 @@ const CardProduct = ({ data }) => {
               : `Stock: ${effectiveStock}`}
           </div>
         )}
+
+        {/* {effectiveStock === 0 && (
+          <div className="absolute bottom-1 right-1 bg-orange-600 text-white text-xs px-2 py-1 rounded">
+            Out of Stock
+          </div>
+        )} */}
       </Link>
 
       {/* Product Name */}
@@ -429,7 +478,7 @@ const CardProduct = ({ data }) => {
       )}
 
       {/* Coffee-specific details */}
-      {data.productType === 'COFFEE' && intensityInfo && (
+      {/* {data.productType === 'COFFEE' && intensityInfo && (
         <div className="my-1 space-y-1">
           <div className="flex items-center text-xs">
             <span className="mr-1 font-medium">Intensity:</span>
@@ -445,7 +494,7 @@ const CardProduct = ({ data }) => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Product Details */}
       <div className="text-xs text-gray-500 my-1">{getProductInfo()}</div>
@@ -465,7 +514,7 @@ const CardProduct = ({ data }) => {
         </div>
       )}
 
-      {/* Pricing Options */}
+      {/* Pricing Options with Currency Support */}
       {data.productAvailability && pricingOptions.length > 0 && (
         <div className="space-y-2 mb-3">
           {pricingOptions.map((option, index) => (
@@ -502,7 +551,7 @@ const CardProduct = ({ data }) => {
       {/* Action Buttons */}
       <div className="mt-auto pt-2 border-t space-y-2">
         {!data.productAvailability ? (
-          /* Product discontinued */
+          /* Product not available for production */
           <button
             onClick={() => setShowRequestModal(true)}
             className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-3 rounded-md transition flex items-center justify-center border border-yellow-300"
@@ -549,7 +598,7 @@ const CardProduct = ({ data }) => {
                 <button
                   onClick={handleQuickIncreaseQty}
                   className="bg-green-700 hover:bg-green-800 text-white p-2 rounded-r-md flex items-center justify-center transition"
-                  disabled={quickCartLoading || quickCartQty >= effectiveStock}
+                  disabled={quickCartLoading}
                 >
                   <FaPlus className="text-sm" />
                 </button>
@@ -564,6 +613,13 @@ const CardProduct = ({ data }) => {
               <FaShoppingCart className="mr-2" />
               Quick Checkout
             </button>
+
+            {/* Stock Information */}
+            {/* {effectiveStock === 0 && (
+              <div className="text-xs text-center text-orange-600">
+                Currently out of stock - Order will be processed by admin
+              </div>
+            )} */}
           </>
         )}
       </div>

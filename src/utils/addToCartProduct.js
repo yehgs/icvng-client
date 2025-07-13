@@ -1,46 +1,45 @@
-import toast from "react-hot-toast"
-import SummaryApi from "../common/SummaryApi"
-import Axios from "./Axios"
-import AxiosToastError from "./AxiosToastError"
+import toast from 'react-hot-toast';
+import SummaryApi from '../common/SummaryApi';
+import Axios from './Axios';
+import AxiosToastError from './AxiosToastError';
 
-export const addToCartProduct = async(productId,qty)=>{
-    try {
-        const response = await Axios({
-            ...SummaryApi.addToCart,
-            data : {
-                quantity : qty,
-                productId : productId
-            }
-        })
+export const addToCartProduct = async (productId, qty) => {
+  try {
+    const response = await Axios({
+      ...SummaryApi.addTocart,
+      data: {
+        quantity: qty,
+        productId: productId,
+      },
+    });
 
-        const { data : responseData} = response
+    const { data: responseData } = response;
 
-        console.log(responseData)
-        if(responseData.success){
-            toast.success(responseData.message)
-        }
-        return responseData
-
-    } catch (error) {
-        AxiosToastError(error)
-
-        return {}
+    console.log(responseData);
+    if (responseData.success) {
+      toast.success(responseData.message);
     }
-}
+    return responseData;
+  } catch (error) {
+    AxiosToastError(error);
 
-export const getCartItems = async()=>{
-    try {
-        const response = await Axios({
-            ...SummaryApi.getCartItems
-        })
+    return {};
+  }
+};
 
-        const { data : responseData } = response
+export const getCartItems = async () => {
+  try {
+    const response = await Axios({
+      ...SummaryApi.getCartItems,
+    });
 
-        if(responseData.success){
-            return responseData 
-        }
-    } catch (error) {
-        AxiosToastError(error)
-        return error
+    const { data: responseData } = response;
+
+    if (responseData.success) {
+      return responseData;
     }
-}
+  } catch (error) {
+    AxiosToastError(error);
+    return error;
+  }
+};
