@@ -529,7 +529,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                     View My Orders
                   </Link>
                   <Link
-                    to="/"
+                    to="/shop"
                     className="flex items-center justify-center w-full py-3 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                   >
                     <FaHome className="mr-2" />

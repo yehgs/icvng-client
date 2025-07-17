@@ -419,11 +419,11 @@ const ProductDisplayPage = () => {
                       ({getEffectiveOnlineStock()} units available)
                     </span>
                   )}
-                  {getEffectiveOnlineStock() === 0 && (
+                  {/* {getEffectiveOnlineStock() === 0 && (
                     <span className="ml-2 text-orange-600 text-xs">
                       (Order will be processed by admin)
                     </span>
-                  )}
+                  )} */}
                 </div>
 
                 {/* Discount Badge */}

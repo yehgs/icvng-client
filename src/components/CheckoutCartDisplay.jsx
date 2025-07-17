@@ -162,7 +162,7 @@ const CheckoutCartDisplay = () => {
           Add some items to your cart to continue shopping
         </p>
         <Link
-          to="/"
+          to="/shop"
           className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition"
         >
           Continue Shopping
@@ -315,7 +315,7 @@ const CheckoutCartDisplay = () => {
       {/* Continue Shopping Link */}
       <div className="p-4 border-t border-gray-200 bg-gray-50">
         <Link
-          to="/"
+          to="/shop"
           className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center justify-center"
         >
           ← Continue Shopping

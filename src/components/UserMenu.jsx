@@ -96,6 +96,8 @@ const UserMenu = ({ close }) => {
     { path: '/dashboard/myorders', label: 'My Orders' },
     { path: '/dashboard/user-request', label: 'Your Requests' },
     { path: '/dashboard/address', label: 'Saved Addresses' },
+    { path: '/dashboard/wishlist', label: 'Wishlist' },
+    { path: '/dashboard/track', label: 'Track Your Shipment' },
   ];
 
   return (

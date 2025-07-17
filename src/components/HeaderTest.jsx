@@ -170,7 +170,7 @@ export default function Header() {
           {/* Icons and Actions */}
           <div className="flex justify-center items-center space-x-4 w-[100%] md:w-fit">
             {/* Currency Selector */}
-            <div className="hidden md:block">
+            <div className="">
               <CurrencySelector />
             </div>
 
@@ -249,7 +249,7 @@ export default function Header() {
             </button>
 
             {/* Cart Summary Button */}
-            <button
+            {/* <button
               onClick={() => setOpenCartSection(true)}
               className="hidden md:flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
             >
@@ -263,20 +263,20 @@ export default function Header() {
                   <span>My Cart</span>
                 )}
               </div>
+            </button> */}
+            <button
+              className="hidden md:flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
+              onClick={() => navigate('/shop')}
+            >
+              <span className="font-semibold text-sm">Shop Now</span>
             </button>
 
             {/* Mobile Cart Link */}
             <Link
-              to="/cart"
-              className="md:hidden bg-green-600 text-white px-3 py-2 rounded-md text-sm font-medium flex items-center gap-2"
+              to="/shop"
+              className="md:hidden items-center  bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors gap-2"
             >
-              <ShoppingCart size={18} />
-              <span>Cart</span>
-              {localCartCount > 0 && (
-                <span className="bg-green-800 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-                  {localCartCount}
-                </span>
-              )}
+              <span>Shop Now</span>
             </Link>
           </div>
 
@@ -290,11 +290,6 @@ export default function Header() {
         <div className="mt-4 md:hidden space-y-2">
           {/* Mobile Search */}
           <SearchInput />
-
-          {/* Mobile Currency Selector */}
-          <div className="flex justify-center">
-            <CurrencySelector />
-          </div>
         </div>
       </header>
 

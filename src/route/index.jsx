@@ -39,6 +39,7 @@ import BannerAdmin from '../pages/BannerAdmin.jsx';
 import WishListPage from '../pages/WishListPage.jsx';
 import ComparePage from '../pages/ComparePage.jsx';
 import BankTransferInstructionsPage from '../pages/BankTransferInstructionPage.jsx';
+import TrackingPage from '../pages/TrackingPage';
 
 const router = createBrowserRouter([
   {
@@ -104,6 +105,38 @@ const router = createBrowserRouter([
       },
       { path: '/brand/:brandSlug', element: <CategoryDetailPage /> },
       {
+        path: 'product/:product',
+        element: <ProductDisplayPage />,
+      },
+      {
+        path: 'cart',
+        element: <CartMobile />,
+      },
+      {
+        path: 'checkout',
+        element: <CheckoutPage />,
+      },
+      {
+        path: 'success',
+        element: <Success />,
+      },
+      {
+        path: 'cancel',
+        element: <Cancel />,
+      },
+      {
+        path: 'wishlist',
+        element: <WishListPage />,
+      },
+      {
+        path: 'compare',
+        element: <ComparePage />,
+      },
+      {
+        path: '*',
+        element: <NotFoundPage />,
+      },
+      {
         path: 'dashboard',
         element: <Dashboard />,
         children: [
@@ -118,6 +151,15 @@ const router = createBrowserRouter([
           {
             path: 'address',
             element: <Address />,
+          },
+
+          {
+            path: 'track',
+            element: <TrackingPage />,
+          },
+          {
+            path: 'track/:trackingNumber',
+            element: <TrackingPage />,
           },
           {
             path: 'banners',
@@ -220,38 +262,6 @@ const router = createBrowserRouter([
             ),
           },
         ],
-      },
-      {
-        path: 'product/:product',
-        element: <ProductDisplayPage />,
-      },
-      {
-        path: 'cart',
-        element: <CartMobile />,
-      },
-      {
-        path: 'checkout',
-        element: <CheckoutPage />,
-      },
-      {
-        path: 'success',
-        element: <Success />,
-      },
-      {
-        path: 'cancel',
-        element: <Cancel />,
-      },
-      {
-        path: 'wishlist',
-        element: <WishListPage />,
-      },
-      {
-        path: 'compare',
-        element: <ComparePage />,
-      },
-      {
-        path: '*',
-        element: <NotFoundPage />,
       },
     ],
   },

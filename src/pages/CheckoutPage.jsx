@@ -1,8 +1,9 @@
-// client/src/pages/CheckoutPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
 import CurrencySelector from '../components/CurrencySelector';
 import CheckoutCartDisplay from '../components/CheckoutCartDisplay';
+import ShippingMethodSelector from '../components/ShippingMethodSelector';
+import AddressFormModal from '../components/AddressFormModal';
 import AuthModal from '../components/AuthModel';
 import { useSelector } from 'react-redux';
 import AxiosToastError from '../utils/AxiosToastError';
@@ -16,7 +17,13 @@ import {
   FaCreditCard,
   FaUniversity,
   FaShoppingCart,
+  FaShippingFast,
+  FaTruck,
+  FaMapMarkerAlt,
+  FaPlus,
+  FaEdit,
 } from 'react-icons/fa';
+import AddressForm from '../components/AddressForm';
 
 const CheckoutPage = () => {
   const {
@@ -35,21 +42,19 @@ const CheckoutPage = () => {
 
   const [loading, setLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
+  const [shippingCost, setShippingCost] = useState(0);
+  const [shippingMethods, setShippingMethods] = useState([]);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
+
   const addressList = useSelector((state) => state.addresses.addressList);
   const [selectAddress, setSelectAddress] = useState(0);
   const cartItemsList = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
-
-  // Guest delivery address - always collected
-  const [deliveryAddress, setDeliveryAddress] = useState({
-    address_line: '',
-    city: '',
-    state: '',
-    country: 'Nigeria',
-    pincode: '',
-    mobile: '',
-  });
 
   // Get current cart items based on login status
   const currentCartItems = isLoggedIn ? cartItemsList : guestCart;
@@ -57,45 +62,207 @@ const CheckoutPage = () => {
   // Convert prices to selected currency
   const convertedTotalPrice = convertPrice(totalPrice);
   const convertedNotDiscountTotalPrice = convertPrice(notDiscountTotalPrice);
+  const convertedShippingCost = convertPrice(shippingCost);
 
-  const handleAddressChange = (e) => {
-    const { name, value } = e.target;
-    setDeliveryAddress((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const validateDeliveryAddress = Object.values(deliveryAddress).every(
-    (value) => value.trim()
-  );
+  // Calculate final total with shipping
+  const finalTotal = totalPrice + shippingCost;
+  const convertedFinalTotal = convertPrice(finalTotal);
 
   const handleAuthSuccess = (userData) => {
     toast.success('Welcome! Your cart has been preserved.');
     setShowAuthModal(false);
-    // Refresh data after login
     fetchCartItem();
     fetchAddress();
     fetchOrder();
   };
 
-  // Create address if needed
-  const getOrCreateAddress = async () => {
-    if (addressList.length > 0 && addressList[selectAddress]) {
-      return addressList[selectAddress]._id;
+  // Handle address selection change
+  const handleAddressSelect = async (addressIndex) => {
+    setSelectAddress(addressIndex);
+    const selectedAddr = addressList[addressIndex];
+    if (selectedAddr) {
+      setSelectedAddressId(selectedAddr._id);
+
+      // Add loading state feedback
+      toast.loading('Loading shipping options...', { id: 'shipping-load' });
+
+      try {
+        await fetchShippingMethods(selectedAddr._id);
+        toast.dismiss('shipping-load');
+      } catch (error) {
+        toast.dismiss('shipping-load');
+        console.error('Error in address selection:', error);
+      }
     }
+  };
+  // Fetch shipping methods when address changes
+  const fetchShippingMethods = async (addressId) => {
+    try {
+      setShippingLoading(true);
+      setShippingMethods([]);
+      setSelectedShippingMethod(null);
+      setShippingCost(0);
 
-    if (!validateDeliveryAddress) {
-      throw new Error('Please fill in all delivery address fields');
+      // Get current cart items with product details
+      const cartItems = isLoggedIn ? cartItemsList : guestCart;
+
+      if (!cartItems || cartItems.length === 0) {
+        throw new Error('No items in cart');
+      }
+
+      // Prepare items with proper product information
+      const itemsForShipping = cartItems.map((item) => {
+        if (isLoggedIn && item.productId) {
+          // Logged-in user cart structure
+          return {
+            productId: item.productId._id,
+            quantity: item.quantity,
+            category: item.productId.category,
+            weight: item.productId.weight || 1,
+            name: item.productId.name,
+            priceOption: item.priceOption || 'regular',
+          };
+        } else {
+          // Guest cart structure
+          return {
+            productId: item.productId || item._id,
+            quantity: item.quantity,
+            category: item.category,
+            weight: item.weight || 1,
+            name: item.name,
+            priceOption: item.priceOption || 'regular',
+          };
+        }
+      });
+
+      // Calculate total weight more accurately
+      const totalWeight = itemsForShipping.reduce((total, item) => {
+        const weight = item.weight || 1; // Default 1kg if no weight specified
+        return total + weight * item.quantity;
+      }, 0);
+
+      console.log('Fetching shipping methods for:', {
+        addressId,
+        itemsCount: itemsForShipping.length,
+        totalWeight,
+        orderValue: totalPrice,
+        items: itemsForShipping,
+      });
+
+      const response = await Axios({
+        url: '/api/shipping/calculate-checkout',
+        method: 'post',
+        data: {
+          addressId,
+          items: itemsForShipping,
+          orderValue: totalPrice,
+          totalWeight,
+        },
+      });
+
+      console.log('Shipping methods response:', response.data);
+
+      if (response.data.success) {
+        const methods = response.data.data.methods || [];
+        setShippingMethods(methods);
+
+        // Auto-select best method (free first, then cheapest)
+        if (methods.length > 0) {
+          const freeMethod = methods.find((m) => m.cost === 0);
+          const cheapestMethod = methods.reduce((prev, current) =>
+            prev.cost < current.cost ? prev : current
+          );
+
+          const selectedMethod = freeMethod || cheapestMethod;
+          setSelectedShippingMethod(selectedMethod);
+          setShippingCost(selectedMethod.cost || 0);
+
+          toast.success(
+            `${methods.length} shipping option${
+              methods.length > 1 ? 's' : ''
+            } available`
+          );
+        } else {
+          toast.error(
+            'No shipping methods available for your location and items'
+          );
+        }
+      } else {
+        throw new Error(
+          response.data.message || 'Failed to load shipping methods'
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching shipping methods:', error);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        'Failed to load shipping methods';
+      toast.error(errorMessage);
+
+      // Set empty state on error
+      setShippingMethods([]);
+      setSelectedShippingMethod(null);
+      setShippingCost(0);
+    } finally {
+      setShippingLoading(false);
     }
+  };
 
-    const addressResponse = await Axios({
-      ...SummaryApi.createAddress,
-      data: deliveryAddress,
-    });
+  // Handle shipping method selection
+  const handleShippingMethodSelect = (method) => {
+    setSelectedShippingMethod(method);
+    setShippingCost(method.cost || 0);
+  };
 
-    if (addressResponse.data.success) {
-      fetchAddress();
-      return addressResponse.data.data._id;
-    } else {
-      throw new Error('Failed to create address');
+  // Handle new address creation
+  const handleAddressSubmit = async (addressData) => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.createAddress,
+        data: addressData,
+      });
+
+      if (response.data.success) {
+        toast.success('Address saved successfully');
+        fetchAddress();
+        setShowAddressForm(false);
+
+        // Auto-select the new address
+        const newAddressId = response.data.data._id;
+        setSelectedAddressId(newAddressId);
+        await fetchShippingMethods(newAddressId);
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    }
+  };
+
+  // Handle address editing
+  const handleEditAddress = (address) => {
+    setEditingAddress(address);
+    setShowAddressForm(true);
+  };
+
+  // Handle address update
+  const handleAddressUpdate = async (addressData) => {
+    try {
+      const response = await Axios({
+        ...SummaryApi.updateAddress,
+        data: {
+          ...addressData,
+          _id: editingAddress._id,
+        },
+      });
+
+      if (response.data.success) {
+        toast.success('Address updated successfully');
+        fetchAddress();
+        setShowAddressForm(false);
+        setEditingAddress(null);
+      }
+    } catch (error) {
+      AxiosToastError(error);
     }
   };
 
@@ -112,12 +279,19 @@ const CheckoutPage = () => {
       return;
     }
 
+    if (!selectedShippingMethod) {
+      toast.error('Please select a shipping method');
+      return;
+    }
+
+    if (!selectedAddressId) {
+      toast.error('Please select a delivery address');
+      return;
+    }
+
     try {
       setLoading(true);
 
-      const addressId = await getOrCreateAddress();
-
-      // Generate bank transfer reference
       const bankDetails = {
         bankName: 'First Bank of Nigeria',
         accountName: 'I-Coffee Nigeria Limited',
@@ -130,9 +304,11 @@ const CheckoutPage = () => {
         ...SummaryApi.directBankTransferOrder,
         data: {
           list_items: currentCartItems,
-          addressId: addressId,
+          addressId: selectedAddressId,
           subTotalAmt: totalPrice,
-          totalAmt: totalPrice,
+          totalAmt: finalTotal,
+          shippingCost: shippingCost,
+          shippingMethodId: selectedShippingMethod._id,
           currency: selectedCurrency,
           bankDetails: bankDetails,
         },
@@ -150,7 +326,9 @@ const CheckoutPage = () => {
           state: {
             orderDetails: responseData.data,
             bankDetails: bankDetails,
-            totalAmount: totalPrice,
+            totalAmount: finalTotal,
+            shippingCost: shippingCost,
+            shippingMethod: selectedShippingMethod,
           },
         });
       }
@@ -169,17 +347,26 @@ const CheckoutPage = () => {
       return;
     }
 
+    if (!selectedShippingMethod) {
+      toast.error('Please select a shipping method');
+      return;
+    }
+
+    if (!selectedAddressId) {
+      toast.error('Please select a delivery address');
+      return;
+    }
+
     try {
       setLoading(true);
       toast.loading('Processing payment...');
 
-      const addressId = await getOrCreateAddress();
       const paymentMethod = getPaymentMethod();
 
       if (paymentMethod === 'stripe') {
-        await handleStripePayment(addressId);
+        await handleStripePayment();
       } else {
-        await handleFlutterwavePayment(addressId);
+        await handleFlutterwavePayment();
       }
     } catch (error) {
       AxiosToastError(error);
@@ -189,7 +376,7 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleStripePayment = async (addressId) => {
+  const handleStripePayment = async () => {
     try {
       const { loadStripe } = await import('@stripe/stripe-js');
       const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
@@ -199,9 +386,11 @@ const CheckoutPage = () => {
         ...SummaryApi.payment_url,
         data: {
           list_items: currentCartItems,
-          addressId: addressId,
+          addressId: selectedAddressId,
           subTotalAmt: convertedTotalPrice,
-          totalAmt: convertedTotalPrice,
+          totalAmt: convertedFinalTotal,
+          shippingCost: convertedShippingCost,
+          shippingMethodId: selectedShippingMethod._id,
           currency: selectedCurrency,
           paymentMethod: 'stripe',
         },
@@ -219,15 +408,17 @@ const CheckoutPage = () => {
     }
   };
 
-  const handleFlutterwavePayment = async (addressId) => {
+  const handleFlutterwavePayment = async () => {
     try {
       const response = await Axios({
         ...SummaryApi.flutterwavePaymentController,
         data: {
           list_items: currentCartItems,
-          addressId: addressId,
+          addressId: selectedAddressId,
           subTotalAmt: totalPrice,
-          totalAmt: totalPrice,
+          totalAmt: finalTotal,
+          shippingCost: shippingCost,
+          shippingMethodId: selectedShippingMethod._id,
           currency: selectedCurrency,
           paymentMethod: 'flutterwave',
         },
@@ -245,12 +436,29 @@ const CheckoutPage = () => {
     }
   };
 
-  // Check if form is valid for proceeding
-  const hasValidAddress = isLoggedIn
-    ? addressList.length > 0 || validateDeliveryAddress
-    : validateDeliveryAddress;
+  // Auto-fetch shipping methods when logged in user selects existing address
+  useEffect(() => {
+    if (isLoggedIn && addressList.length > 0 && addressList[selectAddress]) {
+      const selectedAddr = addressList[selectAddress];
+      if (currentCartItems.length > 0) {
+        fetchShippingMethods(selectedAddr._id);
+      }
+      setSelectedAddressId(selectedAddr._id);
+    }
+  }, [isLoggedIn, addressList, selectAddress, currentCartItems.length]);
 
-  const canProceed = currentCartItems.length > 0 && hasValidAddress;
+  // Debugging: Log cart items structure
+  useEffect(() => {
+    console.log('Current cart items:', currentCartItems);
+    console.log('Is logged in:', isLoggedIn);
+    if (currentCartItems.length > 0) {
+      console.log('Sample cart item structure:', currentCartItems[0]);
+    }
+  }, [currentCartItems, isLoggedIn]);
+
+  // Check if form is valid for proceeding
+  const canProceed =
+    currentCartItems.length > 0 && selectedAddressId && selectedShippingMethod;
 
   if (currentCartItems.length === 0) {
     return (
@@ -350,18 +558,25 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            {/* Delivery Address - Show regardless of login status */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Delivery Address
-              </h3>
+            {/* Delivery Address */}
+            {isLoggedIn && (
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
+                    <FaMapMarkerAlt className="mr-2 text-blue-600" />
+                    Delivery Address
+                  </h3>
+                  <button
+                    onClick={() => setShowAddressForm(true)}
+                    className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+                  >
+                    <FaPlus size={14} />
+                    Add New Address
+                  </button>
+                </div>
 
-              {/* Show existing addresses if logged in */}
-              {isLoggedIn && addressList.length > 0 && (
-                <div className="mb-6">
-                  <h4 className="text-md font-medium text-gray-700 mb-3">
-                    Saved Addresses
-                  </h4>
+                {/* Show existing addresses if logged in */}
+                {addressList.length > 0 ? (
                   <div className="grid gap-3">
                     {addressList.map((address, index) => (
                       <label
@@ -374,127 +589,74 @@ const CheckoutPage = () => {
                             id={'address' + index}
                             type="radio"
                             value={index}
-                            onChange={(e) => setSelectAddress(e.target.value)}
+                            onChange={(e) =>
+                              handleAddressSelect(parseInt(e.target.value))
+                            }
                             name="address"
+                            checked={selectAddress === index}
                             className="mt-1"
                           />
-                          <div>
-                            <p className="font-medium text-gray-800">
-                              {address.address_line}
-                            </p>
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between">
+                              <p className="font-medium text-gray-800">
+                                {address.address_line}
+                              </p>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleEditAddress(address);
+                                }}
+                                className="text-blue-600 hover:text-blue-700 p-1"
+                                title="Edit address"
+                              >
+                                <FaEdit size={14} />
+                              </button>
+                            </div>
                             <p className="text-sm text-gray-600">
                               {address.city}, {address.state}, {address.country}{' '}
-                              - {address.pincode}
+                              - {address.postal_code}
                             </p>
                             <p className="text-sm text-gray-600">
                               {address.mobile}
                             </p>
+                            {address.is_primary && (
+                              <span className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
+                                Primary Address
+                              </span>
+                            )}
                           </div>
                         </div>
                       </label>
                     ))}
                   </div>
-                  <div className="mt-4 text-sm text-gray-600 border-t pt-4">
-                    Or add a new address below:
+                ) : (
+                  <div className="text-center py-8">
+                    <FaMapMarkerAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                    <p className="text-gray-600 mb-4">No addresses found</p>
+                    <button
+                      onClick={() => setShowAddressForm(true)}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      <FaPlus size={14} />
+                      Add Your First Address
+                    </button>
                   </div>
-                </div>
-              )}
-
-              {/* Address form - always shown */}
-              <div className="grid gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Address Line *
-                  </label>
-                  <input
-                    type="text"
-                    name="address_line"
-                    value={deliveryAddress.address_line}
-                    onChange={handleAddressChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter your full address"
-                    required
-                  />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      City *
-                    </label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={deliveryAddress.city}
-                      onChange={handleAddressChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter city"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      State *
-                    </label>
-                    <input
-                      type="text"
-                      name="state"
-                      value={deliveryAddress.state}
-                      onChange={handleAddressChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter state"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Country *
-                    </label>
-                    <input
-                      type="text"
-                      name="country"
-                      value={deliveryAddress.country}
-                      onChange={handleAddressChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter country"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Postal Code *
-                    </label>
-                    <input
-                      type="text"
-                      name="pincode"
-                      value={deliveryAddress.pincode}
-                      onChange={handleAddressChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Enter postal code"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number *
-                  </label>
-                  <input
-                    type="tel"
-                    name="mobile"
-                    value={deliveryAddress.mobile}
-                    onChange={handleAddressChange}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter phone number"
-                    required
-                  />
-                </div>
+                )}
               </div>
-            </div>
+            )}
+
+            {/* Shipping Method Selector */}
+            {selectedAddressId && (
+              <ShippingMethodSelector
+                selectedAddress={addressList[selectAddress]}
+                cartItems={currentCartItems}
+                orderValue={totalPrice}
+                onMethodSelect={handleShippingMethodSelect}
+                selectedMethodId={selectedShippingMethod?._id}
+                loading={shippingLoading}
+                methods={shippingMethods}
+              />
+            )}
           </div>
 
           {/* Right Column - Order Summary & Payment */}
@@ -509,11 +671,9 @@ const CheckoutPage = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Items total</span>
                   <div className="text-right">
-                    {notDiscountTotalPrice > totalPrice && (
-                      <span className="line-through text-gray-400 block text-sm">
-                        {formatPrice(notDiscountTotalPrice)}
-                      </span>
-                    )}
+                    {notDiscountTotalPrice > totalPrice &&
+                      // You can add a discount label or similar here if needed
+                      null}
                     <span className="font-medium">
                       {formatPrice(totalPrice)}
                     </span>
@@ -528,9 +688,22 @@ const CheckoutPage = () => {
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Delivery</span>
-                  <span className="text-green-600 font-medium">Free</span>
+                  <span className="text-gray-600">Shipping</span>
+                  <span
+                    className={`font-medium ${
+                      shippingCost === 0 ? 'text-green-600' : 'text-gray-900'
+                    }`}
+                  >
+                    {shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}
+                  </span>
                 </div>
+
+                {selectedShippingMethod && (
+                  <div className="text-xs text-gray-500 flex items-center">
+                    <FaTruck className="mr-1" />
+                    {selectedShippingMethod.name}
+                  </div>
+                )}
 
                 {selectedCurrency !== 'NGN' && (
                   <div className="flex justify-between items-center text-sm">
@@ -545,7 +718,7 @@ const CheckoutPage = () => {
                       Total
                     </span>
                     <span className="text-xl font-bold text-green-600">
-                      {formatPrice(totalPrice)}
+                      {formatPrice(finalTotal)}
                     </span>
                   </div>
                 </div>
@@ -618,7 +791,11 @@ const CheckoutPage = () => {
                   <p className="text-sm text-yellow-800 text-center">
                     {currentCartItems.length === 0
                       ? 'Your cart is empty'
-                      : 'Please fill in your delivery address'}
+                      : !selectedAddressId
+                      ? 'Please select a delivery address'
+                      : !selectedShippingMethod
+                      ? 'Please select a shipping method'
+                      : 'Please complete all required fields'}
                   </p>
                 </div>
               )}
@@ -632,11 +809,64 @@ const CheckoutPage = () => {
               </div>
             </div>
 
+            {/* Shipping Information */}
+            {selectedShippingMethod && (
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
+                  <FaShippingFast className="mr-2 text-green-600" />
+                  Shipping Information
+                </h4>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <div className="flex justify-between">
+                    <span>Method:</span>
+                    <span className="font-medium">
+                      {selectedShippingMethod.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Cost:</span>
+                    <span className="font-medium">
+                      {selectedShippingMethod.cost === 0
+                        ? 'Free'
+                        : formatPrice(selectedShippingMethod.cost)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Type:</span>
+                    <span className="font-medium capitalize">
+                      {selectedShippingMethod.type.replace('_', ' ')}
+                    </span>
+                  </div>
+                </div>
+
+                {selectedShippingMethod.type === 'pickup' &&
+                  selectedShippingMethod.pickupLocations && (
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                      <h5 className="text-sm font-medium text-gray-700 mb-2">
+                        Pickup Locations:
+                      </h5>
+                      <div className="space-y-2">
+                        {selectedShippingMethod.pickupLocations
+                          .slice(0, 2)
+                          .map((location, index) => (
+                            <div key={index} className="text-sm text-gray-600">
+                              <p className="font-medium">{location.name}</p>
+                              <p className="text-xs">
+                                {location.address}, {location.city}
+                              </p>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
+              </div>
+            )}
+
             {/* Help Section */}
             <div className="bg-white p-6 rounded-lg shadow-sm">
               <h4 className="font-semibold text-gray-800 mb-3">Need Help?</h4>
               <div className="space-y-2 text-sm text-gray-600">
-                <p>• Free delivery on all orders</p>
+                <p>• Multiple shipping options available</p>
                 <p>• 24/7 customer support</p>
                 <p>• Secure payment processing</p>
                 <p>• Order tracking available</p>
@@ -653,6 +883,18 @@ const CheckoutPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Address Form Modal */}
+      <AddressFormModal
+        isOpen={showAddressForm}
+        onClose={() => {
+          setShowAddressForm(false);
+          setEditingAddress(null);
+        }}
+        onSubmit={editingAddress ? handleAddressUpdate : handleAddressSubmit}
+        initialData={editingAddress}
+        loading={loading}
+      />
 
       {/* Auth Modal */}
       <AuthModal

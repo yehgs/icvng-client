@@ -1,4 +1,4 @@
-//client
+// client/src/common/SummaryApi.js - Updated with shipping endpoints
 export const baseURL = import.meta.env.VITE_API_URL;
 
 const SummaryApi = {
@@ -199,6 +199,10 @@ const SummaryApi = {
     url: '/api/cart/validate',
     method: 'get',
   },
+  migrateGuestCart: {
+    url: '/api/cart/migrate-guest-cart',
+    method: 'post',
+  },
   createAddress: {
     url: '/api/address/create',
     method: 'post',
@@ -215,7 +219,26 @@ const SummaryApi = {
     url: '/api/address/disable',
     method: 'delete',
   },
-  // Payment and Order endpoints
+
+  // ===== NEW SHIPPING ENDPOINTS =====
+
+  // Public shipping endpoints for checkout
+  calculateShippingCost: {
+    url: '/api/shipping/calculate-checkout',
+    method: 'post',
+  },
+  getPublicShippingMethods: {
+    url: '/api/shipping/methods/public',
+    method: 'get',
+  },
+
+  // Public tracking endpoints
+  trackShipment: (trackingNumber) => ({
+    url: `/api/shipping/track/${trackingNumber}`,
+    method: 'get',
+  }),
+
+  // Payment and Order endpoints (updated to include shipping)
   directBankTransferOrder: {
     url: '/api/order/direct-bank-transfer',
     method: 'post',
@@ -232,6 +255,9 @@ const SummaryApi = {
     url: '/api/order/order-list',
     method: 'get',
   },
+
+  // ===== EXISTING ENDPOINTS =====
+
   addSlider: {
     url: '/api/slider/add',
     method: 'POST',
@@ -408,6 +434,70 @@ const SummaryApi = {
   bulkUpdateRates: {
     url: '/api/exchange-rates/bulk-update',
     method: 'POST',
+  },
+  // Address endpoints - Enhanced
+  getNigerianLocationData: {
+    url: '/api/address/nigeria-locations',
+    method: 'get',
+  },
+  validateAddressFormat: {
+    url: '/api/address/validate-format',
+    method: 'post',
+  },
+  getPostalCodeSuggestions: {
+    url: '/api/address/postal-code-suggestions',
+    method: 'get',
+  },
+  setPrimaryAddress: {
+    url: '/api/address/set-primary',
+    method: 'put',
+  },
+
+  getShippingZones: {
+    url: '/api/shipping/zones',
+    method: 'get',
+  },
+  getShippingMethods: {
+    url: '/api/shipping/methods',
+    method: 'get',
+  },
+
+  // Order endpoints - Enhanced with shipping
+  getOrdersForShipping: {
+    url: '/api/order/shipping/ready',
+    method: 'get',
+  },
+  updateOrderTracking: (orderId) => ({
+    url: `/api/order/shipping/tracking/${orderId}`,
+    method: 'put',
+  }),
+  getShippingAnalytics: {
+    url: '/api/order/shipping/analytics',
+    method: 'get',
+  },
+
+  // Cart endpoints - Enhanced
+  getCartSummary: {
+    url: '/api/cart/summary',
+    method: 'get',
+  },
+  getItemsForShipping: {
+    url: '/api/cart/items-for-shipping',
+    method: 'get',
+  },
+
+  // Additional helper endpoints
+  getShippingDashboardStats: {
+    url: '/api/shipping/dashboard/stats',
+    method: 'get',
+  },
+  getCategoriesForShipping: {
+    url: '/api/shipping/categories/for-assignment',
+    method: 'get',
+  },
+  getProductsForShipping: {
+    url: '/api/shipping/products/for-assignment',
+    method: 'get',
   },
 };
 
