@@ -499,6 +499,80 @@ const SummaryApi = {
     url: '/api/shipping/products/for-assignment',
     method: 'get',
   },
+  getBlogCategories: {
+    url: '/api/blog/public/categories',
+    method: 'get',
+  },
+  getBlogTags: {
+    url: '/api/blog/public/tags',
+    method: 'get',
+  },
+  getBlogPosts: {
+    url: '/api/blog/public/posts',
+    method: 'get',
+  },
+  getBlogPostBySlug: {
+    url: '/api/blog/public/posts/slug',
+    method: 'get',
+  },
+  getFeaturedBlogPosts: {
+    url: '/api/blog/public/posts/featured',
+    method: 'get',
+  },
+  getRelatedBlogPosts: {
+    url: '/api/blog/public/posts',
+    method: 'get',
+  },
+
+  // Admin blog endpoints
+  adminCreateBlogCategory: {
+    url: '/api/blog/admin/categories',
+    method: 'post',
+  },
+  adminGetBlogCategories: {
+    url: '/api/blog/admin/categories',
+    method: 'get',
+  },
+  adminUpdateBlogCategory: {
+    url: '/api/blog/admin/categories',
+    method: 'put',
+  },
+  adminDeleteBlogCategory: {
+    url: '/api/blog/admin/categories',
+    method: 'delete',
+  },
+  adminCreateBlogTag: {
+    url: '/api/blog/admin/tags',
+    method: 'post',
+  },
+  adminGetBlogTags: {
+    url: '/api/blog/admin/tags',
+    method: 'get',
+  },
+  adminUpdateBlogTag: {
+    url: '/api/blog/admin/tags',
+    method: 'put',
+  },
+  adminDeleteBlogTag: {
+    url: '/api/blog/admin/tags',
+    method: 'delete',
+  },
+  adminCreateBlogPost: {
+    url: '/api/blog/admin/posts',
+    method: 'post',
+  },
+  adminGetBlogPosts: {
+    url: '/api/blog/admin/posts',
+    method: 'get',
+  },
+  adminUpdateBlogPost: {
+    url: '/api/blog/admin/posts',
+    method: 'put',
+  },
+  adminDeleteBlogPost: {
+    url: '/api/blog/admin/posts',
+    method: 'delete',
+  },
 };
 
 export default SummaryApi;

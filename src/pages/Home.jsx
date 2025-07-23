@@ -1,3 +1,4 @@
+//client/src/pages/Home.jsx
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
@@ -7,6 +8,7 @@ import BrandMarquee from '../components/BrandMarquee';
 import NewArrivalsSection from '../components/NewArrivalsSection';
 import FeaturedProductsSection from '../components/FeaturedProductsSection';
 import CategoryFilterSection from '../components/CategoryFilterSection';
+import BlogSection from '../components/BlogSection';
 import PopularProductsSection from '../components/PopularProductsSection';
 import CoffeeOriginSection from '../components/CoffeeOriginSection';
 import Axios from '../utils/Axios';
@@ -147,8 +149,11 @@ const Home = () => {
       {/* Featured Products Section */}
       <FeaturedProductsSection />
 
+      {/* Blog Section */}
+      <BlogSection />
+
       {/* Coffee Origin Section */}
-      <CoffeeOriginSection />
+      {/* <CoffeeOriginSection /> */}
 
       {/* Popular Products Section */}
       <PopularProductsSection />

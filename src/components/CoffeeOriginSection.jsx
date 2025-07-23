@@ -1,3 +1,4 @@
+// client/src/components/CoffeeOriginSection.jsx sample code in homepage of section blog card
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';

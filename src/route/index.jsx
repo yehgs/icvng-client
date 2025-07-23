@@ -1,3 +1,4 @@
+//client/src/route/index.jsx
 import { createBrowserRouter } from 'react-router-dom';
 import App from '../App';
 import Home from '../pages/Home';
@@ -20,7 +21,6 @@ import SubCategoryPage from '../pages/SubCategoryPage';
 import UploadProduct from '../pages/UploadProduct';
 import ProductAdmin from '../pages/ProductAdmin';
 import AdminPermision from '../layouts/AdminPermision';
-import ProductListPage from '../pages/ProductListPage';
 import ProductDisplayPage from '../pages/ProductDisplayPage';
 import CartMobile from '../pages/CartMobile';
 import CheckoutPage from '../pages/CheckoutPage';
@@ -40,6 +40,7 @@ import WishListPage from '../pages/WishListPage.jsx';
 import ComparePage from '../pages/ComparePage.jsx';
 import BankTransferInstructionsPage from '../pages/BankTransferInstructionPage.jsx';
 import TrackingPage from '../pages/TrackingPage';
+import SingleBlogPost from '../pages/SingleBlogPost.jsx';
 
 const router = createBrowserRouter([
   {
@@ -107,6 +108,10 @@ const router = createBrowserRouter([
       {
         path: 'product/:product',
         element: <ProductDisplayPage />,
+      },
+      {
+        path: 'blog/:slug',
+        element: <SingleBlogPost />,
       },
       {
         path: 'cart',
