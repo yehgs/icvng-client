@@ -33,9 +33,9 @@ const BankTransferInstructionsPage = () => {
   // Default bank details
   const defaultBankDetails = {
     bankName: 'First Bank of Nigeria',
-    accountName: 'I-Coffee Nigeria Limited',
-    accountNumber: '2013456789',
-    sortCode: '011',
+    accountName: 'ITALIAN COFFEE VENTURE',
+    accountNumber: '2040490784',
+    sortCode: '011152484',
     reference: `ICOFFEE-${Date.now()}`,
   };
 
@@ -631,10 +631,6 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
               <div className="text-center">
                 <p className="font-semibold">Customer Support</p>
                 <p className="text-sm text-green-100">24/7 Available</p>
-              </div>
-              <div className="text-center">
-                <p className="font-semibold">Free Delivery</p>
-                <p className="text-sm text-green-100">On all orders</p>
               </div>
             </div>
           </div>

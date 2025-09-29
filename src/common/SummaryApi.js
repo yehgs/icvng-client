@@ -232,7 +232,7 @@ const SummaryApi = {
     method: 'get',
   },
 
-  // Public tracking endpoints
+  // Public tracking endpoints i dont think the tracking number is implemented yet
   trackShipment: (trackingNumber) => ({
     url: `/api/shipping/track/${trackingNumber}`,
     method: 'get',

@@ -52,6 +52,7 @@ const ProductDisplayPage = () => {
     ratings: [],
     averageRating: 0,
     price: 0,
+    btcPrice: 0,
     price3weeksDelivery: 0,
     price5weeksDelivery: 0,
     discount: 0,
@@ -75,6 +76,13 @@ const ProductDisplayPage = () => {
   // Get currency context
   const { formatPrice, selectedCurrency } = useCurrency();
   const { getEffectiveStock } = useGlobalContext();
+
+  // Helper function to get the primary price (btcPrice first, then price)
+  const getPrimaryPrice = (product) => {
+    return product.btcPrice && product.btcPrice > 0
+      ? product.btcPrice
+      : product.price;
+  };
 
   // Get effective online stock
   const getEffectiveOnlineStock = () => {
@@ -155,32 +163,35 @@ const ProductDisplayPage = () => {
     return stars;
   };
 
-  // Get selected price based on delivery option
+  // Get selected price based on delivery option - uses btcPrice first
   const getSelectedPrice = () => {
     switch (selectedPriceOption) {
       case '3weeks':
-        return data.price3weeksDelivery || data.price;
+        return data.price3weeksDelivery || getPrimaryPrice(data);
       case '5weeks':
-        return data.price5weeksDelivery || data.price;
+        return data.price5weeksDelivery || getPrimaryPrice(data);
       default:
-        return data.price;
+        return getPrimaryPrice(data);
     }
   };
 
-  // Price options configuration
+  // Price options configuration - prioritize btcPrice over price
   const priceOptions = [
-    // Only show regular price if online stock > 0
-    ...(getEffectiveOnlineStock() > 0
+    // Always show regular price if it exists
+    ...(getPrimaryPrice(data) > 0
       ? [
           {
             key: 'regular',
             label: 'Regular Price',
-            price: data.price,
+            price: getPrimaryPrice(data), // Use btcPrice or price
             icon: <FaShippingFast className="text-green-600" />,
             color: 'text-green-600',
             bgColor: 'bg-green-50',
             borderColor: 'border-green-200',
-            description: 'Standard delivery (2-3 business days)',
+            description:
+              getEffectiveOnlineStock() > 0
+                ? 'Standard delivery (2-3 business days)'
+                : 'Available for order - Admin will process',
             delivery: 'Fast Delivery',
           },
         ]
@@ -231,6 +242,7 @@ const ProductDisplayPage = () => {
     data.warehouseStock,
     data.stock,
     data.price,
+    data.btcPrice,
     data.price3weeksDelivery,
     data.price5weeksDelivery,
   ]);
@@ -352,7 +364,7 @@ const ProductDisplayPage = () => {
             )}
 
             {/* Price Options */}
-            {data.productAvailability ? (
+            {data.productAvailability && priceOptions.length > 0 ? (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800">
                   Choose Delivery Option
@@ -419,11 +431,6 @@ const ProductDisplayPage = () => {
                       ({getEffectiveOnlineStock()} units available)
                     </span>
                   )}
-                  {/* {getEffectiveOnlineStock() === 0 && (
-                    <span className="ml-2 text-orange-600 text-xs">
-                      (Order will be processed by admin)
-                    </span>
-                  )} */}
                 </div>
 
                 {/* Discount Badge */}

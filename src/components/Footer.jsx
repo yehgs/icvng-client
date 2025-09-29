@@ -247,10 +247,10 @@ const Footer = () => {
                   <li className="flex items-center">
                     <Mail size={20} className="mr-2 flex-shrink-0" />
                     <a
-                      href="mailto:customercare@italiancoffee.ng"
+                      href="mailto:customercare@i-coffee.ng"
                       className="decoration-none"
                     >
-                      customercare@italiancoffee.ng
+                      customercare@i-coffee.ng
                     </a>
                   </li>
                 </ul>

@@ -51,6 +51,13 @@ const CardProduct = ({ data }) => {
   // Get effective stock for display purposes only
   const effectiveStock = getEffectiveStock(data);
 
+  // Helper function to get the primary price (btcPrice first, then price)
+  const getPrimaryPrice = (product) => {
+    return product.btcPrice && product.btcPrice > 0
+      ? product.btcPrice
+      : product.price;
+  };
+
   // Check if item is in cart (both guest and logged-in)
   useEffect(() => {
     if (isLoggedIn) {
@@ -71,7 +78,7 @@ const CardProduct = ({ data }) => {
       if (guestItem) {
         setIsInCart(true);
         setQuickCartQty(guestItem.quantity);
-        setCartItemId(null); // Guest cart doesn't have _id
+        setCartItemId(null);
       } else {
         setIsInCart(false);
         setQuickCartQty(0);
@@ -83,7 +90,6 @@ const CardProduct = ({ data }) => {
   // Listen for currency changes
   useEffect(() => {
     const handleCurrencyChange = () => {
-      // Force re-render when currency changes
       setSelectedPriceOption(selectedPriceOption);
     };
 
@@ -143,14 +149,16 @@ const CardProduct = ({ data }) => {
     return badges.slice(0, 2);
   };
 
-  // Get pricing options - all options available regardless of stock
+  // Get pricing options - prioritize btcPrice over price (behind the scenes)
   const getPricingOptions = () => {
     const options = [];
 
-    // Regular price option
-    if (data.price > 0) {
+    // Get primary price (btcPrice or price) - user sees same "Regular" label
+    const primaryPrice = getPrimaryPrice(data);
+
+    if (primaryPrice > 0) {
       options.push({
-        price: data.price,
+        price: primaryPrice,
         label: 'Regular',
         icon: <FaShippingFast className="w-3 h-3" />,
         color: 'text-green-600',
@@ -186,7 +194,7 @@ const CardProduct = ({ data }) => {
     return options;
   };
 
-  // Quick add to cart functionality - no stock validation
+  // Quick add to cart functionality - uses btcPrice first
   const handleQuickAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -200,7 +208,7 @@ const CardProduct = ({ data }) => {
           productId: data._id,
           quantity: 1,
           priceOption: selectedPriceOption || 'regular',
-          price: data.price,
+          price: getPrimaryPrice(data), // Use btcPrice or price
           discount: data.discount || 0,
           name: data.name,
           image: data.image,
@@ -300,7 +308,6 @@ const CardProduct = ({ data }) => {
     }
   };
 
-  // Handle share functionality
   const handleShare = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -336,12 +343,10 @@ const CardProduct = ({ data }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // If not in cart, add it first
     if (!isInCart) {
       await handleQuickAddToCart(e);
     }
 
-    // Navigate to checkout
     navigate('/checkout');
   };
 
@@ -350,8 +355,6 @@ const CardProduct = ({ data }) => {
   const intensityInfo = getIntensityLevel();
   const badges = getProductBadges();
 
-  //product details
-  // Format product type for display
   const formatProductType = (type) => {
     if (!type) return '';
     return type
@@ -427,7 +430,6 @@ const CardProduct = ({ data }) => {
           </div>
         )}
 
-        {/* Stock display - informational only */}
         {effectiveStock > 0 && (
           <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
             {effectiveStock <= 5
@@ -435,12 +437,6 @@ const CardProduct = ({ data }) => {
               : `Stock: ${effectiveStock}`}
           </div>
         )}
-
-        {/* {effectiveStock === 0 && (
-          <div className="absolute bottom-1 right-1 bg-orange-600 text-white text-xs px-2 py-1 rounded">
-            Out of Stock
-          </div>
-        )} */}
       </Link>
 
       {/* Product Name */}
@@ -476,25 +472,6 @@ const CardProduct = ({ data }) => {
           ))}
         </div>
       )}
-
-      {/* Coffee-specific details */}
-      {/* {data.productType === 'COFFEE' && intensityInfo && (
-        <div className="my-1 space-y-1">
-          <div className="flex items-center text-xs">
-            <span className="mr-1 font-medium">Intensity:</span>
-            <div className="flex space-x-0.5">
-              {[...Array(intensityInfo.total)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-2 h-2 rounded-full ${
-                    i < intensityInfo.level ? 'bg-amber-800' : 'bg-gray-200'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-      )} */}
 
       {/* Product Details */}
       <div className="text-xs text-gray-500 my-1">{getProductInfo()}</div>
@@ -551,7 +528,6 @@ const CardProduct = ({ data }) => {
       {/* Action Buttons */}
       <div className="mt-auto pt-2 border-t space-y-2">
         {!data.productAvailability ? (
-          /* Product not available for production */
           <button
             onClick={() => setShowRequestModal(true)}
             className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-3 rounded-md transition flex items-center justify-center border border-yellow-300"
@@ -561,7 +537,6 @@ const CardProduct = ({ data }) => {
           </button>
         ) : (
           <>
-            {/* Quick Add to Cart / Quantity Controls */}
             {!isInCart ? (
               <button
                 onClick={handleQuickAddToCart}
@@ -613,13 +588,6 @@ const CardProduct = ({ data }) => {
               <FaShoppingCart className="mr-2" />
               Quick Checkout
             </button>
-
-            {/* Stock Information */}
-            {/* {effectiveStock === 0 && (
-              <div className="text-xs text-center text-orange-600">
-                Currently out of stock - Order will be processed by admin
-              </div>
-            )} */}
           </>
         )}
       </div>
