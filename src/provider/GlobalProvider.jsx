@@ -145,31 +145,55 @@ const GlobalProvider = ({ children }) => {
 
     let updatedCart;
     if (existingItemIndex !== -1) {
+      // Item with this price option exists, update quantity
       updatedCart = [...guestCart];
       updatedCart[existingItemIndex].quantity += productData.quantity;
     } else {
-      updatedCart = [...guestCart, productData];
+      // New item with this price option
+      const itemToAdd = {
+        ...productData,
+        priceOption: productData.priceOption || 'regular',
+      };
+      updatedCart = [...guestCart, itemToAdd];
     }
 
     saveGuestCart(updatedCart);
   };
 
-  const updateGuestCartItem = (productId, quantity) => {
+  const updateGuestCartItem = (
+    productId,
+    quantity,
+    priceOption = 'regular'
+  ) => {
     if (quantity <= 0) {
-      removeFromGuestCart(productId);
+      removeFromGuestCart(productId, priceOption);
       return;
     }
 
-    const updatedCart = guestCart.map((item) =>
-      item.productId === productId ? { ...item, quantity } : item
-    );
+    const updatedCart = guestCart.map((item) => {
+      // Match by BOTH productId AND priceOption
+      const matches =
+        item.productId === productId &&
+        (item.priceOption || 'regular') === priceOption;
+
+      if (matches) {
+        return { ...item, quantity };
+      }
+      return item;
+    });
+
     saveGuestCart(updatedCart);
   };
 
-  const removeFromGuestCart = (productId) => {
-    const updatedCart = guestCart.filter(
-      (item) => item.productId !== productId
-    );
+  const removeFromGuestCart = (productId, priceOption = 'regular') => {
+    const updatedCart = guestCart.filter((item) => {
+      // Remove only items matching BOTH productId AND priceOption
+      return !(
+        item.productId === productId &&
+        (item.priceOption || 'regular') === priceOption
+      );
+    });
+
     saveGuestCart(updatedCart);
   };
 
@@ -631,17 +655,42 @@ const GlobalProvider = ({ children }) => {
       qty += quantity;
 
       if (isLoggedIn && item.productId) {
-        // Logged-in user cart - use selectedPrice if available
-        const price =
-          item.selectedPrice ||
-          pricewithDiscount(item.productId.price, item.productId.discount);
+        // Logged-in user cart - use selectedPrice from backend
+        const price = item.selectedPrice || item.productId.price;
         tPrice += price * quantity;
-        notDiscountPrice += item.productId.price * quantity;
-      } else if (!isLoggedIn && item.price) {
-        // Guest cart
-        const price = pricewithDiscount(item.price, item.discount || 0);
+
+        // Get original price based on priceOption for discount calculation
+        let originalPrice = item.productId.price;
+        const priceOption = item.priceOption || 'regular';
+
+        if (
+          priceOption === '3weeks' &&
+          item.productId.price3weeksDelivery > 0
+        ) {
+          originalPrice = item.productId.price3weeksDelivery;
+        } else if (
+          priceOption === '5weeks' &&
+          item.productId.price5weeksDelivery > 0
+        ) {
+          originalPrice = item.productId.price5weeksDelivery;
+        }
+
+        notDiscountPrice += originalPrice * quantity;
+      } else if (!isLoggedIn) {
+        // Guest cart - calculate price based on priceOption
+        const priceOption = item.priceOption || 'regular';
+        let basePrice = item.price || 0;
+
+        // Get correct base price for this price option
+        if (priceOption === '3weeks' && item.price3weeksDelivery > 0) {
+          basePrice = item.price3weeksDelivery;
+        } else if (priceOption === '5weeks' && item.price5weeksDelivery > 0) {
+          basePrice = item.price5weeksDelivery;
+        }
+
+        const price = pricewithDiscount(basePrice, item.discount || 0);
         tPrice += price * quantity;
-        notDiscountPrice += item.price * quantity;
+        notDiscountPrice += basePrice * quantity;
       }
     });
 

@@ -256,8 +256,6 @@ const SummaryApi = {
     method: 'get',
   },
 
-  // ===== EXISTING ENDPOINTS =====
-
   addSlider: {
     url: '/api/slider/add',
     method: 'POST',

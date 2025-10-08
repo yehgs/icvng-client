@@ -27,11 +27,21 @@ import ProductRequestModal from './ProductRequestModal';
 const CardProduct = ({ data }) => {
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const [selectedPriceOption, setSelectedPriceOption] = useState(null);
+  const [selectedPriceOption, setSelectedPriceOption] = useState('regular');
   const [quickCartLoading, setQuickCartLoading] = useState(false);
-  const [quickCartQty, setQuickCartQty] = useState(0);
-  const [isInCart, setIsInCart] = useState(false);
-  const [cartItemId, setCartItemId] = useState(null);
+
+  // Track quantities and cart IDs for each price option separately
+  const [priceOptionQuantities, setPriceOptionQuantities] = useState({
+    regular: 0,
+    '3weeks': 0,
+    '5weeks': 0,
+  });
+
+  const [priceOptionCartIds, setPriceOptionCartIds] = useState({
+    regular: null,
+    '3weeks': null,
+    '5weeks': null,
+  });
 
   const navigate = useNavigate();
   const {
@@ -45,58 +55,68 @@ const CardProduct = ({ data }) => {
     updateGuestCartItem,
     removeFromGuestCart,
   } = useGlobalContext();
-  const { formatPrice, selectedCurrency } = useCurrency();
+  const { formatPrice } = useCurrency();
   const cartItem = useSelector((state) => state.cartItem.cart);
 
-  // Get effective stock for display purposes only
   const effectiveStock = getEffectiveStock(data);
 
-  // Helper function to get the primary price (btcPrice first, then price)
   const getPrimaryPrice = (product) => {
     return product.btcPrice && product.btcPrice > 0
       ? product.btcPrice
       : product.price;
   };
 
-  // Check if item is in cart (both guest and logged-in)
+  // Check ALL price options in cart and store their quantities
   useEffect(() => {
-    if (isLoggedIn) {
-      const cartProduct = cartItem.find(
-        (item) => item.productId._id === data._id
-      );
-      if (cartProduct) {
-        setIsInCart(true);
-        setQuickCartQty(cartProduct.quantity);
-        setCartItemId(cartProduct._id);
-      } else {
-        setIsInCart(false);
-        setQuickCartQty(0);
-        setCartItemId(null);
-      }
-    } else {
-      const guestItem = guestCart.find((item) => item.productId === data._id);
-      if (guestItem) {
-        setIsInCart(true);
-        setQuickCartQty(guestItem.quantity);
-        setCartItemId(null);
-      } else {
-        setIsInCart(false);
-        setQuickCartQty(0);
-        setCartItemId(null);
-      }
-    }
-  }, [cartItem, guestCart, data._id, isLoggedIn]);
-
-  // Listen for currency changes
-  useEffect(() => {
-    const handleCurrencyChange = () => {
-      setSelectedPriceOption(selectedPriceOption);
+    const quantities = {
+      regular: 0,
+      '3weeks': 0,
+      '5weeks': 0,
     };
 
-    window.addEventListener('currency-changed', handleCurrencyChange);
-    return () =>
-      window.removeEventListener('currency-changed', handleCurrencyChange);
-  }, [selectedPriceOption]);
+    const cartIds = {
+      regular: null,
+      '3weeks': null,
+      '5weeks': null,
+    };
+
+    if (isLoggedIn) {
+      cartItem.forEach((item) => {
+        if (item.productId._id === data._id) {
+          const option = item.priceOption || 'regular';
+          quantities[option] = item.quantity;
+          cartIds[option] = item._id;
+        }
+      });
+    } else {
+      guestCart.forEach((item) => {
+        if (item.productId === data._id) {
+          const option = item.priceOption || 'regular';
+          quantities[option] = item.quantity;
+        }
+      });
+    }
+
+    setPriceOptionQuantities(quantities);
+    setPriceOptionCartIds(cartIds);
+  }, [cartItem, guestCart, data._id, isLoggedIn]);
+
+  const getSelectedPrice = (priceOption) => {
+    const primaryPrice = getPrimaryPrice(data);
+
+    switch (priceOption) {
+      case '3weeks':
+        return data.price3weeksDelivery > 0
+          ? data.price3weeksDelivery
+          : primaryPrice;
+      case '5weeks':
+        return data.price5weeksDelivery > 0
+          ? data.price5weeksDelivery
+          : primaryPrice;
+      default:
+        return primaryPrice;
+    }
+  };
 
   const getRoastLevelInfo = () => {
     if (!data.roastLevel) return null;
@@ -124,7 +144,7 @@ const CardProduct = ({ data }) => {
 
     if (data.unit) details.push(data.unit);
     if (data.packaging) details.push(data.packaging);
-    if (data.weight) details.push(`${data.weight}g`);
+    if (data.weight) details.push(`${data.weight}kg`);
 
     return details.join(' • ');
   };
@@ -149,11 +169,9 @@ const CardProduct = ({ data }) => {
     return badges.slice(0, 2);
   };
 
-  // Get pricing options - prioritize btcPrice over price (behind the scenes)
   const getPricingOptions = () => {
     const options = [];
 
-    // Get primary price (btcPrice or price) - user sees same "Regular" label
     const primaryPrice = getPrimaryPrice(data);
 
     if (primaryPrice > 0) {
@@ -167,7 +185,6 @@ const CardProduct = ({ data }) => {
       });
     }
 
-    // 3-week delivery if price exists
     if (data.price3weeksDelivery > 0) {
       options.push({
         price: data.price3weeksDelivery,
@@ -179,7 +196,6 @@ const CardProduct = ({ data }) => {
       });
     }
 
-    // 5-week delivery if price exists
     if (data.price5weeksDelivery > 0) {
       options.push({
         price: data.price5weeksDelivery,
@@ -194,7 +210,12 @@ const CardProduct = ({ data }) => {
     return options;
   };
 
-  // Quick add to cart functionality - uses btcPrice first
+  const handlePriceOptionSelect = (e, optionKey) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSelectedPriceOption(optionKey);
+  };
+
   const handleQuickAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -202,16 +223,23 @@ const CardProduct = ({ data }) => {
     try {
       setQuickCartLoading(true);
 
+      const priceOptionToUse = selectedPriceOption || 'regular';
+      const selectedPrice = getSelectedPrice(priceOptionToUse);
+
       if (!isLoggedIn) {
-        // Handle guest cart
         const cartData = {
           productId: data._id,
           quantity: 1,
-          priceOption: selectedPriceOption || 'regular',
-          price: getPrimaryPrice(data), // Use btcPrice or price
+          priceOption: priceOptionToUse,
+          price: selectedPrice,
           discount: data.discount || 0,
           name: data.name,
           image: data.image,
+          stock: effectiveStock,
+          productAvailability: data.productAvailability,
+          price3weeksDelivery: data.price3weeksDelivery,
+          price5weeksDelivery: data.price5weeksDelivery,
+          btcPrice: data.btcPrice,
         };
 
         addToGuestCart(cartData);
@@ -223,20 +251,15 @@ const CardProduct = ({ data }) => {
       const cartData = {
         productId: data._id,
         quantity: 1,
+        priceOption: priceOptionToUse,
       };
-
-      if (selectedPriceOption) {
-        cartData.priceOption = selectedPriceOption;
-      }
 
       const response = await Axios({
         ...SummaryApi.addTocart,
         data: cartData,
       });
 
-      const { data: responseData } = response;
-
-      if (responseData.success) {
+      if (response.data.success) {
         toast.success('Added to cart');
         fetchCartItem();
         window.dispatchEvent(new CustomEvent('cart-updated'));
@@ -254,13 +277,16 @@ const CardProduct = ({ data }) => {
 
     try {
       setQuickCartLoading(true);
+      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentQty = priceOptionQuantities[currentPriceOption] || 0;
+      const cartId = priceOptionCartIds[currentPriceOption];
 
       if (!isLoggedIn) {
-        updateGuestCartItem(data._id, quickCartQty + 1);
+        updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
         toast.success('Quantity updated');
         window.dispatchEvent(new CustomEvent('cart-updated'));
       } else {
-        const response = await updateCartItem(cartItemId, quickCartQty + 1);
+        const response = await updateCartItem(cartId, currentQty + 1);
         if (response.success) {
           toast.success('Quantity updated');
           window.dispatchEvent(new CustomEvent('cart-updated'));
@@ -279,22 +305,25 @@ const CardProduct = ({ data }) => {
 
     try {
       setQuickCartLoading(true);
+      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentQty = priceOptionQuantities[currentPriceOption] || 0;
+      const cartId = priceOptionCartIds[currentPriceOption];
 
       if (!isLoggedIn) {
-        if (quickCartQty === 1) {
-          removeFromGuestCart(data._id);
+        if (currentQty === 1) {
+          removeFromGuestCart(data._id, currentPriceOption);
           toast.success('Removed from cart');
         } else {
-          updateGuestCartItem(data._id, quickCartQty - 1);
+          updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
           toast.success('Quantity updated');
         }
         window.dispatchEvent(new CustomEvent('cart-updated'));
       } else {
-        if (quickCartQty === 1) {
-          await deleteCartItem(cartItemId);
+        if (currentQty === 1) {
+          await deleteCartItem(cartId);
           toast.success('Removed from cart');
         } else {
-          const response = await updateCartItem(cartItemId, quickCartQty - 1);
+          const response = await updateCartItem(cartId, currentQty - 1);
           if (response.success) {
             toast.success('Quantity updated');
           }
@@ -343,7 +372,10 @@ const CardProduct = ({ data }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!isInCart) {
+    const currentPriceOption = selectedPriceOption || 'regular';
+    const hasItemInCart = priceOptionQuantities[currentPriceOption] > 0;
+
+    if (!hasItemInCart) {
       await handleQuickAddToCart(e);
     }
 
@@ -362,6 +394,10 @@ const CardProduct = ({ data }) => {
       .toLowerCase()
       .replace(/\b\w/g, (l) => l.toUpperCase());
   };
+
+  // Get current quantity and state for selected price option
+  const currentQty = priceOptionQuantities[selectedPriceOption] || 0;
+  const isInCart = currentQty > 0;
 
   return (
     <div className="group relative border hover:shadow-md transition-shadow duration-300 p-3 lg:p-4 flex flex-col rounded-lg cursor-pointer bg-white h-full">
@@ -502,11 +538,7 @@ const CardProduct = ({ data }) => {
                   ? `${option.bgColor} ring-2 ring-green-500`
                   : `${option.bgColor} hover:ring-1 hover:ring-gray-300`
               }`}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                setSelectedPriceOption(option.key);
-              }}
+              onClick={(e) => handlePriceOptionSelect(e, option.key)}
             >
               <div className={`flex items-center gap-1 ${option.color}`}>
                 {option.icon}
@@ -566,7 +598,7 @@ const CardProduct = ({ data }) => {
                   {quickCartLoading ? (
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700 mx-auto"></div>
                   ) : (
-                    quickCartQty
+                    currentQty
                   )}
                 </div>
 

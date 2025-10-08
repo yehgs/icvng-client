@@ -17,8 +17,6 @@ import {
   FaCreditCard,
   FaUniversity,
   FaShoppingCart,
-  FaShippingFast,
-  FaTruck,
   FaMapMarkerAlt,
   FaPlus,
   FaEdit,
@@ -82,11 +80,10 @@ const CheckoutPage = () => {
     if (selectedAddr) {
       setSelectedAddressId(selectedAddr._id);
 
-      // Add loading state feedback
       toast.loading('Loading shipping options...', { id: 'shipping-load' });
 
       try {
-        await fetchShippingMethods(selectedAddr._id);
+        await fetchShippingMethods(selectedAddr._id, totalPrice);
         toast.dismiss('shipping-load');
       } catch (error) {
         toast.dismiss('shipping-load');
@@ -94,58 +91,65 @@ const CheckoutPage = () => {
       }
     }
   };
+
   // Fetch shipping methods when address changes
-  const fetchShippingMethods = async (addressId) => {
+  const fetchShippingMethods = async (addressId, orderValue) => {
     try {
       setShippingLoading(true);
       setShippingMethods([]);
       setSelectedShippingMethod(null);
       setShippingCost(0);
 
-      // Get current cart items with product details
       const cartItems = isLoggedIn ? cartItemsList : guestCart;
 
       if (!cartItems || cartItems.length === 0) {
         throw new Error('No items in cart');
       }
 
-      // Prepare items with proper product information
+      // DEBUG: Verify orderValue
+      console.log('💰 Order Value received:', orderValue);
+      if (!orderValue || orderValue === 0) {
+        console.warn('⚠️ Warning: orderValue is 0 or undefined!');
+      }
+
+      // FIXED: Prepare items with ALL necessary data including productId and category
       const itemsForShipping = cartItems.map((item) => {
         if (isLoggedIn && item.productId) {
-          // Logged-in user cart structure
+          // Logged in user - use populated productId
           return {
             productId: item.productId._id,
             quantity: item.quantity,
-            category: item.productId.category,
+            category: item.productId.category?._id || item.productId.category, // Handle both populated and ID
             weight: item.productId.weight || 1,
             name: item.productId.name,
             priceOption: item.priceOption || 'regular',
+            selectedPrice: item.selectedPrice || item.productId.price,
           };
         } else {
-          // Guest cart structure
+          // Guest user - use direct product data
           return {
             productId: item.productId || item._id,
             quantity: item.quantity,
-            category: item.category,
+            category: item.category?._id || item.category, // Handle both object and string
             weight: item.weight || 1,
             name: item.name,
             priceOption: item.priceOption || 'regular',
+            selectedPrice: item.price,
           };
         }
       });
 
-      // Calculate total weight more accurately
       const totalWeight = itemsForShipping.reduce((total, item) => {
-        const weight = item.weight || 1; // Default 1kg if no weight specified
+        const weight = item.weight || 1;
         return total + weight * item.quantity;
       }, 0);
 
-      console.log('Fetching shipping methods for:', {
+      console.log('Fetching shipping for:', {
         addressId,
-        itemsCount: itemsForShipping.length,
+        items: itemsForShipping, // ✅ Now sending actual items
+        itemCount: itemsForShipping.length,
+        orderValue: orderValue, // ✅ Use parameter instead of closure variable
         totalWeight,
-        orderValue: totalPrice,
-        items: itemsForShipping,
       });
 
       const response = await Axios({
@@ -153,20 +157,20 @@ const CheckoutPage = () => {
         method: 'post',
         data: {
           addressId,
-          items: itemsForShipping,
-          orderValue: totalPrice,
+          items: itemsForShipping, // ✅ Send full items array
+          orderValue: orderValue, // ✅ Use parameter
           totalWeight,
         },
       });
-
-      console.log('Shipping methods response:', response.data);
 
       if (response.data.success) {
         const methods = response.data.data.methods || [];
         setShippingMethods(methods);
 
-        // Auto-select best method (free first, then cheapest)
+        console.log(`Received ${methods.length} shipping methods`);
+
         if (methods.length > 0) {
+          // Auto-select: prefer free shipping, then cheapest
           const freeMethod = methods.find((m) => m.cost === 0);
           const cheapestMethod = methods.reduce((prev, current) =>
             prev.cost < current.cost ? prev : current
@@ -182,24 +186,14 @@ const CheckoutPage = () => {
             } available`
           );
         } else {
-          toast.error(
-            'No shipping methods available for your location and items'
-          );
+          toast.error('No shipping methods available for your location');
         }
-      } else {
-        throw new Error(
-          response.data.message || 'Failed to load shipping methods'
-        );
       }
     } catch (error) {
       console.error('Error fetching shipping methods:', error);
-      const errorMessage =
-        error.response?.data?.message ||
-        error.message ||
-        'Failed to load shipping methods';
-      toast.error(errorMessage);
-
-      // Set empty state on error
+      toast.error(
+        error.response?.data?.message || 'Failed to load shipping methods'
+      );
       setShippingMethods([]);
       setSelectedShippingMethod(null);
       setShippingCost(0);
@@ -299,10 +293,39 @@ const CheckoutPage = () => {
         reference: `ICOFFEE-${Date.now()}-${user._id}`,
       };
 
+      // Prepare order items with consistent price option handling
+      const orderItems = currentCartItems.map((item) => {
+        if (isLoggedIn && item.productId) {
+          return {
+            productId: item.productId._id || item.productId,
+            quantity: item.quantity,
+            priceOption: item.priceOption || 'regular',
+            selectedPrice: item.selectedPrice,
+            name: item.productId.name,
+            image: item.productId.image,
+            category: item.productId.category,
+            weight: item.productId.weight,
+            discount: item.productId.discount,
+          };
+        } else {
+          return {
+            productId: item.productId || item._id,
+            quantity: item.quantity,
+            priceOption: item.priceOption || 'regular',
+            selectedPrice: item.price,
+            name: item.name,
+            image: item.image,
+            category: item.category,
+            weight: item.weight,
+            discount: item.discount,
+          };
+        }
+      });
+
       const response = await Axios({
         ...SummaryApi.directBankTransferOrder,
         data: {
-          list_items: currentCartItems,
+          list_items: orderItems,
           addressId: selectedAddressId,
           subTotalAmt: totalPrice,
           totalAmt: finalTotal,
@@ -381,10 +404,39 @@ const CheckoutPage = () => {
       const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
       const stripePromise = await loadStripe(stripePublicKey);
 
+      // Prepare order items with consistent price option handling
+      const orderItems = currentCartItems.map((item) => {
+        if (isLoggedIn && item.productId) {
+          return {
+            productId: item.productId._id || item.productId,
+            quantity: item.quantity,
+            priceOption: item.priceOption || 'regular',
+            selectedPrice: item.selectedPrice,
+            name: item.productId.name,
+            image: item.productId.image,
+            category: item.productId.category,
+            weight: item.productId.weight,
+            discount: item.productId.discount,
+          };
+        } else {
+          return {
+            productId: item.productId || item._id,
+            quantity: item.quantity,
+            priceOption: item.priceOption || 'regular',
+            selectedPrice: item.price,
+            name: item.name,
+            image: item.image,
+            category: item.category,
+            weight: item.weight,
+            discount: item.discount,
+          };
+        }
+      });
+
       const response = await Axios({
         ...SummaryApi.payment_url,
         data: {
-          list_items: currentCartItems,
+          list_items: orderItems,
           addressId: selectedAddressId,
           subTotalAmt: convertedTotalPrice,
           totalAmt: convertedFinalTotal,
@@ -409,10 +461,39 @@ const CheckoutPage = () => {
 
   const handleFlutterwavePayment = async () => {
     try {
+      // Prepare order items with consistent price option handling
+      const orderItems = currentCartItems.map((item) => {
+        if (isLoggedIn && item.productId) {
+          return {
+            productId: item.productId._id || item.productId,
+            quantity: item.quantity,
+            priceOption: item.priceOption || 'regular',
+            selectedPrice: item.selectedPrice,
+            name: item.productId.name,
+            image: item.productId.image,
+            category: item.productId.category,
+            weight: item.productId.weight,
+            discount: item.productId.discount,
+          };
+        } else {
+          return {
+            productId: item.productId || item._id,
+            quantity: item.quantity,
+            priceOption: item.priceOption || 'regular',
+            selectedPrice: item.price,
+            name: item.name,
+            image: item.image,
+            category: item.category,
+            weight: item.weight,
+            discount: item.discount,
+          };
+        }
+      });
+
       const response = await Axios({
         ...SummaryApi.flutterwavePaymentController,
         data: {
-          list_items: currentCartItems,
+          list_items: orderItems,
           addressId: selectedAddressId,
           subTotalAmt: totalPrice,
           totalAmt: finalTotal,
@@ -439,22 +520,18 @@ const CheckoutPage = () => {
   useEffect(() => {
     if (isLoggedIn && addressList.length > 0 && addressList[selectAddress]) {
       const selectedAddr = addressList[selectAddress];
-      if (currentCartItems.length > 0) {
-        fetchShippingMethods(selectedAddr._id);
+      if (currentCartItems.length > 0 && totalPrice > 0) {
+        fetchShippingMethods(selectedAddr._id, totalPrice);
       }
       setSelectedAddressId(selectedAddr._id);
     }
-  }, [isLoggedIn, addressList, selectAddress, currentCartItems.length]);
-
-  // Debugging: Log cart items structure
-  useEffect(() => {
-    console.log('Current cart items:', currentCartItems);
-    console.log('Is logged in:', isLoggedIn);
-    if (currentCartItems.length > 0) {
-      console.log('Sample cart item structure:', currentCartItems[0]);
-    }
-  }, [currentCartItems, isLoggedIn]);
-
+  }, [
+    isLoggedIn,
+    addressList,
+    selectAddress,
+    currentCartItems.length,
+    totalPrice,
+  ]);
   // Check if form is valid for proceeding
   const canProceed =
     currentCartItems.length > 0 && selectedAddressId && selectedShippingMethod;
@@ -574,7 +651,6 @@ const CheckoutPage = () => {
                   </button>
                 </div>
 
-                {/* Show existing addresses if logged in */}
                 {addressList.length > 0 ? (
                   <div className="grid gap-3">
                     {addressList.map((address, index) => (
@@ -669,14 +745,7 @@ const CheckoutPage = () => {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Items total</span>
-                  <div className="text-right">
-                    {notDiscountTotalPrice > totalPrice &&
-                      // You can add a discount label or similar here if needed
-                      null}
-                    <span className="font-medium">
-                      {formatPrice(totalPrice)}
-                    </span>
-                  </div>
+                  <span className="font-medium">{formatPrice(totalPrice)}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -698,8 +767,7 @@ const CheckoutPage = () => {
                 </div>
 
                 {selectedShippingMethod && (
-                  <div className="text-xs text-gray-500 flex items-center">
-                    <FaTruck className="mr-1" />
+                  <div className="text-xs text-gray-500">
                     {selectedShippingMethod.name}
                   </div>
                 )}
@@ -805,78 +873,6 @@ const CheckoutPage = () => {
                   <FaLock />
                   <span>Your information is secure and encrypted</span>
                 </div>
-              </div>
-            </div>
-
-            {/* Shipping Information */}
-            {selectedShippingMethod && (
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <FaShippingFast className="mr-2 text-green-600" />
-                  Shipping Information
-                </h4>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <div className="flex justify-between">
-                    <span>Method:</span>
-                    <span className="font-medium">
-                      {selectedShippingMethod.name}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Cost:</span>
-                    <span className="font-medium">
-                      {selectedShippingMethod.cost === 0
-                        ? 'Free'
-                        : formatPrice(selectedShippingMethod.cost)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Type:</span>
-                    <span className="font-medium capitalize">
-                      {selectedShippingMethod.type.replace('_', ' ')}
-                    </span>
-                  </div>
-                </div>
-
-                {selectedShippingMethod.type === 'pickup' &&
-                  selectedShippingMethod.pickupLocations && (
-                    <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-                      <h5 className="text-sm font-medium text-gray-700 mb-2">
-                        Pickup Locations:
-                      </h5>
-                      <div className="space-y-2">
-                        {selectedShippingMethod.pickupLocations
-                          .slice(0, 2)
-                          .map((location, index) => (
-                            <div key={index} className="text-sm text-gray-600">
-                              <p className="font-medium">{location.name}</p>
-                              <p className="text-xs">
-                                {location.address}, {location.city}
-                              </p>
-                            </div>
-                          ))}
-                      </div>
-                    </div>
-                  )}
-              </div>
-            )}
-
-            {/* Help Section */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <h4 className="font-semibold text-gray-800 mb-3">Need Help?</h4>
-              <div className="space-y-2 text-sm text-gray-600">
-                <p>• Multiple shipping options available</p>
-                <p>• 24/7 customer support</p>
-                <p>• Secure payment processing</p>
-                <p>• Order tracking available</p>
-              </div>
-              <div className="mt-4">
-                <Link
-                  to="/contact"
-                  className="text-blue-600 hover:text-blue-700 text-sm font-medium"
-                >
-                  Contact Support →
-                </Link>
               </div>
             </div>
           </div>

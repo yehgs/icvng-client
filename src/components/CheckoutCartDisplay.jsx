@@ -1,13 +1,18 @@
-//client
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { FaPlus, FaMinus, FaTrash, FaShoppingBag } from 'react-icons/fa';
+import {
+  FaPlus,
+  FaMinus,
+  FaTrash,
+  FaShoppingBag,
+  FaClock,
+  FaCalendarAlt,
+  FaShippingFast,
+} from 'react-icons/fa';
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
 import { useSelector } from 'react-redux';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import toast from 'react-hot-toast';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
 
 const CheckoutCartDisplay = () => {
@@ -18,7 +23,6 @@ const CheckoutCartDisplay = () => {
     removeFromGuestCart,
     updateCartItem,
     deleteCartItem,
-    fetchCartItem,
   } = useGlobalContext();
 
   const { formatPrice } = useCurrency();
@@ -26,6 +30,35 @@ const CheckoutCartDisplay = () => {
 
   // Get current cart based on login status
   const currentCart = isLoggedIn ? cartItem : guestCart;
+
+  // Get price option label
+  const getPriceOptionLabel = (priceOption) => {
+    const labels = {
+      regular: 'Regular Delivery',
+      '3weeks': '3 Weeks Delivery',
+      '5weeks': '5 Weeks Delivery',
+    };
+    return labels[priceOption] || 'Regular Delivery';
+  };
+
+  // Get price option color and icon
+  const getPriceOptionStyle = (priceOption) => {
+    const styles = {
+      regular: {
+        color: 'bg-green-100 text-green-700 border-green-200',
+        icon: <FaShippingFast className="text-xs" />,
+      },
+      '3weeks': {
+        color: 'bg-orange-100 text-orange-700 border-orange-200',
+        icon: <FaClock className="text-xs" />,
+      },
+      '5weeks': {
+        color: 'bg-red-100 text-red-700 border-red-200',
+        icon: <FaCalendarAlt className="text-xs" />,
+      },
+    };
+    return styles[priceOption] || styles.regular;
+  };
 
   // Handle quantity update for logged-in users
   const handleLoggedInQuantityUpdate = async (cartItemId, newQuantity) => {
@@ -46,13 +79,13 @@ const CheckoutCartDisplay = () => {
   };
 
   // Handle quantity update for guest users
-  const handleGuestQuantityUpdate = (productId, newQuantity) => {
+  const handleGuestQuantityUpdate = (productId, newQuantity, priceOption) => {
     try {
       if (newQuantity <= 0) {
-        removeFromGuestCart(productId);
+        removeFromGuestCart(productId, priceOption);
         toast.success('Item removed from cart');
       } else {
-        updateGuestCartItem(productId, newQuantity);
+        updateGuestCartItem(productId, newQuantity, priceOption);
         toast.success('Quantity updated');
       }
       window.dispatchEvent(new CustomEvent('cart-updated'));
@@ -68,7 +101,7 @@ const CheckoutCartDisplay = () => {
         await deleteCartItem(item._id);
         toast.success('Item removed from cart');
       } else {
-        removeFromGuestCart(item.productId);
+        removeFromGuestCart(item.productId, item.priceOption);
         toast.success('Item removed from cart');
       }
       window.dispatchEvent(new CustomEvent('cart-updated'));
@@ -81,36 +114,53 @@ const CheckoutCartDisplay = () => {
     }
   };
 
-  // Calculate item total
-  const calculateItemTotal = (item) => {
+  // Calculate item price based on price option
+  const getItemPrice = (item) => {
     if (isLoggedIn && item.productId) {
-      const price = pricewithDiscount(
-        item.productId.price,
-        item.productId.discount
-      );
-      return price * item.quantity;
+      // Use selectedPrice from backend (already calculated)
+      return item.selectedPrice || item.productId.price;
     } else if (!isLoggedIn) {
-      const price = pricewithDiscount(item.price, item.discount || 0);
-      return price * item.quantity;
+      // For guest cart, calculate based on price option
+      const priceOption = item.priceOption || 'regular';
+      let basePrice = item.price || 0;
+
+      if (priceOption === '3weeks' && item.price3weeksDelivery > 0) {
+        basePrice = item.price3weeksDelivery;
+      } else if (priceOption === '5weeks' && item.price5weeksDelivery > 0) {
+        basePrice = item.price5weeksDelivery;
+      }
+
+      return pricewithDiscount(basePrice, item.discount || 0);
     }
     return 0;
   };
 
-  // Get item price for display
-  const getItemPrice = (item) => {
-    if (isLoggedIn && item.productId) {
-      return pricewithDiscount(item.productId.price, item.productId.discount);
-    } else if (!isLoggedIn) {
-      return pricewithDiscount(item.price, item.discount || 0);
-    }
-    return 0;
+  // Calculate item total
+  const calculateItemTotal = (item) => {
+    const price = getItemPrice(item);
+    return price * item.quantity;
   };
 
   // Get item original price (before discount)
   const getItemOriginalPrice = (item) => {
     if (isLoggedIn && item.productId) {
-      return item.productId.price;
+      const priceOption = item.priceOption || 'regular';
+      if (priceOption === '3weeks' && item.productId.price3weeksDelivery > 0) {
+        return item.productId.price3weeksDelivery;
+      } else if (
+        priceOption === '5weeks' &&
+        item.productId.price5weeksDelivery > 0
+      ) {
+        return item.productId.price5weeksDelivery;
+      }
+      return item.productId.btcPrice || item.productId.price;
     } else if (!isLoggedIn) {
+      const priceOption = item.priceOption || 'regular';
+      if (priceOption === '3weeks' && item.price3weeksDelivery > 0) {
+        return item.price3weeksDelivery;
+      } else if (priceOption === '5weeks' && item.price5weeksDelivery > 0) {
+        return item.price5weeksDelivery;
+      }
       return item.price;
     }
     return 0;
@@ -148,7 +198,9 @@ const CheckoutCartDisplay = () => {
 
   // Get item identifier for updates
   const getItemId = (item) => {
-    return isLoggedIn ? item._id : item.productId;
+    return isLoggedIn
+      ? item._id
+      : `${item.productId}-${item.priceOption || 'regular'}`;
   };
 
   if (currentCart.length === 0) {
@@ -190,46 +242,58 @@ const CheckoutCartDisplay = () => {
           const itemName = getItemName(item);
           const itemImage = getItemImage(item);
           const itemId = getItemId(item);
+          const priceOption = item.priceOption || 'regular';
+          const priceOptionStyle = getPriceOptionStyle(priceOption);
 
           return (
             <div key={`cart-item-${itemId}-${index}`} className="p-4">
               <div className="flex items-start space-x-3">
                 {/* Product Image */}
-                <div className="flex-shrink-0 w-16 h-16 bg-gray-100 rounded-md overflow-hidden">
+                <div className="flex-shrink-0 w-20 h-20 bg-gray-100 rounded-md overflow-hidden">
                   <img
                     src={itemImage}
                     alt={itemName}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-contain p-1"
                   />
                 </div>
 
                 {/* Product Details */}
                 <div className="flex-1 min-w-0">
-                  <h4 className="text-sm font-medium text-gray-800 line-clamp-2">
+                  <h4 className="text-sm font-medium text-gray-800 line-clamp-2 mb-1">
                     {itemName}
                   </h4>
 
+                  {/* Price Option Badge */}
+                  <div className="mb-2">
+                    <span
+                      className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-md border ${priceOptionStyle.color}`}
+                    >
+                      {priceOptionStyle.icon}
+                      {getPriceOptionLabel(priceOption)}
+                    </span>
+                  </div>
+
                   {/* Price Display */}
-                  <div className="mt-1">
+                  <div className="mb-2">
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-semibold text-gray-800">
                         {formatPrice(itemPrice)}
                       </span>
                       {discount > 0 && (
-                        <span className="text-xs text-gray-500 line-through">
-                          {formatPrice(originalPrice)}
-                        </span>
-                      )}
-                      {discount > 0 && (
-                        <span className="text-xs text-green-600 font-medium">
-                          {discount}% OFF
-                        </span>
+                        <>
+                          <span className="text-xs text-gray-500 line-through">
+                            {formatPrice(originalPrice)}
+                          </span>
+                          <span className="text-xs text-green-600 font-medium">
+                            {discount}% OFF
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
 
                   {/* Quantity Controls */}
-                  <div className="mt-2 flex items-center space-x-2">
+                  <div className="flex items-center space-x-2">
                     <div className="flex items-center border border-gray-300 rounded-md">
                       <button
                         onClick={() => {
@@ -241,17 +305,18 @@ const CheckoutCartDisplay = () => {
                           } else {
                             handleGuestQuantityUpdate(
                               item.productId,
-                              item.quantity - 1
+                              item.quantity - 1,
+                              priceOption
                             );
                           }
                         }}
-                        className="p-1 hover:bg-gray-100 transition-colors"
+                        className="p-1.5 hover:bg-gray-100 transition-colors"
                         disabled={item.quantity <= 1}
                       >
                         <FaMinus className="text-xs text-gray-600" />
                       </button>
 
-                      <span className="px-3 py-1 text-sm font-medium text-gray-800 min-w-8 text-center">
+                      <span className="px-3 py-1 text-sm font-medium text-gray-800 min-w-[40px] text-center">
                         {item.quantity}
                       </span>
 
@@ -265,11 +330,12 @@ const CheckoutCartDisplay = () => {
                           } else {
                             handleGuestQuantityUpdate(
                               item.productId,
-                              item.quantity + 1
+                              item.quantity + 1,
+                              priceOption
                             );
                           }
                         }}
-                        className="p-1 hover:bg-gray-100 transition-colors"
+                        className="p-1.5 hover:bg-gray-100 transition-colors"
                       >
                         <FaPlus className="text-xs text-gray-600" />
                       </button>
@@ -278,7 +344,7 @@ const CheckoutCartDisplay = () => {
                     {/* Remove Button */}
                     <button
                       onClick={() => handleRemoveItem(item)}
-                      className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                      className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
                       title="Remove item"
                     >
                       <FaTrash className="text-xs" />
@@ -298,15 +364,6 @@ const CheckoutCartDisplay = () => {
                   )}
                 </div>
               </div>
-
-              {/* Stock Status Info (if needed) */}
-              {/* {isLoggedIn && item.productId && (
-                <div className="mt-2 text-xs text-gray-500">
-                  {item.productId.stock > 0
-                    ? `${item.productId.stock} in stock`
-                    : 'Available for order (admin processing)'}
-                </div>
-              )} */}
             </div>
           );
         })}
