@@ -691,6 +691,8 @@ const UploadProduct = () => {
             <input
               id="weight"
               type="number"
+              min="0"
+              step="0.01"
               placeholder="Enter product weight in grams"
               name="weight"
               value={data.weight}

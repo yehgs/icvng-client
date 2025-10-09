@@ -657,6 +657,8 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   type="number"
                   id="weight"
                   name="weight"
+                  min="0"
+                  step="0.01"
                   className="bg-blue-50 border w-full p-2 rounded"
                   value={data.weight}
                   onChange={handleChange}
