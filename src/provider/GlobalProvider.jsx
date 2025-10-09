@@ -591,7 +591,7 @@ const GlobalProvider = ({ children }) => {
   };
 
   const getPaymentMethod = (currency = selectedCurrency) => {
-    return currency === 'NGN' ? 'flutterwave' : 'stripe';
+    return currency === 'NGN' ? 'paystack' : 'stripe';
   };
 
   // ===== OTHER FUNCTIONS =====

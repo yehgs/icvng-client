@@ -1,3 +1,4 @@
+// src/pages/Complete CheckoutPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
 import CurrencySelector from '../components/CurrencySelector';
@@ -20,6 +21,8 @@ import {
   FaMapMarkerAlt,
   FaPlus,
   FaEdit,
+  FaInfoCircle,
+  FaShieldAlt,
 } from 'react-icons/fa';
 
 const CheckoutPage = () => {
@@ -46,6 +49,7 @@ const CheckoutPage = () => {
   const [selectedAddressId, setSelectedAddressId] = useState(null);
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [editingAddress, setEditingAddress] = useState(null);
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
 
   const addressList = useSelector((state) => state.addresses.addressList);
   const [selectAddress, setSelectAddress] = useState(0);
@@ -64,6 +68,10 @@ const CheckoutPage = () => {
   // Calculate final total with shipping
   const finalTotal = totalPrice + shippingCost;
   const convertedFinalTotal = convertPrice(finalTotal);
+
+  // Calculate discount amount
+  const discountAmount = notDiscountTotalPrice - totalPrice;
+  const hasDiscount = discountAmount > 0;
 
   const handleAuthSuccess = (userData) => {
     toast.success('Welcome! Your cart has been preserved.');
@@ -112,7 +120,6 @@ const CheckoutPage = () => {
         console.warn('⚠️ Warning: orderValue is 0 or undefined!');
       }
 
-      // FIXED: Prepare items with ALL necessary data including productId and category
       const itemsForShipping = cartItems.map((item) => {
         if (isLoggedIn && item.productId) {
           // Logged in user - use populated productId
@@ -272,55 +279,21 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (!selectedShippingMethod) {
-      toast.error('Please select a shipping method');
-      return;
-    }
-
-    if (!selectedAddressId) {
-      toast.error('Please select a delivery address');
-      return;
-    }
+    if (!validateCheckout()) return;
 
     try {
       setLoading(true);
 
       const bankDetails = {
-        bankName: 'First Bank of Nigeria',
-        accountName: 'I-Coffee Nigeria Limited',
-        accountNumber: '2013456789',
-        sortCode: '011',
+        bankName: import.meta.env.VITE_BANK_NAME || 'First Bank of Nigeria',
+        accountName:
+          import.meta.env.VITE_BANK_ACCOUNT_NAME || 'I-Coffee Nigeria Limited',
+        accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || '2013456789',
+        sortCode: import.meta.env.VITE_BANK_SORT_CODE || '011',
         reference: `ICOFFEE-${Date.now()}-${user._id}`,
       };
 
-      // Prepare order items with consistent price option handling
-      const orderItems = currentCartItems.map((item) => {
-        if (isLoggedIn && item.productId) {
-          return {
-            productId: item.productId._id || item.productId,
-            quantity: item.quantity,
-            priceOption: item.priceOption || 'regular',
-            selectedPrice: item.selectedPrice,
-            name: item.productId.name,
-            image: item.productId.image,
-            category: item.productId.category,
-            weight: item.productId.weight,
-            discount: item.productId.discount,
-          };
-        } else {
-          return {
-            productId: item.productId || item._id,
-            quantity: item.quantity,
-            priceOption: item.priceOption || 'regular',
-            selectedPrice: item.price,
-            name: item.name,
-            image: item.image,
-            category: item.category,
-            weight: item.weight,
-            discount: item.discount,
-          };
-        }
-      });
+      const orderItems = prepareOrderItems();
 
       const response = await Axios({
         ...SummaryApi.directBankTransferOrder,
@@ -361,7 +334,27 @@ const CheckoutPage = () => {
     }
   };
 
-  // Handle Online Payment
+  // Validate checkout form
+  const validateCheckout = () => {
+    if (!selectedShippingMethod) {
+      toast.error('Please select a shipping method');
+      return false;
+    }
+
+    if (!selectedAddressId) {
+      toast.error('Please select a delivery address');
+      return false;
+    }
+
+    if (!agreeToTerms) {
+      toast.error('Please agree to the terms and conditions');
+      return false;
+    }
+
+    return true;
+  };
+
+  // Handle Online Payment (Paystack or Stripe)
   const handleOnlinePayment = async () => {
     if (!isLoggedIn) {
       toast.error('Please login to complete your order');
@@ -369,32 +362,24 @@ const CheckoutPage = () => {
       return;
     }
 
-    if (!selectedShippingMethod) {
-      toast.error('Please select a shipping method');
-      return;
-    }
-
-    if (!selectedAddressId) {
-      toast.error('Please select a delivery address');
-      return;
-    }
+    if (!validateCheckout()) return;
 
     try {
       setLoading(true);
-      toast.loading('Processing payment...');
+      toast.loading('Processing payment...', { id: 'payment-processing' });
 
       const paymentMethod = getPaymentMethod();
 
       if (paymentMethod === 'stripe') {
         await handleStripePayment();
       } else {
-        await handleFlutterwavePayment();
+        await handlePaystackPayment();
       }
     } catch (error) {
       AxiosToastError(error);
     } finally {
       setLoading(false);
-      toast.dismiss();
+      toast.dismiss('payment-processing');
     }
   };
 
@@ -402,36 +387,13 @@ const CheckoutPage = () => {
     try {
       const { loadStripe } = await import('@stripe/stripe-js');
       const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-      const stripePromise = await loadStripe(stripePublicKey);
 
-      // Prepare order items with consistent price option handling
-      const orderItems = currentCartItems.map((item) => {
-        if (isLoggedIn && item.productId) {
-          return {
-            productId: item.productId._id || item.productId,
-            quantity: item.quantity,
-            priceOption: item.priceOption || 'regular',
-            selectedPrice: item.selectedPrice,
-            name: item.productId.name,
-            image: item.productId.image,
-            category: item.productId.category,
-            weight: item.productId.weight,
-            discount: item.productId.discount,
-          };
-        } else {
-          return {
-            productId: item.productId || item._id,
-            quantity: item.quantity,
-            priceOption: item.priceOption || 'regular',
-            selectedPrice: item.price,
-            name: item.name,
-            image: item.image,
-            category: item.category,
-            weight: item.weight,
-            discount: item.discount,
-          };
-        }
-      });
+      if (!stripePublicKey) {
+        throw new Error('Stripe configuration missing');
+      }
+
+      const stripePromise = await loadStripe(stripePublicKey);
+      const orderItems = prepareOrderItems();
 
       const response = await Axios({
         ...SummaryApi.payment_url,
@@ -450,48 +412,23 @@ const CheckoutPage = () => {
       const { data: responseData } = response;
 
       if (responseData.success) {
-        stripePromise.redirectToCheckout({ sessionId: responseData.id });
+        await stripePromise.redirectToCheckout({ sessionId: responseData.id });
+
         if (fetchCartItem) fetchCartItem();
         if (fetchOrder) fetchOrder();
       }
     } catch (error) {
+      console.error('Stripe payment error:', error);
       throw error;
     }
   };
 
-  const handleFlutterwavePayment = async () => {
+  const handlePaystackPayment = async () => {
     try {
-      // Prepare order items with consistent price option handling
-      const orderItems = currentCartItems.map((item) => {
-        if (isLoggedIn && item.productId) {
-          return {
-            productId: item.productId._id || item.productId,
-            quantity: item.quantity,
-            priceOption: item.priceOption || 'regular',
-            selectedPrice: item.selectedPrice,
-            name: item.productId.name,
-            image: item.productId.image,
-            category: item.productId.category,
-            weight: item.productId.weight,
-            discount: item.productId.discount,
-          };
-        } else {
-          return {
-            productId: item.productId || item._id,
-            quantity: item.quantity,
-            priceOption: item.priceOption || 'regular',
-            selectedPrice: item.price,
-            name: item.name,
-            image: item.image,
-            category: item.category,
-            weight: item.weight,
-            discount: item.discount,
-          };
-        }
-      });
+      const orderItems = prepareOrderItems();
 
       const response = await Axios({
-        ...SummaryApi.flutterwavePaymentController,
+        ...SummaryApi.paystackPaymentController,
         data: {
           list_items: orderItems,
           addressId: selectedAddressId,
@@ -500,18 +437,21 @@ const CheckoutPage = () => {
           shippingCost: shippingCost,
           shippingMethodId: selectedShippingMethod._id,
           currency: selectedCurrency,
-          paymentMethod: 'flutterwave',
+          paymentMethod: 'paystack',
         },
       });
 
       const { data: responseData } = response;
 
       if (responseData.success) {
+        // Redirect to Paystack payment page
         window.location.href = responseData.paymentUrl;
+
         if (fetchCartItem) fetchCartItem();
         if (fetchOrder) fetchOrder();
       }
     } catch (error) {
+      console.error('Paystack payment error:', error);
       throw error;
     }
   };
@@ -622,14 +562,16 @@ const CheckoutPage = () => {
                 {selectedCurrency === 'NGN' ? (
                   <div className="space-y-1">
                     <p className="text-green-600">
-                      ✓ Flutterwave payment available
+                      ✓ Paystack payment available (Cards, Bank Transfer)
                     </p>
                     <p className="text-blue-600">
                       ✓ Direct Bank Transfer available
                     </p>
                   </div>
                 ) : (
-                  <p className="text-blue-600">✓ Stripe payment available</p>
+                  <p className="text-blue-600">
+                    ✓ Stripe payment available (International cards)
+                  </p>
                 )}
               </div>
             </div>
@@ -811,7 +753,7 @@ const CheckoutPage = () => {
                     <>
                       <FaCreditCard className="mr-2" />
                       {selectedCurrency === 'NGN'
-                        ? 'Pay with Flutterwave'
+                        ? 'Pay with Paystack'
                         : 'Pay with Stripe'}
                       {!isLoggedIn && ' (Login Required)'}
                     </>

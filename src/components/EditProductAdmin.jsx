@@ -651,7 +651,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
               {/* weight */}
               <div className="grid gap-1">
                 <label htmlFor="weight" className="font-medium">
-                  Weight
+                  Weight (kg)
                 </label>
                 <input
                   type="number"

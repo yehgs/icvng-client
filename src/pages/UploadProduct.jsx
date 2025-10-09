@@ -686,7 +686,7 @@ const UploadProduct = () => {
 
           <div className="grid gap-1">
             <label htmlFor="weight" className="font-medium">
-              Weight
+              Weight (kg)
             </label>
             <input
               id="weight"

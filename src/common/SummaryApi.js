@@ -1,4 +1,4 @@
-// client/src/common/SummaryApi.js - Updated with shipping endpoints
+// client/src/common/SummaryApi.js
 export const baseURL = import.meta.env.VITE_API_URL;
 
 const SummaryApi = {
@@ -220,7 +220,7 @@ const SummaryApi = {
     method: 'delete',
   },
 
-  // ===== NEW SHIPPING ENDPOINTS =====
+  // ===== UPDATED PAYMENT ENDPOINTS =====
 
   // Public shipping endpoints for checkout
   calculateShippingCost: {
@@ -232,25 +232,30 @@ const SummaryApi = {
     method: 'get',
   },
 
-  // Public tracking endpoints i dont think the tracking number is implemented yet
+  // Public tracking endpoints
   trackShipment: (trackingNumber) => ({
     url: `/api/shipping/track/${trackingNumber}`,
     method: 'get',
   }),
 
-  // Payment and Order endpoints (updated to include shipping)
+  // Payment and Order endpoints (updated to include Paystack)
   directBankTransferOrder: {
     url: '/api/order/direct-bank-transfer',
     method: 'post',
   },
+
+  // Stripe payment for international currencies
   payment_url: {
     url: '/api/order/checkout',
     method: 'post',
   },
-  flutterwavePaymentController: {
-    url: '/api/order/flutterwave-payment',
+
+  // Paystack payment for NGN
+  paystackPaymentController: {
+    url: '/api/order/paystack-payment',
     method: 'post',
   },
+
   getOrderItems: {
     url: '/api/order/order-list',
     method: 'get',
@@ -365,6 +370,10 @@ const SummaryApi = {
     url: `/api/wishlist/check/${productId}`,
     method: 'GET',
   }),
+  migrateGuestWishlist: {
+    url: '/api/wishlist/migrate-guest',
+    method: 'POST',
+  },
 
   // Compare endpoints
   addToCompare: {
@@ -391,6 +400,10 @@ const SummaryApi = {
     url: `/api/compare/check/${productId}`,
     method: 'GET',
   }),
+  migrateGuestCompare: {
+    url: '/api/compare/migrate-guest',
+    method: 'POST',
+  },
 
   // Exchange Rate endpoints
   getExchangeRates: {
@@ -433,6 +446,7 @@ const SummaryApi = {
     url: '/api/exchange-rates/bulk-update',
     method: 'POST',
   },
+
   // Address endpoints - Enhanced
   getNigerianLocationData: {
     url: '/api/address/nigeria-locations',
@@ -497,6 +511,8 @@ const SummaryApi = {
     url: '/api/shipping/products/for-assignment',
     method: 'get',
   },
+
+  // Blog endpoints
   getBlogCategories: {
     url: '/api/blog/public/categories',
     method: 'get',
