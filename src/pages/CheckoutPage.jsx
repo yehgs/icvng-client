@@ -23,6 +23,7 @@ import {
   FaEdit,
   FaInfoCircle,
   FaShieldAlt,
+  FaCheckCircle,
 } from 'react-icons/fa';
 
 const CheckoutPage = () => {
@@ -126,7 +127,7 @@ const CheckoutPage = () => {
           return {
             productId: item.productId._id,
             quantity: item.quantity,
-            category: item.productId.category?._id || item.productId.category, // Handle both populated and ID
+            category: item.productId.category?._id || item.productId.category,
             weight: item.productId.weight || 1,
             name: item.productId.name,
             priceOption: item.priceOption || 'regular',
@@ -137,7 +138,7 @@ const CheckoutPage = () => {
           return {
             productId: item.productId || item._id,
             quantity: item.quantity,
-            category: item.category?._id || item.category, // Handle both object and string
+            category: item.category?._id || item.category,
             weight: item.weight || 1,
             name: item.name,
             priceOption: item.priceOption || 'regular',
@@ -153,9 +154,9 @@ const CheckoutPage = () => {
 
       console.log('Fetching shipping for:', {
         addressId,
-        items: itemsForShipping, // ✅ Now sending actual items
+        items: itemsForShipping,
         itemCount: itemsForShipping.length,
-        orderValue: orderValue, // ✅ Use parameter instead of closure variable
+        orderValue: orderValue,
         totalWeight,
       });
 
@@ -164,8 +165,8 @@ const CheckoutPage = () => {
         method: 'post',
         data: {
           addressId,
-          items: itemsForShipping, // ✅ Send full items array
-          orderValue: orderValue, // ✅ Use parameter
+          items: itemsForShipping,
+          orderValue: orderValue,
           totalWeight,
         },
       });
@@ -264,6 +265,27 @@ const CheckoutPage = () => {
     } catch (error) {
       AxiosToastError(error);
     }
+  };
+
+  // Prepare order items helper function
+  const prepareOrderItems = () => {
+    return currentCartItems.map((item) => {
+      if (isLoggedIn && item.productId) {
+        return {
+          productId: item.productId._id,
+          quantity: item.quantity,
+          priceOption: item.priceOption || 'regular',
+          selectedPrice: item.selectedPrice || item.productId.price,
+        };
+      } else {
+        return {
+          productId: item.productId || item._id,
+          quantity: item.quantity,
+          priceOption: item.priceOption || 'regular',
+          selectedPrice: item.price,
+        };
+      }
+    });
   };
 
   // Handle Direct Bank Transfer
@@ -472,9 +494,13 @@ const CheckoutPage = () => {
     currentCartItems.length,
     totalPrice,
   ]);
+
   // Check if form is valid for proceeding
   const canProceed =
-    currentCartItems.length > 0 && selectedAddressId && selectedShippingMethod;
+    currentCartItems.length > 0 &&
+    selectedAddressId &&
+    selectedShippingMethod &&
+    agreeToTerms;
 
   if (currentCartItems.length === 0) {
     return (
@@ -674,6 +700,69 @@ const CheckoutPage = () => {
                 methods={shippingMethods}
               />
             )}
+
+            {/* Terms and Conditions */}
+            {isLoggedIn && (
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="agreeToTerms"
+                    checked={agreeToTerms}
+                    onChange={(e) => setAgreeToTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                  />
+                  <label
+                    htmlFor="agreeToTerms"
+                    className="flex-1 cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <FaShieldAlt className="text-blue-600" />
+                      <span className="font-medium text-gray-800">
+                        Terms and Conditions
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-600">
+                      I agree to the{' '}
+                      <Link
+                        to="/terms-and-conditions"
+                        target="_blank"
+                        className="text-blue-600 hover:text-blue-700 underline"
+                      >
+                        Terms and Conditions
+                      </Link>
+                      ,{' '}
+                      <Link
+                        to="/privacy-policy"
+                        target="_blank"
+                        className="text-blue-600 hover:text-blue-700 underline"
+                      >
+                        Privacy Policy
+                      </Link>
+                      , and{' '}
+                      <Link
+                        to="/refund-policy"
+                        target="_blank"
+                        className="text-blue-600 hover:text-blue-700 underline"
+                      >
+                        Refund Policy
+                      </Link>
+                    </p>
+                  </label>
+                </div>
+                {!agreeToTerms &&
+                  selectedAddressId &&
+                  selectedShippingMethod && (
+                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+                      <FaInfoCircle className="text-yellow-600 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-yellow-800">
+                        Please agree to the terms and conditions to proceed with
+                        your order
+                      </p>
+                    </div>
+                  )}
+              </div>
+            )}
           </div>
 
           {/* Right Column - Order Summary & Payment */}
@@ -804,6 +893,8 @@ const CheckoutPage = () => {
                       ? 'Please select a delivery address'
                       : !selectedShippingMethod
                       ? 'Please select a shipping method'
+                      : !agreeToTerms
+                      ? 'Please agree to the terms and conditions'
                       : 'Please complete all required fields'}
                   </p>
                 </div>
