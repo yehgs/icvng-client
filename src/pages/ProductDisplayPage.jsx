@@ -15,22 +15,25 @@ import {
   FaCalendarAlt,
   FaSadTear,
   FaEdit,
+  FaPlus,
+  FaMinus,
+  FaShoppingCart,
 } from 'react-icons/fa';
+import { BsCart4 } from 'react-icons/bs';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
-import AddToCartButton from '../components/AddToCartButton';
 import ProductRequestModal from '../components/ProductRequestModal';
 import EditProductAdmin from '../components/EditProductAdmin';
 import { useSelector } from 'react-redux';
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
-
-// New components
 import RoastIndicator from '../components/RoastIndicator';
 import IntensityMeter from '../components/IntensityMeter';
 import RatingReviewComponent from '../components/RatingReviewComponent';
+import toast from 'react-hot-toast';
 
 const ProductDisplayPage = () => {
   const params = useParams();
   let productId = params?.product?.split('-')?.slice(-1)[0];
+
   const [data, setData] = useState({
     name: '',
     image: [],
@@ -61,38 +64,113 @@ const ProductDisplayPage = () => {
     sku: '',
     featured: false,
   });
+
   const [image, setImage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
   const [selectedPriceOption, setSelectedPriceOption] = useState('regular');
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [cartLoading, setCartLoading] = useState(false);
 
-  // Get user role from Redux store
+  // Image magnifier state
+  const [showMagnifier, setShowMagnifier] = useState(false);
+  const [magnifierPosition, setMagnifierPosition] = useState({ x: 0, y: 0 });
+  const [imgSize, setImgSize] = useState({ width: 0, height: 0 });
+
+  // Track quantities and cart IDs for each price option separately
+  const [priceOptionQuantities, setPriceOptionQuantities] = useState({
+    regular: 0,
+    '3weeks': 0,
+    '5weeks': 0,
+  });
+
+  const [priceOptionCartIds, setPriceOptionCartIds] = useState({
+    regular: null,
+    '3weeks': null,
+    '5weeks': null,
+  });
+
   const user = useSelector((state) => state.user);
   const isAdmin = user?.role === 'ADMIN';
+  const cartItem = useSelector((state) => state.cartItem.cart);
 
-  // Get currency context
   const { formatPrice, selectedCurrency } = useCurrency();
-  const { getEffectiveStock } = useGlobalContext();
+  const {
+    getEffectiveStock,
+    fetchCartItem,
+    updateCartItem,
+    deleteCartItem,
+    isLoggedIn,
+    guestCart,
+    addToGuestCart,
+    updateGuestCartItem,
+    removeFromGuestCart,
+  } = useGlobalContext();
 
-  // Helper function to get the primary price (btcPrice first, then price)
+  const effectiveStock = getEffectiveStock(data);
+
   const getPrimaryPrice = (product) => {
     return product.btcPrice && product.btcPrice > 0
       ? product.btcPrice
       : product.price;
   };
 
-  // Get effective online stock
-  const getEffectiveOnlineStock = () => {
-    return getEffectiveStock(data);
+  // Check ALL price options in cart and store their quantities
+  useEffect(() => {
+    const quantities = {
+      regular: 0,
+      '3weeks': 0,
+      '5weeks': 0,
+    };
+
+    const cartIds = {
+      regular: null,
+      '3weeks': null,
+      '5weeks': null,
+    };
+
+    if (isLoggedIn) {
+      cartItem.forEach((item) => {
+        if (item.productId._id === data._id) {
+          const option = item.priceOption || 'regular';
+          quantities[option] = item.quantity;
+          cartIds[option] = item._id;
+        }
+      });
+    } else {
+      guestCart.forEach((item) => {
+        if (item.productId === data._id) {
+          const option = item.priceOption || 'regular';
+          quantities[option] = item.quantity;
+        }
+      });
+    }
+
+    setPriceOptionQuantities(quantities);
+    setPriceOptionCartIds(cartIds);
+  }, [cartItem, guestCart, data._id, isLoggedIn]);
+
+  const getSelectedPrice = (priceOption) => {
+    const primaryPrice = getPrimaryPrice(data);
+
+    switch (priceOption) {
+      case '3weeks':
+        return data.price3weeksDelivery > 0
+          ? data.price3weeksDelivery
+          : primaryPrice;
+      case '5weeks':
+        return data.price5weeksDelivery > 0
+          ? data.price5weeksDelivery
+          : primaryPrice;
+      default:
+        return primaryPrice;
+    }
   };
 
   // Listen for currency changes
   useEffect(() => {
     const handleCurrencyChange = () => {
-      // Force re-render when currency changes
       setSelectedPriceOption(selectedPriceOption);
     };
 
@@ -112,8 +190,6 @@ const ProductDisplayPage = () => {
 
       const { data: responseData } = response;
 
-      console.log(responseData);
-
       if (responseData.success) {
         setData(responseData.data);
       }
@@ -129,19 +205,115 @@ const ProductDisplayPage = () => {
     fetchProductDetails();
   }, [params]);
 
-  // Fixed quantity change handler
-  const handleQuantityChange = (amount) => {
-    const newQuantity = quantity + amount;
-    if (newQuantity > 0) {
-      setQuantity(newQuantity);
+  const handleAddToCart = async () => {
+    try {
+      setCartLoading(true);
+
+      const priceOptionToUse = selectedPriceOption || 'regular';
+      const selectedPrice = getSelectedPrice(priceOptionToUse);
+
+      if (!isLoggedIn) {
+        const cartData = {
+          productId: data._id,
+          quantity: 1,
+          priceOption: priceOptionToUse,
+          price: selectedPrice,
+          discount: data.discount || 0,
+          name: data.name,
+          image: data.image,
+          stock: effectiveStock,
+          productAvailability: data.productAvailability,
+          price3weeksDelivery: data.price3weeksDelivery,
+          price5weeksDelivery: data.price5weeksDelivery,
+          btcPrice: data.btcPrice,
+        };
+
+        addToGuestCart(cartData);
+        toast.success('Added to cart');
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+        return;
+      }
+
+      const cartData = {
+        productId: data._id,
+        quantity: 1,
+        priceOption: priceOptionToUse,
+      };
+
+      const response = await Axios({
+        ...SummaryApi.addTocart,
+        data: cartData,
+      });
+
+      if (response.data.success) {
+        toast.success('Added to cart');
+        fetchCartItem();
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setCartLoading(false);
     }
   };
 
-  // Handle direct quantity input
-  const handleQuantityInput = (e) => {
-    const val = parseInt(e.target.value) || 1;
-    if (val > 0) {
-      setQuantity(val);
+  const handleIncreaseQty = async () => {
+    try {
+      setCartLoading(true);
+      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentQty = priceOptionQuantities[currentPriceOption] || 0;
+      const cartId = priceOptionCartIds[currentPriceOption];
+
+      if (!isLoggedIn) {
+        updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
+        toast.success('Quantity updated');
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      } else {
+        const response = await updateCartItem(cartId, currentQty + 1);
+        if (response.success) {
+          toast.success('Quantity updated');
+          window.dispatchEvent(new CustomEvent('cart-updated'));
+        }
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setCartLoading(false);
+    }
+  };
+
+  const handleDecreaseQty = async () => {
+    try {
+      setCartLoading(true);
+      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentQty = priceOptionQuantities[currentPriceOption] || 0;
+      const cartId = priceOptionCartIds[currentPriceOption];
+
+      if (!isLoggedIn) {
+        if (currentQty === 1) {
+          removeFromGuestCart(data._id, currentPriceOption);
+          toast.success('Removed from cart');
+        } else {
+          updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
+          toast.success('Quantity updated');
+        }
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      } else {
+        if (currentQty === 1) {
+          await deleteCartItem(cartId);
+          toast.success('Removed from cart');
+        } else {
+          const response = await updateCartItem(cartId, currentQty - 1);
+          if (response.success) {
+            toast.success('Quantity updated');
+          }
+        }
+        window.dispatchEvent(new CustomEvent('cart-updated'));
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setCartLoading(false);
     }
   };
 
@@ -163,40 +335,45 @@ const ProductDisplayPage = () => {
     return stars;
   };
 
-  // Get selected price based on delivery option - uses btcPrice first
-  const getSelectedPrice = () => {
-    switch (selectedPriceOption) {
-      case '3weeks':
-        return data.price3weeksDelivery || getPrimaryPrice(data);
-      case '5weeks':
-        return data.price5weeksDelivery || getPrimaryPrice(data);
-      default:
-        return getPrimaryPrice(data);
-    }
+  // Image magnifier handlers
+  const handleMouseEnter = (e) => {
+    const elem = e.currentTarget;
+    const { width, height } = elem.getBoundingClientRect();
+    setImgSize({ width, height });
+    setShowMagnifier(true);
   };
 
-  // Price options configuration - prioritize btcPrice over price
+  const handleMouseMove = (e) => {
+    const elem = e.currentTarget;
+    const { top, left } = elem.getBoundingClientRect();
+    const x = e.pageX - left - window.pageXOffset;
+    const y = e.pageY - top - window.pageYOffset;
+    setMagnifierPosition({ x, y });
+  };
+
+  const handleMouseLeave = () => {
+    setShowMagnifier(false);
+  };
+
   const priceOptions = [
-    // Always show regular price if it exists
     ...(getPrimaryPrice(data) > 0
       ? [
           {
             key: 'regular',
             label: 'Regular Price',
-            price: getPrimaryPrice(data), // Use btcPrice or price
+            price: getPrimaryPrice(data),
             icon: <FaShippingFast className="text-green-600" />,
             color: 'text-green-600',
             bgColor: 'bg-green-50',
             borderColor: 'border-green-200',
             description:
-              getEffectiveOnlineStock() > 0
+              effectiveStock > 0
                 ? 'Standard delivery (2-3 business days)'
                 : 'Available for order - Admin will process',
             delivery: 'Fast Delivery',
           },
         ]
       : []),
-    // Always show 3-week option if price exists
     ...(data.price3weeksDelivery > 0
       ? [
           {
@@ -212,7 +389,6 @@ const ProductDisplayPage = () => {
           },
         ]
       : []),
-    // Always show 5-week option if price exists
     ...(data.price5weeksDelivery > 0
       ? [
           {
@@ -230,7 +406,6 @@ const ProductDisplayPage = () => {
       : []),
   ];
 
-  // Set default selected option based on available options
   useEffect(() => {
     if (
       priceOptions.length > 0 &&
@@ -247,9 +422,8 @@ const ProductDisplayPage = () => {
     data.price5weeksDelivery,
   ]);
 
-  const handleRequestClick = () => {
-    setShowRequestModal(true);
-  };
+  const currentQty = priceOptionQuantities[selectedPriceOption] || 0;
+  const isInCart = currentQty > 0;
 
   if (loading) {
     return (
@@ -258,6 +432,10 @@ const ProductDisplayPage = () => {
       </div>
     );
   }
+
+  const magnifierHeight = 350;
+  const magnifierWidth = 350;
+  const zoomLevel = 3.5;
 
   return (
     <div className="bg-gray-50">
@@ -268,7 +446,6 @@ const ProductDisplayPage = () => {
             Home / {data.productType?.toLowerCase() || 'Products'} / {data.name}
           </div>
 
-          {/* Admin Edit Button */}
           {isAdmin && (
             <button
               onClick={() => setOpenEditModal(true)}
@@ -281,15 +458,50 @@ const ProductDisplayPage = () => {
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Column - Images */}
+          {/* Left Column - Images with Magnifier */}
           <div className="space-y-4">
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="h-96 flex items-center justify-center p-4">
+              <div
+                className="h-96 flex items-center justify-center p-4 relative"
+                onMouseEnter={handleMouseEnter}
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
                 <img
                   src={data.image[image]}
                   alt={data.name}
                   className="max-h-full object-contain"
                 />
+
+                {showMagnifier && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      pointerEvents: 'none',
+                      height: `${magnifierHeight}px`,
+                      width: `${magnifierWidth}px`,
+                      top: `${magnifierPosition.y - magnifierHeight / 2}px`,
+                      left: `${magnifierPosition.x + 20}px`, // move slightly to the right of cursor like Amazon
+                      border: '2px solid rgba(0,0,0,0.1)',
+                      backgroundColor: 'white',
+                      backgroundImage: `url('${data.image[image]}')`,
+                      backgroundRepeat: 'no-repeat',
+                      backgroundSize: `${imgSize.width * zoomLevel}px ${
+                        imgSize.height * zoomLevel
+                      }px`,
+                      backgroundPositionX: `${
+                        -magnifierPosition.x * zoomLevel + magnifierWidth / 2
+                      }px`,
+                      backgroundPositionY: `${
+                        -magnifierPosition.y * zoomLevel + magnifierHeight / 2
+                      }px`,
+                      borderRadius: '8px',
+                      boxShadow: '0 8px 16px rgba(0,0,0,0.25)',
+                      zIndex: 1000,
+                      transition: 'background-position 0.05s ease-out',
+                    }}
+                  />
+                )}
               </div>
             </div>
 
@@ -316,7 +528,6 @@ const ProductDisplayPage = () => {
 
           {/* Right Column - Product Info */}
           <div className="space-y-6">
-            {/* Brand and Title */}
             <div>
               {data.brand && data.brand[0] && (
                 <div className="flex items-center">
@@ -334,19 +545,16 @@ const ProductDisplayPage = () => {
                 {data.name}
               </h1>
 
-              {/* SKU */}
               {data.sku && (
                 <p className="text-sm text-gray-500 mt-1">SKU: {data.sku}</p>
               )}
 
-              {/* Featured Badge */}
               {data.featured && (
                 <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full mt-2">
                   Featured Product
                 </span>
               )}
 
-              {/* Rating */}
               <div className="flex items-center mt-2">
                 <div className="flex mr-2">
                   {renderStars(data.averageRating)}
@@ -358,7 +566,6 @@ const ProductDisplayPage = () => {
               </div>
             </div>
 
-            {/* Short Description */}
             {data.shortDescription && (
               <p className="text-gray-600">{data.shortDescription}</p>
             )}
@@ -370,79 +577,132 @@ const ProductDisplayPage = () => {
                   Choose Delivery Option
                 </h3>
                 <div className="space-y-3">
-                  {priceOptions.map((option) => (
-                    <label
-                      key={option.key}
-                      className={`block cursor-pointer p-2 px-2 rounded-lg border-2 transition-all ${
-                        selectedPriceOption === option.key
-                          ? `${option.borderColor} ${option.bgColor}`
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="priceOption"
-                        value={option.key}
-                        checked={selectedPriceOption === option.key}
-                        onChange={(e) => setSelectedPriceOption(e.target.value)}
-                        className="sr-only"
-                      />
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-1">
-                          {option.icon}
-                          <div>
-                            <div className="text-sm text-gray-600">
-                              {option.description}
+                  {priceOptions.map((option) => {
+                    const optionQty = priceOptionQuantities[option.key] || 0;
+                    return (
+                      <div
+                        key={option.key}
+                        className={`block p-4 rounded-lg border-2 transition-all ${
+                          selectedPriceOption === option.key
+                            ? `${option.borderColor} ${option.bgColor}`
+                            : 'border-gray-200 bg-white'
+                        }`}
+                      >
+                        <label className="cursor-pointer">
+                          <input
+                            type="radio"
+                            name="priceOption"
+                            value={option.key}
+                            checked={selectedPriceOption === option.key}
+                            onChange={(e) =>
+                              setSelectedPriceOption(e.target.value)
+                            }
+                            className="sr-only"
+                          />
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-2">
+                              {option.icon}
+                              <div>
+                                <div className="text-sm text-gray-600">
+                                  {option.description}
+                                </div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div
+                                className={`text-xl font-bold ${option.color}`}
+                              >
+                                {formatPrice(
+                                  pricewithDiscount(option.price, data.discount)
+                                )}
+                              </div>
+                              {data.discount > 0 && (
+                                <div className="text-sm text-gray-500 line-through">
+                                  {formatPrice(option.price)}
+                                </div>
+                              )}
                             </div>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className={`text-xl font-bold ${option.color}`}>
-                            {formatPrice(
-                              pricewithDiscount(option.price, data.discount)
-                            )}
-                          </div>
-                          {data.discount > 0 && (
-                            <div className="text-sm text-gray-500 line-through">
-                              {formatPrice(option.price)}
+                        </label>
+
+                        {/* Quantity controls for this specific price option */}
+                        {optionQty > 0 &&
+                          selectedPriceOption === option.key && (
+                            <div className="mt-3 flex items-center justify-center bg-white rounded-md border border-gray-300">
+                              <button
+                                onClick={handleDecreaseQty}
+                                className="bg-green-700 hover:bg-green-800 text-white p-2 rounded-l-md transition"
+                                disabled={cartLoading}
+                              >
+                                <FaMinus className="text-sm" />
+                              </button>
+
+                              <div className="flex-1 py-2 px-4 font-semibold text-center">
+                                {cartLoading ? (
+                                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700 mx-auto"></div>
+                                ) : (
+                                  `${optionQty} in cart`
+                                )}
+                              </div>
+
+                              <button
+                                onClick={handleIncreaseQty}
+                                className="bg-green-700 hover:bg-green-800 text-white p-2 rounded-r-md transition"
+                                disabled={cartLoading}
+                              >
+                                <FaPlus className="text-sm" />
+                              </button>
                             </div>
                           )}
-                        </div>
                       </div>
-                    </label>
-                  ))}
+                    );
+                  })}
                 </div>
 
-                {/* Stock Status */}
+                {/* Add to Cart Button - only show if current option not in cart */}
+                {!isInCart && (
+                  <button
+                    onClick={handleAddToCart}
+                    className="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-md transition flex items-center justify-center"
+                    disabled={cartLoading}
+                  >
+                    {cartLoading ? (
+                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
+                    ) : (
+                      <>
+                        <BsCart4 className="mr-2" />
+                        Add to Cart
+                      </>
+                    )}
+                  </button>
+                )}
+
                 <div className="flex items-center text-sm">
                   <span
                     className={
-                      getEffectiveOnlineStock() > 0
-                        ? 'text-green-600'
-                        : 'text-orange-600'
+                      effectiveStock > 0 ? 'text-green-600' : 'text-orange-600'
                     }
                   >
-                    {getEffectiveOnlineStock() > 0
-                      ? 'In Stock'
-                      : 'Available for Order'}
+                    {effectiveStock > 0 ? 'In Stock' : 'Available for Order'}
                   </span>
-                  {getEffectiveOnlineStock() > 0 && (
+                  {effectiveStock > 0 && (
                     <span className="ml-2 text-gray-500">
-                      ({getEffectiveOnlineStock()} units available)
+                      ({effectiveStock} units available)
                     </span>
                   )}
                 </div>
 
-                {/* Discount Badge */}
                 {data.discount > 0 && (
                   <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium inline-block">
                     {data.discount}% OFF - Save{' '}
-                    {formatPrice((getSelectedPrice() * data.discount) / 100)}
+                    {formatPrice(
+                      (getSelectedPrice(selectedPriceOption) * data.discount) /
+                        100
+                    )}
                   </div>
                 )}
               </div>
             ) : (
-              /* Product Not Available */
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                 <FaSadTear className="text-yellow-600 text-3xl mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-yellow-800 mb-2">
@@ -453,7 +713,7 @@ const ProductDisplayPage = () => {
                   be notified if it becomes available again in the future.
                 </p>
                 <button
-                  onClick={handleRequestClick}
+                  onClick={() => setShowRequestModal(true)}
                   className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition"
                 >
                   Request Notification
@@ -461,7 +721,7 @@ const ProductDisplayPage = () => {
               </div>
             )}
 
-            {/* Coffee attributes section */}
+            {/* Coffee attributes */}
             {data.productType === 'COFFEE' && (
               <div className="bg-gray-50 p-4 rounded-lg grid md:grid-cols-2 gap-4">
                 {data.weight && (
@@ -524,42 +784,6 @@ const ProductDisplayPage = () => {
               </div>
             )}
 
-            {/* Quantity and Add to Cart - Only show if product is available */}
-            {data.productAvailability && (
-              <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex items-center border rounded-md w-32">
-                  <button
-                    className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition"
-                    onClick={() => handleQuantityChange(-1)}
-                    disabled={quantity <= 1}
-                  >
-                    -
-                  </button>
-                  <input
-                    type="number"
-                    value={quantity}
-                    onChange={handleQuantityInput}
-                    className="w-full text-center py-2 focus:outline-none"
-                    min="1"
-                  />
-                  <button
-                    className="px-3 py-2 text-gray-600 hover:bg-gray-100 transition"
-                    onClick={() => handleQuantityChange(1)}
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div className="flex-1">
-                  <AddToCartButton
-                    data={data}
-                    quantity={quantity}
-                    selectedPriceOption={selectedPriceOption}
-                  />
-                </div>
-              </div>
-            )}
-
             {/* Trust badges */}
             <div className="grid grid-cols-3 gap-4 border-t border-b py-4">
               <div className="flex flex-col items-center text-center">
@@ -599,7 +823,6 @@ const ProductDisplayPage = () => {
               >
                 Description
               </button>
-              {/* Only show Additional Information tab if additionalInfo exists and is not empty */}
               {data.additionalInfo && data.additionalInfo.trim() !== '' && (
                 <button
                   className={`inline-block p-4 font-medium text-sm border-b-2 ${
@@ -675,11 +898,10 @@ const ProductDisplayPage = () => {
           </div>
         </div>
 
-        {/* Related Products would go here */}
+        {/* Related Products */}
         {data.relatedProducts && data.relatedProducts.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
-            {/* Related products grid would go here */}
             <p className="text-gray-500">
               Related products component would be rendered here
             </p>

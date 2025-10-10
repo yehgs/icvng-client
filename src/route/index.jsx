@@ -41,6 +41,9 @@ import ComparePage from '../pages/ComparePage.jsx';
 import BankTransferInstructionsPage from '../pages/BankTransferInstructionPage.jsx';
 import TrackingPage from '../pages/TrackingPage';
 import SingleBlogPost from '../pages/SingleBlogPost.jsx';
+import PaymentSuccessPage from '../pages/PaymentSuccessPage';
+import PaymentCancelPage from '../pages/PaymentCancelPage';
+import PaystackCallbackPage from '../pages/PaystackCallbackPage';
 
 const router = createBrowserRouter([
   {
@@ -140,6 +143,22 @@ const router = createBrowserRouter([
       {
         path: '*',
         element: <NotFoundPage />,
+      },
+      {
+        path: '/success',
+        element: <PaymentSuccessPage />,
+      },
+      {
+        path: '/cancel',
+        element: <PaymentCancelPage />,
+      },
+      {
+        path: '/order-success',
+        element: <PaymentSuccessPage />,
+      },
+      {
+        path: '/payment/paystack/callback',
+        element: <PaystackCallbackPage />,
       },
       {
         path: 'dashboard',
