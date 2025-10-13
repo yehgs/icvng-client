@@ -38,8 +38,13 @@ const CheckoutPage = () => {
     fetchAddress,
   } = useGlobalContext();
 
-  const { selectedCurrency, formatPrice, convertPrice, getPaymentMethod } =
-    useCurrency();
+  const {
+    selectedCurrency,
+    formatPrice,
+    convertPrice,
+    getPaymentMethod,
+    exchangeRates,
+  } = useCurrency();
 
   const [loading, setLoading] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -416,17 +421,55 @@ const CheckoutPage = () => {
 
       const stripePromise = await loadStripe(stripePublicKey);
       const orderItems = prepareOrderItems();
+      const convertedSubTotal = convertPrice(totalPrice, selectedCurrency);
+      const convertedShipping = convertPrice(shippingCost, selectedCurrency);
+      const convertedTotal = convertPrice(finalTotal, selectedCurrency);
+      const exchangeRate = exchangeRates[selectedCurrency] || 1;
+
+      console.log('💰 Sending to Stripe:', {
+        currency: selectedCurrency,
+        originalNGN: {
+          subtotal: totalPrice,
+          shipping: shippingCost,
+          total: finalTotal,
+        },
+        converted: {
+          subtotal: convertedSubTotal,
+          shipping: convertedShipping,
+          total: convertedTotal,
+        },
+        exchangeRate: exchangeRate,
+      });
 
       const response = await Axios({
         ...SummaryApi.payment_url,
         data: {
           list_items: orderItems,
           addressId: selectedAddressId,
-          subTotalAmt: convertedTotalPrice,
-          totalAmt: convertedFinalTotal,
-          shippingCost: convertedShippingCost,
+
+          // ✅ Send CONVERTED amounts (what Stripe will charge)
+          subTotalAmt: convertedSubTotal,
+          totalAmt: convertedTotal,
+          shippingCost: convertedShipping,
+
+          // ✅ Send ORIGINAL NGN amounts for record-keeping
+          originalAmounts: {
+            subTotalAmt: totalPrice,
+            shippingCost: shippingCost,
+            totalAmt: finalTotal,
+          },
+
+          // ✅ Send exchange rate info for admin records
+          exchangeRateInfo: {
+            rate: exchangeRate,
+            fromCurrency: 'NGN',
+            toCurrency: selectedCurrency,
+            rateSource: 'manual',
+            appliedAt: new Date().toISOString(),
+          },
+
           shippingMethodId: selectedShippingMethod._id,
-          currency: selectedCurrency,
+          currency: selectedCurrency, // Target currency
           paymentMethod: 'stripe',
         },
       });
@@ -434,10 +477,12 @@ const CheckoutPage = () => {
       const { data: responseData } = response;
 
       if (responseData.success) {
-        await stripePromise.redirectToCheckout({ sessionId: responseData.id });
+        await stripePromise.redirectToCheckout({
+          sessionId: responseData.id,
+        });
 
-        if (fetchCartItem) fetchCartItem();
-        if (fetchOrder) fetchOrder();
+        fetchCartItem();
+        fetchOrder();
       }
     } catch (error) {
       console.error('Stripe payment error:', error);
@@ -449,16 +494,27 @@ const CheckoutPage = () => {
     try {
       const orderItems = prepareOrderItems();
 
+      // ✅ For Paystack, everything is already in NGN
       const response = await Axios({
         ...SummaryApi.paystackPaymentController,
         data: {
           list_items: orderItems,
           addressId: selectedAddressId,
-          subTotalAmt: totalPrice,
+          subTotalAmt: totalPrice, // Already in NGN
           totalAmt: finalTotal,
           shippingCost: shippingCost,
+
+          // ✅ For NGN, exchange rate is 1:1
+          exchangeRateInfo: {
+            rate: 1,
+            fromCurrency: 'NGN',
+            toCurrency: 'NGN',
+            rateSource: 'manual',
+            appliedAt: new Date().toISOString(),
+          },
+
           shippingMethodId: selectedShippingMethod._id,
-          currency: selectedCurrency,
+          currency: 'NGN',
           paymentMethod: 'paystack',
         },
       });
@@ -466,11 +522,9 @@ const CheckoutPage = () => {
       const { data: responseData } = response;
 
       if (responseData.success) {
-        // Redirect to Paystack payment page
         window.location.href = responseData.paymentUrl;
-
-        if (fetchCartItem) fetchCartItem();
-        if (fetchOrder) fetchOrder();
+        fetchCartItem();
+        fetchOrder();
       }
     } catch (error) {
       console.error('Paystack payment error:', error);
@@ -700,69 +754,6 @@ const CheckoutPage = () => {
                 methods={shippingMethods}
               />
             )}
-
-            {/* Terms and Conditions */}
-            {isLoggedIn && (
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    id="agreeToTerms"
-                    checked={agreeToTerms}
-                    onChange={(e) => setAgreeToTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                  />
-                  <label
-                    htmlFor="agreeToTerms"
-                    className="flex-1 cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2 mb-2">
-                      <FaShieldAlt className="text-blue-600" />
-                      <span className="font-medium text-gray-800">
-                        Terms and Conditions
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-600">
-                      I agree to the{' '}
-                      <Link
-                        to="/terms-and-conditions"
-                        target="_blank"
-                        className="text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Terms and Conditions
-                      </Link>
-                      ,{' '}
-                      <Link
-                        to="/privacy-policy"
-                        target="_blank"
-                        className="text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Privacy Policy
-                      </Link>
-                      , and{' '}
-                      <Link
-                        to="/refund-policy"
-                        target="_blank"
-                        className="text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Refund Policy
-                      </Link>
-                    </p>
-                  </label>
-                </div>
-                {!agreeToTerms &&
-                  selectedAddressId &&
-                  selectedShippingMethod && (
-                    <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
-                      <FaInfoCircle className="text-yellow-600 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-yellow-800">
-                        Please agree to the terms and conditions to proceed with
-                        your order
-                      </p>
-                    </div>
-                  )}
-              </div>
-            )}
           </div>
 
           {/* Right Column - Order Summary & Payment */}
@@ -897,6 +888,69 @@ const CheckoutPage = () => {
                       ? 'Please agree to the terms and conditions'
                       : 'Please complete all required fields'}
                   </p>
+                </div>
+              )}
+
+              {/* Terms and Conditions */}
+              {isLoggedIn && (
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      id="agreeToTerms"
+                      checked={agreeToTerms}
+                      onChange={(e) => setAgreeToTerms(e.target.checked)}
+                      className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                    />
+                    <label
+                      htmlFor="agreeToTerms"
+                      className="flex-1 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-2 mb-2">
+                        <FaShieldAlt className="text-blue-600" />
+                        <span className="font-medium text-gray-800">
+                          Terms and Conditions
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600">
+                        I agree to the{' '}
+                        <Link
+                          to="/terms-and-conditions"
+                          target="_blank"
+                          className="text-blue-600 hover:text-blue-700 underline"
+                        >
+                          Terms and Conditions
+                        </Link>
+                        ,{' '}
+                        <Link
+                          to="/privacy-policy"
+                          target="_blank"
+                          className="text-blue-600 hover:text-blue-700 underline"
+                        >
+                          Privacy Policy
+                        </Link>
+                        , and{' '}
+                        <Link
+                          to="/refund-policy"
+                          target="_blank"
+                          className="text-blue-600 hover:text-blue-700 underline"
+                        >
+                          Refund Policy
+                        </Link>
+                      </p>
+                    </label>
+                  </div>
+                  {/* {!agreeToTerms &&
+                    selectedAddressId &&
+                    selectedShippingMethod && (
+                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
+                        <FaInfoCircle className="text-yellow-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-yellow-800">
+                          Please agree to the terms and conditions to proceed
+                          with your order
+                        </p>
+                      </div>
+                    )} */}
                 </div>
               )}
 

@@ -537,12 +537,16 @@ const GlobalProvider = ({ children }) => {
   };
 
   // ===== CURRENCY FUNCTIONS =====
+  // GlobalProvider.jsx - Use only manual rates
   const fetchExchangeRates = async () => {
     try {
       setCurrencyLoading(true);
       const response = await Axios({
         ...SummaryApi.getExchangeRates,
-        params: { baseCurrency: 'NGN' },
+        params: {
+          baseCurrency: 'NGN',
+          source: 'MANUAL', // ✅ Only fetch manual rates
+        },
       });
 
       const { data: responseData } = response;
@@ -550,13 +554,18 @@ const GlobalProvider = ({ children }) => {
       if (responseData.success) {
         const rates = { NGN: 1 };
         responseData.data.forEach((rate) => {
-          rates[rate.targetCurrency] = rate.rate;
+          // ✅ Only use manual rates for website
+          if (rate.source === 'MANUAL') {
+            rates[rate.targetCurrency] = rate.rate;
+          }
         });
         setExchangeRates(rates);
+
+        console.log('✅ Loaded manual exchange rates:', rates);
       }
     } catch (error) {
       console.error('Error fetching exchange rates:', error);
-      // Keep default fallback rates
+      // Use default rates if manual rates not available
     } finally {
       setCurrencyLoading(false);
     }
@@ -655,12 +664,10 @@ const GlobalProvider = ({ children }) => {
       qty += quantity;
 
       if (isLoggedIn && item.productId) {
-        // Logged-in user cart - use selectedPrice from backend
-        const price = item.selectedPrice || item.productId.price;
+        const price = item.selectedPrice || item.productId.btcPrice;
         tPrice += price * quantity;
 
-        // Get original price based on priceOption for discount calculation
-        let originalPrice = item.productId.price;
+        let originalPrice = item.productId.btcPrice;
         const priceOption = item.priceOption || 'regular';
 
         if (
@@ -677,11 +684,9 @@ const GlobalProvider = ({ children }) => {
 
         notDiscountPrice += originalPrice * quantity;
       } else if (!isLoggedIn) {
-        // Guest cart - calculate price based on priceOption
         const priceOption = item.priceOption || 'regular';
-        let basePrice = item.price || 0;
+        let basePrice = item.btcPrice || 0;
 
-        // Get correct base price for this price option
         if (priceOption === '3weeks' && item.price3weeksDelivery > 0) {
           basePrice = item.price3weeksDelivery;
         } else if (priceOption === '5weeks' && item.price5weeksDelivery > 0) {
