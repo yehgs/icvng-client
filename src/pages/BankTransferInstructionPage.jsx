@@ -32,12 +32,12 @@ const BankTransferInstructionsPage = () => {
 
   // Default bank details
   const defaultBankDetails = {
-    bankName: 'First Bank of Nigeria',
-    accountName: 'ITALIAN COFFEE VENTURE',
-    accountNumber: '2040490784',
-    sortCode: '011152484',
+    bankName: 'ZENITH BANK',
+    accountName: 'I-COFFEE VENTURES',
+    accountNumber: '1310523997',
+    sortCode: '057150042',
     reference: `ICOFFEE-${Date.now()}`,
-  };
+  }; 
 
   useEffect(() => {
     // Get data from location state or sessionStorage
