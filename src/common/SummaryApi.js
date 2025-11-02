@@ -587,6 +587,10 @@ const SummaryApi = {
     url: '/api/blog/admin/posts',
     method: 'delete',
   },
+  getFeaturedCustomers: {
+    url: '/api/customers/featured',
+    method: 'get',
+  },
 };
 
 export default SummaryApi;
