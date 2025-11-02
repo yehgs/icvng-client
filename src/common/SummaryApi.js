@@ -407,15 +407,15 @@ const SummaryApi = {
 
   // Exchange Rate endpoints
   getExchangeRates: {
-    url: '/api/exchange-rate/get',
+    url: '/api/exchange-rates/get',
     method: 'GET',
   },
   fetchRatesFromAPI: {
-    url: '/api/exchange-rate/fetch-api-rates',
+    url: '/api/exchange-rates/fetch-api-rates',
     method: 'POST',
   },
   createOrUpdateRate: {
-    url: '/api/exchange-rate/create-update',
+    url: '/api/exchange-rates/create-update',
     method: 'POST',
   },
   getSpecificRate: (baseCurrency, targetCurrency) => ({
@@ -588,7 +588,7 @@ const SummaryApi = {
     method: 'delete',
   },
   getFeaturedCustomers: {
-    url: '/api/customers/featured',
+    url: '/api/admin/customers/featured',
     method: 'get',
   },
 };
