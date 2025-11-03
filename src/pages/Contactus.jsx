@@ -14,24 +14,24 @@ import ContactForm from '../components/Contactform';
 const ContactUs = () => {
   const contactInfo = [
     {
-      icon: <FaMapMarkerAlt className="text-3xl text-green-600" />,
+      icon: <FaMapMarkerAlt className="text-3xl text-amber-600" />,
       title: 'Visit Us',
       details: ['3 Kaffi Street, Alausa', 'Ikeja, Lagos', 'Nigeria'],
     },
     {
-      icon: <FaPhone className="text-3xl text-green-600" />,
+      icon: <FaPhone className="text-3xl text-amber-600" />,
       title: 'Call Us',
       details: ['+234 803 982 7194'],
       link: 'tel:+2348039827194',
     },
     {
-      icon: <FaEnvelope className="text-3xl text-green-600" />,
+      icon: <FaEnvelope className="text-3xl text-amber-600" />,
       title: 'Email Us',
-      details: ['customercare@i-coffee.ng', 'customerservice@i-coffee.ng'],
+      details: ['customercare@i-coffee.ng',],
       link: 'mailto:customercare@i-coffee.ng',
     },
     {
-      icon: <FaClock className="text-3xl text-green-600" />,
+      icon: <FaClock className="text-3xl text-amber-600" />,
       title: 'Business Hours',
       details: [
         'Monday - Friday: 8:00 AM - 6:00 PM',
@@ -44,12 +44,12 @@ const ContactUs = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaEnvelope className="text-6xl mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Contact Us</h1>
-            <p className="text-xl text-green-100">
+            <p className="text-xl text-amber-100">
               We'd love to hear from you. Get in touch with our team!
             </p>
           </div>
@@ -74,7 +74,7 @@ const ContactUs = () => {
                     <a
                       key={idx}
                       href={info.link}
-                      className="block hover:text-green-600 transition"
+                      className="block hover:text-amber-600 transition"
                     >
                       {detail}
                     </a>
@@ -186,7 +186,7 @@ const ContactUs = () => {
       </div>
 
       {/* FAQ Teaser */}
-      <div className="bg-green-50 py-16">
+      <div className="bg-amber-50 py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">
@@ -197,7 +197,7 @@ const ContactUs = () => {
             </p>
             <a
               href="/faq"
-              className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition"
+              className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-semibold transition"
             >
               View FAQ
             </a>

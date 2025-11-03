@@ -18,25 +18,25 @@ import { Link } from 'react-router-dom';
 const ReturnPolicy = () => {
   const returnConditions = [
     {
-      icon: <FaClock className="text-3xl text-blue-600" />,
+      icon: <FaClock className="text-3xl text-amber-600" />,
       title: '7-Day Return Window',
       description:
         'Customers must return products within 7 days from the date of purchase.',
     },
     {
-      icon: <FaBox className="text-3xl text-green-600" />,
+      icon: <FaBox className="text-3xl text-amber-600" />,
       title: 'Original Condition',
       description:
         'Products must be returned in their original condition, unopened and unused with all original packaging.',
     },
     {
-      icon: <FaShieldAlt className="text-3xl text-purple-600" />,
+      icon: <FaShieldAlt className="text-3xl text-amber-600" />,
       title: 'Proof of Purchase',
       description:
         'Original receipt or proof of purchase must be provided with the return.',
     },
     {
-      icon: <FaMoneyBillWave className="text-3xl text-orange-600" />,
+      icon: <FaMoneyBillWave className="text-3xl text-amber-600" />,
       title: 'Restocking Fee',
       description:
         'A 20% handling charge per unit and transportation costs will be deducted, except for manufacturing defects.',
@@ -102,14 +102,14 @@ const ReturnPolicy = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaUndo className="text-6xl mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Return & Refund Policy
             </h1>
-            <p className="text-xl text-blue-100">
+            <p className="text-xl text-amber-100">
               Your satisfaction is our priority. Review our return policy to
               ensure a smooth experience.
             </p>
@@ -188,9 +188,9 @@ const ReturnPolicy = () => {
               {returnProcess.map((item, index) => (
                 <div
                   key={index}
-                  className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border-2 border-blue-100"
+                  className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-6 border-2 border-amber-100"
                 >
-                  <div className="bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mb-4">
+                  <div className="bg-amber-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold mb-4">
                     {item.step}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -417,7 +417,7 @@ const ReturnPolicy = () => {
           </p>
           <Link
             to="/faq"
-            className="inline-block bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-semibold transition"
+            className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-semibold transition"
           >
             View FAQ
           </Link>

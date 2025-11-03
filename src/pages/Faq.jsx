@@ -44,7 +44,7 @@ const FAQ = () => {
       category: 'ordering',
       question: 'What payment methods do you accept?',
       answer:
-        'We accept card payments (Visa, Mastercard), bank transfers, and online payment platforms. We also support multi-currency payments including BTC for international customers.',
+        'We accept card payments (Visa, Mastercard), bank transfers, and online payment platforms. We also support multi-currency payments for international customers.',
     },
     {
       category: 'ordering',
@@ -88,12 +88,12 @@ const FAQ = () => {
       answer:
         'Yes, absolutely. We use industry-standard SSL encryption and secure payment gateways. We never store your complete card details on our servers.',
     },
-    {
-      category: 'payment',
-      question: 'Can I pay with Bitcoin?',
-      answer:
-        'Yes! We accept Bitcoin (BTC) payments for both local and international customers. Select BTC as your payment method during checkout.',
-    },
+    // {
+    //   category: 'payment',
+    //   question: 'Can I pay with Bitcoin?',
+    //   answer:
+    //     'Yes! We accept Bitcoin (BTC) payments for both local and international customers. Select BTC as your payment method during checkout.',
+    // },
     {
       category: 'payment',
       question: 'Do you offer payment on delivery?',
@@ -164,7 +164,7 @@ const FAQ = () => {
       category: 'ordering',
       question: 'Do you offer wholesale or bulk pricing?',
       answer:
-        'Yes! We offer competitive wholesale prices for bulk orders. Contact us at customerservice@i-coffee.ng or call +234 803 982 7194 to discuss your requirements and pricing.',
+        'Yes! We offer competitive wholesale prices for bulk orders. Contact us at customercare@i-coffee.ng or call +234 803 982 7194 to discuss your requirements and pricing.',
     },
     {
       category: 'shipping',
@@ -196,14 +196,14 @@ const FAQ = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaQuestionCircle className="text-6xl mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Frequently Asked Questions
             </h1>
-            <p className="text-xl text-blue-100">
+            <p className="text-xl text-amber-100">
               Find answers to common questions about ordering, shipping,
               payments, and more
             </p>
@@ -221,7 +221,7 @@ const FAQ = () => {
               placeholder="Search for answers..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 text-lg"
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 text-lg"
             />
           </div>
         </div>
@@ -237,8 +237,8 @@ const FAQ = () => {
                 onClick={() => setActiveCategory(category.id)}
                 className={`flex items-center space-x-2 px-6 py-3 rounded-lg font-medium transition ${
                   activeCategory === category.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 hover:bg-blue-50'
+                    ? 'bg-amber-600 text-white'
+                    : 'bg-white text-gray-700 hover:bg-amber-50'
                 }`}
               >
                 {category.icon}
@@ -277,7 +277,7 @@ const FAQ = () => {
                       {faq.question}
                     </span>
                     {openQuestion === index ? (
-                      <FaChevronUp className="text-blue-600 flex-shrink-0" />
+                      <FaChevronUp className="text-amber-600 flex-shrink-0" />
                     ) : (
                       <FaChevronDown className="text-gray-400 flex-shrink-0" />
                     )}
@@ -333,21 +333,21 @@ const FAQ = () => {
               to="/shipping-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaShippingFast className="text-4xl text-blue-600 mx-auto mb-3" />
+              <FaShippingFast className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">Shipping Policy</h3>
             </Link>
             <Link
               to="/return-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaUndo className="text-4xl text-orange-600 mx-auto mb-3" />
+              <FaUndo className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">Return Policy</h3>
             </Link>
             <Link
               to="/terms-conditions"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaUserShield className="text-4xl text-green-600 mx-auto mb-3" />
+              <FaUserShield className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">
                 Terms & Conditions
               </h3>

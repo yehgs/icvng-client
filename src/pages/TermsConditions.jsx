@@ -13,7 +13,7 @@ import { Link } from 'react-router-dom';
 const TermsConditions = () => {
   const sections = [
     {
-      icon: <FaUserCheck className="text-3xl text-green-600" />,
+      icon: <FaUserCheck className="text-3xl text-amber-600" />,
       title: 'Account Terms',
       content: [
         'You must be at least 18 years old to use this platform',
@@ -24,7 +24,7 @@ const TermsConditions = () => {
       ],
     },
     {
-      icon: <FaHandshake className="text-3xl text-blue-600" />,
+      icon: <FaHandshake className="text-3xl text-amber-600" />,
       title: 'Use of Platform',
       content: [
         'You may use our platform only for lawful purposes',
@@ -35,7 +35,7 @@ const TermsConditions = () => {
       ],
     },
     {
-      icon: <FaShieldAlt className="text-3xl text-purple-600" />,
+      icon: <FaShieldAlt className="text-3xl text-amber-600" />,
       title: 'Product Information',
       content: [
         'We strive to provide accurate product descriptions and images',
@@ -46,7 +46,7 @@ const TermsConditions = () => {
       ],
     },
     {
-      icon: <FaBalanceScale className="text-3xl text-orange-600" />,
+      icon: <FaBalanceScale className="text-3xl text-amber-600" />,
       title: 'Pricing & Payment',
       content: [
         'All prices are listed in Nigerian Naira (₦) unless otherwise stated',
@@ -61,7 +61,7 @@ const TermsConditions = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaFileContract className="text-6xl mx-auto mb-6" />
@@ -395,11 +395,11 @@ const TermsConditions = () => {
       </div>
 
       {/* Contact Section */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white py-16">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-4">Questions About Our Terms?</h2>
-            <p className="text-xl text-green-100 mb-8">
+            <p className="text-xl text-amber-100 mb-8">
               Contact our team for clarification or assistance
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -411,7 +411,7 @@ const TermsConditions = () => {
               </Link>
               <Link
                 to="/faq"
-                className="bg-green-600 hover:bg-green-800 text-white px-8 py-3 rounded-lg font-semibold transition border-2 border-white"
+                className="bg-amber-600 hover:bg-amber-800 text-white px-8 py-3 rounded-lg font-semibold transition border-2 border-white"
               >
                 View FAQ
               </Link>
@@ -431,21 +431,21 @@ const TermsConditions = () => {
               to="/privacy-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaShieldAlt className="text-4xl text-blue-600 mx-auto mb-3" />
+              <FaShieldAlt className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">Privacy Policy</h3>
             </Link>
             <Link
               to="/return-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaHandshake className="text-4xl text-green-600 mx-auto mb-3" />
+              <FaHandshake className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">Return Policy</h3>
             </Link>
             <Link
               to="/shipping-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaBalanceScale className="text-4xl text-purple-600 mx-auto mb-3" />
+              <FaBalanceScale className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">Shipping Policy</h3>
             </Link>
           </div>

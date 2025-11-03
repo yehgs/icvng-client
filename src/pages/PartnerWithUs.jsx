@@ -25,37 +25,37 @@ const PartnerWithUs = () => {
 
   const benefits = [
     {
-      icon: <FaChartLine className="text-4xl text-green-600" />,
+      icon: <FaChartLine className="text-4xl text-amber-600" />,
       title: 'Grow Your Business',
       description:
         'Reach thousands of coffee enthusiasts across Nigeria and expand your market presence.',
     },
     {
-      icon: <FaShieldAlt className="text-4xl text-green-600" />,
+      icon: <FaShieldAlt className="text-4xl text-amber-600" />,
       title: 'Secure Platform',
       description:
         'Our platform ensures secure transactions and timely payments within 24 hours.',
     },
     {
-      icon: <FaUsers className="text-4xl text-green-600" />,
+      icon: <FaUsers className="text-4xl text-amber-600" />,
       title: 'Wide Customer Base',
       description:
         'Connect with coffee shops, businesses, and individual coffee lovers nationwide.',
     },
     {
-      icon: <FaRocket className="text-4xl text-green-600" />,
+      icon: <FaRocket className="text-4xl text-amber-600" />,
       title: 'Easy Setup',
       description:
         'Get your products online in just 15 days with our streamlined onboarding process.',
     },
     {
-      icon: <FaMoneyBillWave className="text-4xl text-green-600" />,
+      icon: <FaMoneyBillWave className="text-4xl text-amber-600" />,
       title: 'Competitive Rates',
       description:
         'Only 10% handling fee with transparent pricing and no hidden costs.',
     },
     {
-      icon: <FaTruck className="text-4xl text-green-600" />,
+      icon: <FaTruck className="text-4xl text-amber-600" />,
       title: 'Logistics Support',
       description:
         'Free delivery for orders above ₦100,000 within Lagos State.',
@@ -101,17 +101,17 @@ const PartnerWithUs = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaHandshake className="text-6xl mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Partner With I-Coffee
             </h1>
-            <p className="text-xl md:text-2xl mb-8 text-green-100">
+            <p className="text-xl md:text-2xl mb-8 text-amber-100">
               Join Nigeria's Leading Coffee Trading Platform
             </p>
-            <p className="text-lg mb-8 text-green-50">
+            <p className="text-lg mb-8 text-amber-50">
               Creating Value for Your Products - Connect with thousands of
               coffee enthusiasts and grow your business with us
             </p>
@@ -121,7 +121,7 @@ const PartnerWithUs = () => {
                   .getElementById('application-form')
                   .scrollIntoView({ behavior: 'smooth' })
               }
-              className="bg-white text-green-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-50 transition inline-flex items-center"
+              className="bg-white text-amber-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-amber-50 transition inline-flex items-center"
             >
               Apply Now <FaArrowRight className="ml-2" />
             </button>
@@ -175,7 +175,7 @@ const PartnerWithUs = () => {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
               {howItWorks.map((item, index) => (
                 <div key={index} className="text-center">
-                  <div className="bg-green-100 text-green-700 rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+                  <div className="bg-amber-100 text-amber-700 rounded-full w-16 h-16 flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                     {item.step}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-800 mb-2">
@@ -183,7 +183,7 @@ const PartnerWithUs = () => {
                   </h3>
                   <p className="text-gray-600 text-sm">{item.description}</p>
                   {index < howItWorks.length - 1 && (
-                    <FaArrowRight className="text-green-600 mx-auto mt-4 hidden lg:block" />
+                    <FaArrowRight className="text-amber-600 mx-auto mt-4 hidden lg:block" />
                   )}
                 </div>
               ))}
@@ -194,14 +194,14 @@ const PartnerWithUs = () => {
 
       {/* Key Features */}
       <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-8 md:p-12">
+        <div className="max-w-4xl mx-auto bg-gradient-to-br from-amber-50 to-blue-50 rounded-xl p-8 md:p-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
             What You Get
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {keyFeatures.map((feature, index) => (
               <div key={index} className="flex items-start space-x-3">
-                <FaCheckCircle className="text-green-600 text-xl flex-shrink-0 mt-1" />
+                <FaCheckCircle className="text-amber-600 text-xl flex-shrink-0 mt-1" />
                 <span className="text-gray-700">{feature}</span>
               </div>
             ))}
@@ -214,7 +214,7 @@ const PartnerWithUs = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="text-center mb-8">
-              <FaFileContract className="text-5xl text-green-600 mx-auto mb-4" />
+              <FaFileContract className="text-5xl text-amber-600 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
                 Supplier Agreement
               </h2>
@@ -230,35 +230,35 @@ const PartnerWithUs = () => {
                 </h3>
                 <ul className="space-y-2 text-gray-600">
                   <li className="flex items-start">
-                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-amber-600 mr-2">•</span>
                     <span>
                       10% handling fee on all orders (or agreed distributor
                       price)
                     </span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-amber-600 mr-2">•</span>
                     <span>Payment within 24 hours of customer payment</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-amber-600 mr-2">•</span>
                     <span>
                       Free delivery for orders above ₦100,000 within Lagos
                     </span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-amber-600 mr-2">•</span>
                     <span>Products must have minimum 6 months validity</span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-amber-600 mr-2">•</span>
                     <span>
                       Supplier delivers orders within 24 hours to I-Coffee
                       office
                     </span>
                   </li>
                   <li className="flex items-start">
-                    <span className="text-green-600 mr-2">•</span>
+                    <span className="text-amber-600 mr-2">•</span>
                     <span>One-year renewable contract</span>
                   </li>
                 </ul>
@@ -266,7 +266,7 @@ const PartnerWithUs = () => {
 
               <button
                 onClick={() => setShowAgreement(!showAgreement)}
-                className="text-green-600 hover:text-green-700 font-medium flex items-center"
+                className="text-amber-600 hover:text-amber-700 font-medium flex items-center"
               >
                 {showAgreement ? 'Hide' : 'View'} Full Agreement Details
                 <FaArrowRight className="ml-2" />
@@ -346,23 +346,23 @@ const PartnerWithUs = () => {
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="flex flex-col items-center">
-                <FaMapMarkerAlt className="text-3xl text-green-400 mb-3" />
+                <FaMapMarkerAlt className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Visit Us</h3>
-                <p className="text-gray-300 text-sm">
+                <p className="text-gray-300 text-sm hover:text-amber-400 duration-300">
                   3, Kaffi Street Alausa, Lagos State
                 </p>
               </div>
 
               <div className="flex flex-col items-center">
-                <FaPhone className="text-3xl text-green-400 mb-3" />
+                <FaPhone className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Call Us</h3>
-                <p className="text-gray-300 text-sm">+234 800 000 0000</p>
+                <a href='tel:+2348039827194' className="text-gray-300 text-sm hover:text-amber-400 duration-300">+234 803 982 7194</a>
               </div>
 
               <div className="flex flex-col items-center">
-                <FaEnvelope className="text-3xl text-green-400 mb-3" />
+                <FaEnvelope className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Email Us</h3>
-                <p className="text-gray-300 text-sm">partners@i-coffee.ng</p>
+                <a href='mailto:partners@i-coffee.ng' className="text-gray-300 text-sm hover:text-amber-400 duration-300">partners@i-coffee.ng</a>
               </div>
             </div>
           </div>

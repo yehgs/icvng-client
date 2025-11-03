@@ -34,7 +34,7 @@ const OurStory = () => {
       title: 'Princess Finds Her Beans',
       description:
         'Princess, a young coffee shop owner, discovered I-Coffee while searching for high-quality Arabica beans. She connected with suppliers, and her coffee shop sales soared.',
-      icon: <FaStar className="text-3xl text-green-500" />,
+      icon: <FaStar className="text-3xl text-amber-500" />,
     },
     {
       year: 'Growing Community',
@@ -54,7 +54,7 @@ const OurStory = () => {
 
   const principles = [
     {
-      icon: <FaCoffee className="text-4xl text-green-600" />,
+      icon: <FaCoffee className="text-4xl text-amber-600" />,
       title: 'Quality Above All',
       description:
         'Every product on our platform meets stringent quality standards.',
@@ -76,7 +76,7 @@ const OurStory = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="relative bg-gradient-to-r from-green-700 to-green-900 text-white overflow-hidden">
+      <div className="relative bg-gradient-to-r from-secondary-100 to-secondary-200 text-white overflow-hidden">
         <div className="absolute inset-0 opacity-10">
           <div
             className="absolute inset-0"
@@ -91,10 +91,10 @@ const OurStory = () => {
           <div className="max-w-4xl mx-auto text-center">
             <FaCoffee className="text-6xl mx-auto mb-6 animate-pulse" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">Our Story</h1>
-            <p className="text-xl md:text-2xl mb-4 text-green-100">
+            <p className="text-xl md:text-2xl mb-4 text-amber-100">
               From Vision to Reality
             </p>
-            <p className="text-lg text-green-50">
+            <p className="text-lg text-amber-50">
               The journey of how I-Coffee became Nigeria's leading coffee
               trading platform
             </p>
@@ -107,7 +107,7 @@ const OurStory = () => {
         <div className="max-w-5xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8 md:p-12">
             <div className="flex items-center mb-6">
-              <FaMapMarkerAlt className="text-4xl text-green-600 mr-4" />
+              <FaMapMarkerAlt className="text-4xl text-amber-600 mr-4" />
               <h2 className="text-3xl font-bold text-gray-800">
                 It All Started in Lagos
               </h2>
@@ -147,7 +147,7 @@ const OurStory = () => {
                 />
               </div>
               <div>
-                <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
+                <div className="inline-block bg-amber-100 text-amber-800 px-4 py-2 rounded-full text-sm font-semibold mb-4">
                   Success Story
                 </div>
                 <h2 className="text-3xl font-bold text-gray-800 mb-6">
@@ -165,7 +165,7 @@ const OurStory = () => {
                     and received her beans within days. The quality exceeded her
                     expectations, and her coffee shop's sales soared.
                   </p>
-                  <p className="leading-relaxed font-semibold text-green-700">
+                  <p className="leading-relaxed font-semibold text-amber-700">
                     Princess became a loyal I-Coffee customer, and her success
                     story inspired countless others to join our community.
                   </p>
@@ -201,7 +201,7 @@ const OurStory = () => {
                     <div className="flex items-center mb-4">
                       {item.icon}
                       <div className="ml-4">
-                        <div className="text-sm font-semibold text-green-600 uppercase tracking-wide">
+                        <div className="text-sm font-semibold text-amber-600 uppercase tracking-wide">
                           {item.year}
                         </div>
                         <h3 className="text-xl font-bold text-gray-800">
@@ -222,11 +222,11 @@ const OurStory = () => {
       </div>
 
       {/* Impact Section */}
-      <div className="bg-gradient-to-br from-green-700 to-green-900 text-white py-16">
+      <div className="bg-gradient-to-br from-secondary-100 to-secondary-200 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">Our Impact</h2>
-            <p className="text-xl text-green-100 mb-12">
+            <p className="text-xl text-amber-100 mb-12">
               As word spread, I-Coffee's community grew exponentially
             </p>
 
@@ -234,21 +234,21 @@ const OurStory = () => {
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaCoffee className="text-5xl mx-auto mb-4" />
                 <div className="text-3xl font-bold mb-2">Premium Quality</div>
-                <p className="text-green-100">
+                <p className="text-amber-100">
                   Suppliers showcase their finest beans
                 </p>
               </div>
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaUsers className="text-5xl mx-auto mb-4" />
                 <div className="text-3xl font-bold mb-2">Growing Network</div>
-                <p className="text-green-100">
+                <p className="text-amber-100">
                   Buyers discover new flavors daily
                 </p>
               </div>
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaRocket className="text-5xl mx-auto mb-4" />
                 <div className="text-3xl font-bold mb-2">Business Growth</div>
-                <p className="text-green-100">
+                <p className="text-amber-100">
                   Partners expand their reach
                 </p>
               </div>
@@ -260,7 +260,7 @@ const OurStory = () => {
       {/* Creating Value */}
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-5xl mx-auto">
-          <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-8 md:p-12">
+          <div className="bg-gradient-to-br from-amber-50 to-blue-50 rounded-xl p-8 md:p-12">
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
                 Creating Value for Your Products
@@ -341,7 +341,7 @@ const OurStory = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/shop"
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
+                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
               >
                 <FaCoffee className="mr-2" />
                 Start Shopping

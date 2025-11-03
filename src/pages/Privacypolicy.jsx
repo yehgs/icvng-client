@@ -14,7 +14,7 @@ import { Link } from 'react-router-dom';
 const PrivacyPolicy = () => {
   const dataTypes = [
     {
-      icon: <FaUserShield className="text-3xl text-blue-600" />,
+      icon: <FaUserShield className="text-3xl text-amber-600" />,
       title: 'Personal Information',
       items: [
         'Name and contact details',
@@ -25,7 +25,7 @@ const PrivacyPolicy = () => {
       ],
     },
     {
-      icon: <FaDatabase className="text-3xl text-green-600" />,
+      icon: <FaDatabase className="text-3xl text-amber-600" />,
       title: 'Transaction Data',
       items: [
         'Order history',
@@ -36,7 +36,7 @@ const PrivacyPolicy = () => {
       ],
     },
     {
-      icon: <FaCookie className="text-3xl text-orange-600" />,
+      icon: <FaCookie className="text-3xl text-amber-600" />,
       title: 'Technical Data',
       items: [
         'IP address',
@@ -87,7 +87,7 @@ const PrivacyPolicy = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-100 text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaShieldAlt className="text-6xl mx-auto mb-6" />
@@ -241,7 +241,7 @@ const PrivacyPolicy = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-8 md:p-12">
             <div className="flex items-center mb-6">
-              <FaLock className="text-4xl text-blue-600 mr-4" />
+              <FaLock className="text-4xl text-amber-600 mr-4" />
               <h2 className="text-3xl font-bold text-gray-800">
                 How We Protect Your Data
               </h2>
@@ -336,8 +336,8 @@ const PrivacyPolicy = () => {
                 key={index}
                 className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
               >
-                <div className="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FaUserShield className="text-2xl text-blue-600" />
+                <div className="bg-amber-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaUserShield className="text-2xl text-amber-600" />
                 </div>
                 <h3 className="text-lg font-bold text-gray-800 mb-2">
                   {right.title}
@@ -353,7 +353,7 @@ const PrivacyPolicy = () => {
             </p>
             <a
               href="mailto:customercare@i-coffee.ng"
-              className="text-blue-600 hover:text-blue-700 font-semibold"
+              className="text-amber-600 hover:text-amber-700 font-semibold"
             >
               customercare@i-coffee.ng
             </a>
@@ -366,7 +366,7 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <div className="flex items-center mb-6">
-              <FaCookie className="text-4xl text-orange-600 mr-4" />
+              <FaCookie className="text-4xl text-amber-600 mr-4" />
               <h2 className="text-3xl font-bold text-gray-800">
                 Cookies and Tracking
               </h2>
@@ -477,7 +477,7 @@ const PrivacyPolicy = () => {
       </div>
 
       {/* Contact Section */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white py-16">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <FaEnvelope className="text-5xl mx-auto mb-6" />
@@ -532,14 +532,14 @@ const PrivacyPolicy = () => {
               to="/terms-conditions"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaShieldAlt className="text-4xl text-blue-600 mx-auto mb-3" />
+              <FaShieldAlt className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">Terms & Conditions</h3>
             </Link>
             <Link
               to="/faq"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
-              <FaUserShield className="text-4xl text-green-600 mx-auto mb-3" />
+              <FaUserShield className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">FAQ</h3>
             </Link>
           </div>

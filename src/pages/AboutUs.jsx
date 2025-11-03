@@ -19,25 +19,25 @@ import { Link } from 'react-router-dom';
 const AboutUs = () => {
   const values = [
     {
-      icon: <FaHeart className="text-5xl text-red-500" />,
+      icon: <FaHeart className="text-5xl text-amber-600" />,
       title: 'Quality First',
       description:
         'We ensure every product meets the highest quality standards for our customers.',
     },
     {
-      icon: <FaHandshake className="text-5xl text-blue-500" />,
+      icon: <FaHandshake className="text-5xl text-amber-600" />,
       title: 'Trust & Integrity',
       description:
         'Building lasting relationships through transparency and ethical practices.',
     },
     {
-      icon: <FaLightbulb className="text-5xl text-yellow-500" />,
+      icon: <FaLightbulb className="text-5xl text-amber-600" />,
       title: 'Innovation',
       description:
         'Continuously improving our platform to serve you better with cutting-edge technology.',
     },
     {
-      icon: <FaUsers className="text-5xl text-green-500" />,
+      icon: <FaUsers className="text-5xl text-amber-600" />,
       title: 'Community',
       description:
         'Fostering a vibrant coffee community connecting suppliers and enthusiasts.',
@@ -46,22 +46,22 @@ const AboutUs = () => {
 
   const achievements = [
     {
-      icon: <FaUsers className="text-4xl text-green-600" />,
+      icon: <FaUsers className="text-4xl text-amber-600" />,
       number: '797+',
       label: 'Regular Customers',
     },
     {
-      icon: <FaCoffee className="text-4xl text-green-600" />,
+      icon: <FaCoffee className="text-4xl text-amber-600" />,
       number: '858+',
       label: 'Coffee Products',
     },
     {
-      icon: <FaHandshake className="text-4xl text-green-600" />,
+      icon: <FaHandshake className="text-4xl text-amber-600" />,
       number: '65+',
       label: 'Local & International Brands',
     },
     {
-      icon: <FaGlobeAfrica className="text-4xl text-green-600" />,
+      icon: <FaGlobeAfrica className="text-4xl text-amber-600" />,
       number: '36+',
       label: 'States Presence (Including FCT)',
     },
@@ -69,37 +69,37 @@ const AboutUs = () => {
 
   const whyChooseUs = [
     {
-      icon: <FaAward className="text-3xl text-green-600" />,
+      icon: <FaAward className="text-3xl text-amber-600" />,
       title: 'Premium Quality',
       description:
         'Only the finest coffee products from trusted suppliers make it to our platform.',
     },
     {
-      icon: <FaTruck className="text-3xl text-green-600" />,
+      icon: <FaTruck className="text-3xl text-amber-600" />,
       title: 'Fast Delivery',
       description:
         'Multiple delivery options to ensure you get your coffee when you need it.',
     },
     {
-      icon: <FaShieldAlt className="text-3xl text-green-600" />,
+      icon: <FaShieldAlt className="text-3xl text-amber-600" />,
       title: 'Secure Shopping',
       description:
         'Safe and secure payment methods with buyer protection guarantee.',
     },
     {
-      icon: <FaLeaf className="text-3xl text-green-600" />,
+      icon: <FaLeaf className="text-3xl text-amber-600" />,
       title: 'Sustainability',
       description:
         'Supporting sustainable and ethical coffee sourcing practices.',
     },
     {
-      icon: <FaStar className="text-3xl text-green-600" />,
+      icon: <FaStar className="text-3xl text-amber-600" />,
       title: 'Customer Support',
       description:
         '24/7 dedicated support team ready to assist with your queries.',
     },
     {
-      icon: <FaRocket className="text-3xl text-green-600" />,
+      icon: <FaRocket className="text-3xl text-amber-600" />,
       title: 'Easy to Use',
       description:
         'User-friendly platform designed for seamless coffee shopping experience.',
@@ -109,17 +109,17 @@ const AboutUs = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white">
         <div className="container mx-auto px-4 py-20">
           <div className="max-w-4xl mx-auto text-center">
             <FaCoffee className="text-6xl mx-auto mb-6 animate-bounce" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               About I-Coffee
             </h1>
-            <p className="text-xl md:text-2xl mb-4 text-green-100">
+            <p className="text-xl md:text-2xl mb-4 text-amber-100">
               Nigeria's Leading Coffee Trading Platform
             </p>
-            <p className="text-lg text-green-50">
+            <p className="text-lg text-amber-50">
               Creating Value for Your Products Since Our Inception
             </p>
           </div>
@@ -138,7 +138,7 @@ const AboutUs = () => {
             enthusiasts, while ensuring quality, transparency, and mutual
             growth.
           </p>
-          <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-xl p-8 border-l-4 border-green-600">
+          <div className="bg-gradient-to-r from-amber-50 to-blue-50 rounded-xl p-8 border-l-4 border-amber-600">
             <p className="text-lg text-gray-700 italic">
               "Creating Value for Your Products" - We bridge the gap between
               coffee suppliers, buyers, and aficionados, fostering a thriving
@@ -229,13 +229,13 @@ const AboutUs = () => {
       </div>
 
       {/* Achievements */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white py-16">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
               Our Impact
             </h2>
-            <p className="text-lg text-green-100">
+            <p className="text-lg text-amber-100">
               Numbers that reflect our growth and commitment
             </p>
           </div>
@@ -249,7 +249,7 @@ const AboutUs = () => {
                 <div className="text-4xl md:text-5xl font-bold mb-2">
                   {achievement.number}
                 </div>
-                <div className="text-green-100">{achievement.label}</div>
+                <div className="text-amber-100">{achievement.label}</div>
               </div>
             ))}
           </div>
@@ -291,9 +291,9 @@ const AboutUs = () => {
       <div className="bg-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
-            <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-8 md:p-12">
+            <div className="bg-gradient-to-br from-amber-50 to-blue-50 rounded-xl p-8 md:p-12">
               <div className="text-center mb-8">
-                <FaLeaf className="text-5xl text-green-600 mx-auto mb-4" />
+                <FaLeaf className="text-5xl text-amber-600 mx-auto mb-4" />
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">
                   Our Commitment to You
                 </h2>
@@ -325,7 +325,7 @@ const AboutUs = () => {
       </div>
 
       {/* Call to Action */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-16">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -338,7 +338,7 @@ const AboutUs = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/shop"
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
+                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
               >
                 <FaCoffee className="mr-2" />
                 Shop Now
