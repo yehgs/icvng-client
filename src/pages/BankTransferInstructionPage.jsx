@@ -1,4 +1,4 @@
-// client/src/pages/BankTransferInstructionPage.jsx
+// client/src/pages/BankTransferInstructionPage.jsx  sample pages
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {

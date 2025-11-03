@@ -45,6 +45,17 @@ import PaymentSuccessPage from '../pages/PaymentSuccessPage';
 import PaymentCancelPage from '../pages/PaymentCancelPage';
 import PaystackCallbackPage from '../pages/PaystackCallbackPage';
 
+// New Pages
+import PartnerWithUs from '../pages/PartnerWithUs';
+import AboutUs from '../pages/AboutUs';
+import OurStory from '../pages/Ourstory.jsx';
+import ReturnPolicy from '../pages/ReturnPolicy';
+import ContactUs from '../pages/Contactus.jsx';
+import FAQ from '../pages/Faq.jsx';
+import ShippingPolicy from '../pages/ShippingPolicy';
+import TermsConditions from '../pages/TermsConditions';
+import PrivacyPolicy from '../pages/Privacypolicy.jsx';
+
 const router = createBrowserRouter([
   {
     path: '/',
@@ -94,6 +105,45 @@ const router = createBrowserRouter([
         path: 'shop',
         element: <ShopPage />,
       },
+      // Company & Information Pages
+      {
+        path: 'partner-with-us',
+        element: <PartnerWithUs />,
+      },
+      {
+        path: 'about-us',
+        element: <AboutUs />,
+      },
+      {
+        path: 'our-story',
+        element: <OurStory />,
+      },
+      {
+        path: 'contact-us',
+        element: <ContactUs />,
+      },
+      {
+        path: 'faq',
+        element: <FAQ />,
+      },
+      // Policy Pages
+      {
+        path: 'return-policy',
+        element: <ReturnPolicy />,
+      },
+      {
+        path: 'shipping-policy',
+        element: <ShippingPolicy />,
+      },
+      {
+        path: 'terms-conditions',
+        element: <TermsConditions />,
+      },
+      {
+        path: 'privacy-policy',
+        element: <PrivacyPolicy />,
+      },
+      // Category & Product Routes
       { path: '/category/:categorySlug', element: <CategoryDetailPage /> },
       {
         path: '/category/:categorySlug/subcategory/:subcategorySlug',
@@ -116,6 +166,7 @@ const router = createBrowserRouter([
         path: 'blog/:slug',
         element: <SingleBlogPost />,
       },
+      // Cart & Checkout
       {
         path: 'cart',
         element: <CartMobile />,
@@ -144,6 +195,7 @@ const router = createBrowserRouter([
         path: '*',
         element: <NotFoundPage />,
       },
+      // Payment Routes
       {
         path: '/success',
         element: <PaymentSuccessPage />,
@@ -160,6 +212,7 @@ const router = createBrowserRouter([
         path: '/payment/paystack/callback',
         element: <PaystackCallbackPage />,
       },
+      // Dashboard Routes
       {
         path: 'dashboard',
         element: <Dashboard />,
@@ -176,7 +229,6 @@ const router = createBrowserRouter([
             path: 'address',
             element: <Address />,
           },
-
           {
             path: 'track',
             element: <TrackingPage />,
@@ -192,10 +244,6 @@ const router = createBrowserRouter([
           {
             path: 'user-request',
             element: <UserProductRequests />,
-          },
-          {
-            path: 'address',
-            element: <Address />,
           },
           {
             path: 'category',

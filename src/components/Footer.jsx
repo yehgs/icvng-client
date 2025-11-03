@@ -1,3 +1,4 @@
+// client/src/components/Footer.jsx
 import React, { useState, useEffect } from 'react';
 import {
   Facebook,
@@ -10,6 +11,7 @@ import {
   MapPin,
   ArrowRight,
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import banner1 from '../assets/web-mix-small.png';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
@@ -22,12 +24,10 @@ const PreFooter = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle subscription logic here
     toast(`Thank you for subscribing with ${email}!`);
     setEmail('');
   };
 
-  // Fetch footer banner from API
   const fetchFooterBanner = async () => {
     try {
       setLoading(true);
@@ -41,7 +41,6 @@ const PreFooter = () => {
       }
     } catch (error) {
       console.error('Error fetching footer banner:', error);
-      // Will fall back to default banner image
     } finally {
       setLoading(false);
     }
@@ -55,7 +54,6 @@ const PreFooter = () => {
     <div className="bg-gray-100 py-12">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap">
-          {/* Newsletter Subscription */}
           <div className="w-full md:w-1/2 mb-8 md:mb-0">
             <h3 className="text-xl font-bold mb-4 text-gray-800">
               Stay Updated
@@ -86,19 +84,33 @@ const PreFooter = () => {
               Follow Us
             </h3>
             <div className="flex gap-4 mt-4">
-              <a href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage">
+              <a
+                href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-amber-600 transition"
+              >
                 <Facebook size={24} />
               </a>
-              <a href="https://twitter.com/italiancoffee_v">
+              <a
+                href="https://twitter.com/italiancoffee_v"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-amber-600 transition"
+              >
                 <Twitter size={24} />
               </a>
-              <a href="https://www.instagram.com/italiancofeeventure/">
+              <a
+                href="https://www.instagram.com/italiancofeeventure/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-amber-600 transition"
+              >
                 <Instagram size={24} />
               </a>
             </div>
           </div>
 
-          {/* Footer Banner or Default Image */}
           <div className="w-full md:w-1/2">
             {loading ? (
               <div className="bg-gray-200 animate-pulse h-48 rounded"></div>
@@ -119,7 +131,6 @@ const PreFooter = () => {
                 />
               )
             ) : (
-              // Default banner when no footer banner is available
               <img
                 src={banner1}
                 alt="Coffee mix"
@@ -165,22 +176,40 @@ const Footer = () => {
             <div className="w-full md:w-2/5 mb-8 md:mb-0">
               <h3 className="text-xl font-bold mb-4">I-Coffee.ng</h3>
               <p className="mb-4">
-                Premium coffee products and accessories for coffee enthusiasts
-                and professionals.
+                Nigeria's first online coffee trading platform. Your one-stop
+                solution for premium coffee products, machines, and accessories.
               </p>
               <div className="flex space-x-4 mb-4">
-                <Facebook
-                  size={24}
-                  className="cursor-pointer hover:text-amber-300"
-                />
-                <Twitter
-                  size={24}
-                  className="cursor-pointer hover:text-amber-300"
-                />
-                <Instagram
-                  size={24}
-                  className="cursor-pointer hover:text-amber-300"
-                />
+                <a
+                  href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Facebook
+                    size={24}
+                    className="cursor-pointer hover:text-amber-300 transition"
+                  />
+                </a>
+                <a
+                  href="https://twitter.com/italiancoffee_v"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Twitter
+                    size={24}
+                    className="cursor-pointer hover:text-amber-300 transition"
+                  />
+                </a>
+                <a
+                  href="https://www.instagram.com/italiancofeeventure/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Instagram
+                    size={24}
+                    className="cursor-pointer hover:text-amber-300 transition"
+                  />
+                </a>
               </div>
             </div>
 
@@ -188,20 +217,37 @@ const Footer = () => {
             <div className="w-full md:w-1/5 mb-8 md:mb-0">
               <FooterAccordionItem title="Quick Links">
                 <ul>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    About Us
+                  <li className="mb-2">
+                    <Link
+                      to="/about-us"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      About Us
+                    </Link>
                   </li>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    Our Story
+                  <li className="mb-2">
+                    <Link
+                      to="/our-story"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Our Story
+                    </Link>
                   </li>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    Blog
+                  <li className="mb-2">
+                    <Link
+                      to="/shop"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Shop
+                    </Link>
                   </li>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    Careers
-                  </li>
-                  <li className="hover:text-amber-300 cursor-pointer">
-                    Partner With Us
+                  <li className="mb-2">
+                    <Link
+                      to="/partner-with-us"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Partner With Us
+                    </Link>
                   </li>
                 </ul>
               </FooterAccordionItem>
@@ -211,20 +257,53 @@ const Footer = () => {
             <div className="w-full md:w-1/5 mb-8 md:mb-0">
               <FooterAccordionItem title="Customer Service">
                 <ul>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    Contact Us
+                  <li className="mb-2">
+                    <Link
+                      to="/contact-us"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Contact Us
+                    </Link>
                   </li>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    FAQ
+                  <li className="mb-2">
+                    <Link
+                      to="/faq"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      FAQ
+                    </Link>
                   </li>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    Shipping Policy
+                  <li className="mb-2">
+                    <Link
+                      to="/shipping-policy"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Shipping Policy
+                    </Link>
                   </li>
-                  <li className="mb-2 hover:text-amber-300 cursor-pointer">
-                    Returns & Refunds
+                  <li className="mb-2">
+                    <Link
+                      to="/return-policy"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Returns & Refunds
+                    </Link>
                   </li>
-                  <li className="hover:text-amber-300 cursor-pointer">
-                    Terms & Conditions
+                  <li className="mb-2">
+                    <Link
+                      to="/terms-conditions"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Terms & Conditions
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/privacy-policy"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Privacy Policy
+                    </Link>
                   </li>
                 </ul>
               </FooterAccordionItem>
@@ -236,19 +315,22 @@ const Footer = () => {
                 <ul>
                   <li className="mb-3 flex items-start">
                     <MapPin size={20} className="mr-2 mt-1 flex-shrink-0" />
-                    <span>3 Kafi Street, Alausa, Ikeja, Lagos, Nigeria</span>
+                    <span>3 Kaffi Street, Alausa, Ikeja, Lagos, Nigeria</span>
                   </li>
                   <li className="mb-3 flex items-center">
                     <Phone size={20} className="mr-2 flex-shrink-0" />
-                    <a href="tel:08039827194" className="decoration-none">
-                      08039827194
+                    <a
+                      href="tel:+2348039827194"
+                      className="hover:text-amber-300 transition"
+                    >
+                      +234 803 982 7194
                     </a>
                   </li>
                   <li className="flex items-center">
                     <Mail size={20} className="mr-2 flex-shrink-0" />
                     <a
                       href="mailto:customercare@i-coffee.ng"
-                      className="decoration-none"
+                      className="hover:text-amber-300 transition"
                     >
                       customercare@i-coffee.ng
                     </a>
@@ -267,10 +349,15 @@ const Footer = () => {
               <div className="flex items-center">
                 <span className="mr-2 text-sm">Payment Methods:</span>
                 <div className="flex space-x-2">
-                  {/* Payment method icons - using placeholders */}
-                  <div className="bg-white rounded-md h-6 w-10"></div>
-                  <div className="bg-white rounded-md h-6 w-10"></div>
-                  <div className="bg-white rounded-md h-6 w-10"></div>
+                  <div className="bg-white rounded-md h-6 w-10 flex items-center justify-center text-xs text-gray-800 font-bold">
+                    VISA
+                  </div>
+                  <div className="bg-white rounded-md h-6 w-10 flex items-center justify-center text-xs text-gray-800 font-bold">
+                    MC
+                  </div>
+                  <div className="bg-white rounded-md h-6 w-10 flex items-center justify-center text-xs text-gray-800 font-bold">
+                    BTC
+                  </div>
                 </div>
               </div>
             </div>
