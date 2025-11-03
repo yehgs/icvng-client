@@ -47,7 +47,7 @@ import PaystackCallbackPage from '../pages/PaystackCallbackPage';
 
 // New Pages
 import PartnerWithUs from '../pages/PartnerWithUs';
-import AboutUs from '../pages/AboutUs';
+import AboutUs from '../pages/AboutUs.jsx';
 import OurStory from '../pages/Ourstory.jsx';
 import ReturnPolicy from '../pages/ReturnPolicy';
 import ContactUs from '../pages/Contactus.jsx';

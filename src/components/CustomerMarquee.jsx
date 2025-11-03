@@ -98,16 +98,16 @@ const CustomerMarquee = ({ customerCount = 20 }) => {
     : customers;
 
   // Don't render anything if loading or no customers
-  if (loading) {
-    return (
-      <div className="w-full bg-gray-50 py-1 rounded-lg overflow-hidden">
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-800"></div>
-          <span className="ml-3 text-gray-600">Loading customers...</span>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="w-full bg-gray-50 py-1 rounded-lg overflow-hidden">
+  //       <div className="flex items-center justify-center py-8">
+  //         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-800"></div>
+  //         <span className="ml-3 text-gray-600">Loading customers...</span>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   // Don't render if there are no customers
   if (!loading && customers.length === 0) {
