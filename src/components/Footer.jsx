@@ -16,6 +16,7 @@ import banner1 from '../assets/web-mix-small.png';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
+import payment from '../assets/payment.svg'
 
 const PreFooter = () => {
   const [email, setEmail] = useState('');
@@ -346,18 +347,10 @@ const Footer = () => {
               <div className="text-sm mb-4 md:mb-0">
                 © 2025 I-Coffee.ng. All rights reserved.
               </div>
-              <div className="flex items-center">
-                <span className="mr-2 text-sm">Payment Methods:</span>
-                <div className="flex space-x-2">
-                  <div className="bg-white rounded-md h-6 w-10 flex items-center justify-center text-xs text-gray-800 font-bold">
-                    VISA
-                  </div>
-                  <div className="bg-white rounded-md h-6 w-10 flex items-center justify-center text-xs text-gray-800 font-bold">
-                    MC
-                  </div>
-                  <div className="bg-white rounded-md h-6 w-10 flex items-center justify-center text-xs text-gray-800 font-bold">
-                    BTC
-                  </div>
+              <div className="flex flex-col items-center">
+                <span className="mr-2 text-sm space-x-2">Payment Methods:</span>
+                <div className="">
+                <img src={payment} alt="payment" className='h-10' />
                 </div>
               </div>
             </div>

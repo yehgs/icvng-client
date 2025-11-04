@@ -16,14 +16,14 @@ import { Link } from 'react-router-dom';
 const ShippingPolicy = () => {
   const shippingMethods = [
     {
-      icon: <FaShippingFast className="text-4xl text-green-600" />,
+      icon: <FaShippingFast className="text-4xl text-amber-600" />,
       name: 'Standard Shipping',
       delivery: '3-7 business days (domestic)',
       intDelivery: '7-14 business days (international)',
       description: 'Reliable delivery at affordable rates',
     },
     {
-      icon: <FaTruck className="text-4xl text-blue-600" />,
+      icon: <FaTruck className="text-4xl text-amber-600" />,
       name: 'Express Shipping',
       delivery: '1-3 business days (domestic)',
       intDelivery: '3-5 business days (international)',
@@ -36,13 +36,13 @@ const ShippingPolicy = () => {
       zone: 'Lagos State',
       time: '1-3 business days',
       freeShipping: '₦100,000+',
-      color: 'green',
+      color: 'amber',
     },
     {
       zone: 'Other Nigerian States',
       time: '3-7 business days',
       freeShipping: 'N/A',
-      color: 'blue',
+      color: 'amber',
     },
     {
       zone: 'West Africa (Benin, Togo, Cameroon)',
@@ -55,14 +55,14 @@ const ShippingPolicy = () => {
   return (
     <div className="bg-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-green-700 to-green-900 text-white">
+      <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white">
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaTruck className="text-6xl mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
               Shipping Policy
             </h1>
-            <p className="text-xl text-green-100">
+            <p className="text-xl text-amber-100">
               Fast, reliable delivery across Nigeria and West Africa with a 97%
               success rate
             </p>
@@ -75,19 +75,19 @@ const ShippingPolicy = () => {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-6">
             <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-green-600 mb-2">97%</div>
+              <div className="text-4xl font-bold text-amber-600 mb-2">97%</div>
               <div className="text-gray-600">Daily Success Rate</div>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-blue-600 mb-2">5</div>
+              <div className="text-4xl font-bold text-amber-600 mb-2">5</div>
               <div className="text-gray-600">Delivery Vehicles</div>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-purple-600 mb-2">36</div>
+              <div className="text-4xl font-bold text-amber-600 mb-2">36</div>
               <div className="text-gray-600">States Coverage</div>
             </div>
             <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-orange-600 mb-2">4</div>
+              <div className="text-4xl font-bold text-amber-600 mb-2">4</div>
               <div className="text-gray-600">Countries Served</div>
             </div>
           </div>
@@ -118,7 +118,7 @@ const ShippingPolicy = () => {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex items-start">
-                    <FaClock className="text-green-600 mr-3 mt-1 flex-shrink-0" />
+                    <FaClock className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-gray-800">
                         Domestic Delivery
@@ -127,7 +127,7 @@ const ShippingPolicy = () => {
                     </div>
                   </div>
                   <div className="flex items-start">
-                    <FaGlobeAfrica className="text-blue-600 mr-3 mt-1 flex-shrink-0" />
+                    <FaGlobeAfrica className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                     <div>
                       <div className="font-semibold text-gray-800">
                         International Delivery
@@ -163,10 +163,10 @@ const ShippingPolicy = () => {
                 <div
                   key={index}
                   className={`rounded-xl p-6 border-2 ${
-                    zone.color === 'green'
-                      ? 'border-green-200 bg-green-50'
-                      : zone.color === 'blue'
-                      ? 'border-blue-200 bg-blue-50'
+                    zone.color === 'amber'
+                      ? 'border-amber-200 bg-amber-50'
+                      : zone.color === 'amber'
+                      ? 'border-amber-200 bg-amber-50'
                       : 'border-purple-200 bg-purple-50'
                   }`}
                 >
@@ -180,7 +180,7 @@ const ShippingPolicy = () => {
                     </div>
                     {zone.freeShipping !== 'N/A' && (
                       <div className="flex items-center">
-                        <FaCheckCircle className="text-green-600 mr-2" />
+                        <FaCheckCircle className="text-amber-600 mr-2" />
                         <span className="text-gray-700">
                           Free shipping on {zone.freeShipping}
                         </span>
@@ -199,7 +199,7 @@ const ShippingPolicy = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <div className="flex items-center mb-6">
-              <FaBox className="text-4xl text-green-600 mr-4" />
+              <FaBox className="text-4xl text-amber-600 mr-4" />
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
                 Order Processing & Packaging
               </h2>
@@ -246,7 +246,7 @@ const ShippingPolicy = () => {
       </div>
 
       {/* Shipping Costs */}
-      <div className="bg-green-50 py-16">
+      <div className="bg-amber-50 py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
@@ -255,28 +255,28 @@ const ShippingPolicy = () => {
             <div className="bg-white rounded-xl shadow-lg p-8">
               <ul className="space-y-4 text-gray-700">
                 <li className="flex items-start">
-                  <FaCheckCircle className="text-green-600 mr-3 mt-1 flex-shrink-0" />
+                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                   <span>
                     Shipping costs vary depending on the shipping method,
                     package weight, and destination
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <FaCheckCircle className="text-green-600 mr-3 mt-1 flex-shrink-0" />
+                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                   <span>
                     <strong>Free Shipping:</strong> Available on orders over
                     ₦100,000 within Lagos State
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <FaCheckCircle className="text-green-600 mr-3 mt-1 flex-shrink-0" />
+                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                   <span>
                     Final shipping cost will be calculated at checkout based on
                     your location and cart contents
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <FaCheckCircle className="text-green-600 mr-3 mt-1 flex-shrink-0" />
+                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                   <span>
                     International shipping costs are calculated based on
                     destination country and package weight
@@ -299,31 +299,31 @@ const ShippingPolicy = () => {
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
-                  <span className="text-green-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Fulfill orders promptly and accurately
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Provide regular shipping updates to customers
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Deliver orders within 24 hours to I-Coffee office
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Ensure products have minimum 6 months validity
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-green-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Package products securely for safe transport
                   </span>
@@ -338,31 +338,31 @@ const ShippingPolicy = () => {
               </h3>
               <ul className="space-y-3">
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Provide accurate shipping addresses and contact information
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Receive orders promptly at the specified address
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Inspect products for damage or defects upon delivery
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Report any issues within 24 hours of delivery
                   </span>
                 </li>
                 <li className="flex items-start">
-                  <span className="text-blue-600 mr-2">•</span>
+                  <span className="text-amber-600 mr-2">•</span>
                   <span className="text-gray-700">
                     Be available to receive the package or arrange alternative
                     delivery
@@ -455,7 +455,7 @@ const ShippingPolicy = () => {
             <div className="mt-8">
               <Link
                 to="/faq"
-                className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition"
+                className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-semibold transition"
               >
                 View FAQ
               </Link>

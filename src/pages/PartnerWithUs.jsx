@@ -19,6 +19,7 @@ import {
   FaArrowRight,
 } from 'react-icons/fa';
 import ContactForm from '../components/Contactform';
+import CustomerMarquee from '../components/CustomerMarquee';
 
 const PartnerWithUs = () => {
   const [showAgreement, setShowAgreement] = useState(false);
@@ -127,7 +128,9 @@ const PartnerWithUs = () => {
             </button>
           </div>
         </div>
+        <CustomerMarquee/>
       </div>
+    
 
       {/* Benefits Section */}
       <div className="container mx-auto px-4 py-16">
