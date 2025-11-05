@@ -128,11 +128,56 @@ export default function Header() {
       {/* Top Bar */}
       <div className="bg-secondary-200 text-white px-4 py-2">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="text-sm">Free shipping on orders over ₦100,000!</div>
-          <div className="flex space-x-4">
-            <Facebook size={18} className="cursor-pointer" />
-            <Twitter size={18} className="cursor-pointer" />
-            <Instagram size={18} className="cursor-pointer" />
+          {/* left */}
+          <div className="text-sm hidden md:block">
+            Free shipping on orders over ₦100,000!
+          </div>
+          <div className="text-xs md:text-sm md:hidden">
+            Free shipping over ₦100k!
+          </div>
+          {/* right */}
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <Link
+              to="/partner-with-us"
+              className="text-xs md:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-2 md:px-3 py-1 rounded transition-all duration-200 whitespace-nowrap font-medium"
+            >
+              List Your Product
+            </Link>
+            <div className="hidden md:flex space-x-4">
+              <a
+                href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow us on Facebook"
+              >
+                <Facebook
+                  size={18}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </a>
+              <a
+                href="https://twitter.com/italiancoffee_v"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow us on Twitter"
+              >
+                <Twitter
+                  size={18}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </a>
+              <a
+                href="https://www.instagram.com/italiancofeeventure/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Follow us on Instagram"
+              >
+                <Instagram
+                  size={18}
+                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                />
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -150,12 +195,12 @@ export default function Header() {
                   src={logo}
                   height={50}
                   width={200}
-                  alt="logo"
+                  alt="I-Coffee Logo"
                   className="hidden lg:block"
                 />
                 <img
                   src={logo}
-                  alt="logo"
+                  alt="I-Coffee Logo"
                   className="lg:hidden w-[55%] mb-2"
                   width={50}
                 />
@@ -195,6 +240,7 @@ export default function Header() {
               <button
                 onClick={redirectToLoginPage}
                 className="text-xl capitalize px-2"
+                title="Login"
               >
                 <User size={24} className="cursor-pointer text-gray-700" />
               </button>
@@ -248,22 +294,7 @@ export default function Header() {
               )}
             </button>
 
-            {/* Cart Summary Button */}
-            {/* <button
-              onClick={() => setOpenCartSection(true)}
-              className="hidden md:flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
-            >
-              <div className="font-semibold text-sm">
-                {localCartCount > 0 ? (
-                  <div>
-                    <p>{localCartCount} Items</p>
-                    <p>{formatPrice(totalPrice)}</p>
-                  </div>
-                ) : (
-                  <span>My Cart</span>
-                )}
-              </div>
-            </button> */}
+            {/* Shop Now Button - Desktop */}
             <button
               className="hidden md:flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
               onClick={() => navigate('/shop')}
@@ -271,7 +302,7 @@ export default function Header() {
               <span className="font-semibold text-sm">Shop Now</span>
             </button>
 
-            {/* Mobile Cart Link */}
+            {/* Mobile Shop Link */}
             <Link
               to="/shop"
               className="md:hidden items-center  bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors gap-2"
@@ -293,7 +324,10 @@ export default function Header() {
         </div>
       </header>
 
-      <HeaderNavigation />
+      {/* Sticky Navigation */}
+      <div className="sticky top-0 z-40 bg-white shadow-md">
+        <HeaderNavigation />
+      </div>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 // client/src/components/ContactForm.jsx
 import React, { useState } from 'react';
-import emailjs from '@emailjs/browser';
 import {
   FaUser,
   FaEnvelope,
@@ -9,6 +8,9 @@ import {
   FaPaperPlane,
 } from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Axios from '../utils/Axios';
+import SummaryApi from '../common/SummaryApi';
+import AxiosToastError from '../utils/AxiosToastError';
 
 const ContactForm = ({ formType = 'contact' }) => {
   const [formData, setFormData] = useState({
@@ -39,57 +41,37 @@ const ContactForm = ({ formType = 'contact' }) => {
     setLoading(true);
 
     try {
-      // EmailJS configuration
-      const serviceId = import.meta.env.VITE_EMAILJS_SERVICE_ID;
-      const templateId =
-        formType === 'partner'
-          ? import.meta.env.VITE_EMAILJS_PARTNER_TEMPLATE_ID
-          : import.meta.env.VITE_EMAILJS_CONTACT_TEMPLATE_ID;
-      const publicKey = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
-
-      // Prepare template parameters
-      const templateParams = {
-        from_name: formData.name,
-        from_email: formData.email,
-        phone: formData.phone,
-        company: formData.company,
-        subject: formData.subject || 'New Contact Form Submission',
-        message: formData.message,
-        how_did_you_hear: formData.howDidYouHear,
-        preferred_contact: formData.preferredContact,
-        business_type: formData.businessType,
-        product_categories: formData.productCategories,
-        form_type: formType,
-        to_email: 'customercare@i-coffee.ng',
-      };
-
-      // Send email using EmailJS
-      await emailjs.send(serviceId, templateId, templateParams, publicKey);
-
-      toast.success(
-        formType === 'partner'
-          ? 'Thank you for your interest! Our team will contact you shortly.'
-          : 'Message sent successfully! We will get back to you soon.'
-      );
-
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        company: '',
-        subject: '',
-        message: '',
-        howDidYouHear: '',
-        preferredContact: 'email',
-        businessType: '',
-        productCategories: '',
+      const response = await Axios({
+        ...SummaryApi.sendContactForm,
+        data: {
+          ...formData,
+          formType,
+        },
       });
+
+      if (response.data.success) {
+        toast.success(
+          formType === 'partner'
+            ? 'Thank you for your interest! Our partnership team will contact you shortly.'
+            : 'Message sent successfully! We will get back to you soon.'
+        );
+
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+          subject: '',
+          message: '',
+          howDidYouHear: '',
+          preferredContact: 'email',
+          businessType: '',
+          productCategories: '',
+        });
+      }
     } catch (error) {
-      console.error('EmailJS Error:', error);
-      toast.error(
-        'Failed to send message. Please try again or contact us directly.'
-      );
+      AxiosToastError(error);
     } finally {
       setLoading(false);
     }

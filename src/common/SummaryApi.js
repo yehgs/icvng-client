@@ -591,6 +591,10 @@ const SummaryApi = {
     url: '/api/admin/customers/featured',
     method: 'get',
   },
+  sendContactForm: {
+  url: '/api/send-mail',
+  method: 'post',
+},
 };
 
 export default SummaryApi;
