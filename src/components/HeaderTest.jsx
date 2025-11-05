@@ -98,7 +98,7 @@ export default function Header() {
     };
   }, [isLoggedIn, wishlistCount, compareCount, totalQty]);
 
-  // Navigate to wishlist page
+  // Navigate to wishlist page //
   const navigateToWishlistPage = () => {
     navigate('/wishlist');
   };
