@@ -40,6 +40,7 @@ import WishListPage from '../pages/WishListPage.jsx';
 import ComparePage from '../pages/ComparePage.jsx';
 import BankTransferInstructionsPage from '../pages/BankTransferInstructionPage.jsx';
 import TrackingPage from '../pages/TrackingPage';
+import BlogPage from '../pages/BlogPage.jsx';
 import SingleBlogPost from '../pages/SingleBlogPost.jsx';
 import PaymentSuccessPage from '../pages/PaymentSuccessPage';
 import PaymentCancelPage from '../pages/PaymentCancelPage';
@@ -161,6 +162,10 @@ const router = createBrowserRouter([
       {
         path: 'product/:product',
         element: <ProductDisplayPage />,
+      },
+      {
+        path: 'blogs',
+        element: <BlogPage />,
       },
       {
         path: 'blog/:slug',

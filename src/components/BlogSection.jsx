@@ -225,7 +225,7 @@ const BlogSection = () => {
 
             <div className="text-center">
               <Link
-                to="/blog"
+                to="/blogs"
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
                 <span>Explore All Stories</span>

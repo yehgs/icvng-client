@@ -16,7 +16,7 @@ import banner1 from '../assets/web-mix-small.png';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
-import payment from '../assets/payment.svg'
+import payment from '../assets/payment.svg';
 
 const PreFooter = () => {
   const [email, setEmail] = useState('');
@@ -244,6 +244,14 @@ const Footer = () => {
                   </li>
                   <li className="mb-2">
                     <Link
+                      to="/blogs"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      Blog
+                    </Link>
+                  </li>
+                  <li className="mb-2">
+                    <Link
                       to="/partner-with-us"
                       className="hover:text-amber-300 cursor-pointer transition"
                     >
@@ -350,7 +358,7 @@ const Footer = () => {
               <div className="flex flex-col items-center">
                 <span className="mr-2 text-sm space-x-2">Payment Methods:</span>
                 <div className="">
-                <img src={payment} alt="payment" className='h-10' />
+                  <img src={payment} alt="payment" className="h-10" />
                 </div>
               </div>
             </div>
