@@ -73,7 +73,7 @@ const PreFooter = () => {
         <div className="bg-white rounded-lg shadow-sm p-6 mb-10">
           <div className="flex flex-col md:flex-row items-center gap-6">
             {/* Left - Text Content */}
-            <div className="w-full md:w-1/2">
+            <div className="w-full md:w-1/3">
               <h3 className="text-xl font-bold mb-2 text-gray-800">
                 Quality Certified
               </h3>
@@ -85,7 +85,7 @@ const PreFooter = () => {
             </div>
 
             {/* Right - Certification Badges */}
-            <div className="w-full md:w-1/2">
+            <div className="w-full md:w-2/3">
               <div className="grid grid-cols-4 gap-4">
                 {certifications.map((cert) => (
                   <div
@@ -95,7 +95,7 @@ const PreFooter = () => {
                     <img
                       src={cert.src}
                       alt={cert.alt}
-                      className="h-12 w-auto object-contain"
+                      className="h-12 md:h-16 w-auto object-cover"
                     />
                   </div>
                 ))}
