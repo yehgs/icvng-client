@@ -180,7 +180,7 @@ const Home = () => {
             </div>
             <div>
               <h3 className="font-bold text-amber-900">Free Shipping</h3>
-              <p className="text-sm text-amber-800">On orders over ₦50</p>
+              <p className="text-sm text-amber-800">On orders over ₦100,000</p>
             </div>
           </div>
           <div className="bg-amber-50 p-6 rounded-lg shadow flex items-center">
