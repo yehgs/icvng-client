@@ -296,7 +296,6 @@ const EditAddressDetails = ({ close, data }) => {
               <Controller
                 name="city"
                 control={control}
-                rules={{ required: 'City is required' }}
                 render={({ field }) => (
                   <div className="relative">
                     <FaBuilding className="absolute left-3 top-3 text-gray-400" />
@@ -320,7 +319,7 @@ const EditAddressDetails = ({ close, data }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Postal Code *
+                Postal Code (Optional)
               </label>
               <Controller
                 name="postal_code"

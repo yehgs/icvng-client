@@ -278,7 +278,10 @@ const WishlistPage = () => {
                     const productUrl = `/product/${valideURLConvert(
                       item.name
                     )}-${item._id}`;
-                    const price = pricewithDiscount(item.price, item.discount);
+                    const price = pricewithDiscount(
+                      item.btcPrice,
+                      item.discount
+                    );
                     const isAvailable = item.productAvailability;
 
                     return (

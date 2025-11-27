@@ -411,13 +411,12 @@ const AddressForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Postal Code *
+              Postal Code (Optional)
             </label>
             <Controller
               name="postal_code"
               control={control}
               rules={{
-                required: 'Postal code is required',
                 pattern: {
                   value: /^\d{6}$/,
                   message: 'Postal code must be exactly 6 digits',

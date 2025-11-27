@@ -312,11 +312,11 @@ const CheckoutPage = () => {
       setLoading(true);
 
       const bankDetails = {
-        bankName: import.meta.env.VITE_BANK_NAME || 'First Bank of Nigeria',
+        bankName: import.meta.env.VITE_BANK_NAME || 'ZENITH BANK PLC',
         accountName:
-          import.meta.env.VITE_BANK_ACCOUNT_NAME || 'I-Coffee Nigeria Limited',
-        accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || '2013456789',
-        sortCode: import.meta.env.VITE_BANK_SORT_CODE || '011',
+          import.meta.env.VITE_BANK_ACCOUNT_NAME || 'I-COFFEE VENTURES',
+        accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || '1310523997',
+        sortCode: import.meta.env.VITE_BANK_SORT_CODE || '057150042',
         reference: `ICOFFEE-${Date.now()}-${user._id}`,
       };
 
