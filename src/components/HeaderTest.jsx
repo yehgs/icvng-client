@@ -214,6 +214,17 @@ export default function Header() {
 
           {/* Icons and Actions */}
           <div className="flex justify-center items-center space-x-4 w-[100%] md:w-fit">
+            {/* blog button */}
+            <div className="hidden md:block">
+              <Link
+                to="/blogs"
+                className="text-md capitalize bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 transition-colors "
+                title="Blog"
+              >
+                <span className="font-semibold text-sm"> Coffee Blog</span>
+              </Link>
+            </div>
+
             {/* Currency Selector */}
             <div className="">
               <CurrencySelector />
