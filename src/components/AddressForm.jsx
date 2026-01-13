@@ -1,6 +1,6 @@
 // client/src/components/address/AddressForm.jsx - Enhanced Nigerian address form
-import React, { useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import React, { useState, useEffect } from "react";
+import { useForm, Controller } from "react-hook-form";
 import {
   MapPin,
   Phone,
@@ -8,11 +8,11 @@ import {
   Building,
   Navigation,
   AlertCircle,
-} from 'lucide-react';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import toast from 'react-hot-toast';
-import AxiosToastError from '../utils/AxiosToastError';
+} from "lucide-react";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import toast from "react-hot-toast";
+import AxiosToastError from "../utils/AxiosToastError";
 
 const AddressForm = ({
   onSubmit,
@@ -24,7 +24,7 @@ const AddressForm = ({
   const [lgas, setLgas] = useState([]);
   const [loadingStates, setLoadingStates] = useState(true);
   const [loadingLgas, setLoadingLgas] = useState(false);
-  const [selectedState, setSelectedState] = useState('');
+  const [selectedState, setSelectedState] = useState("");
 
   const {
     control,
@@ -35,27 +35,27 @@ const AddressForm = ({
     reset,
   } = useForm({
     defaultValues: {
-      address_line: '',
-      address_line_2: '',
-      city: '',
-      state: '',
-      lga: '',
-      area: '',
-      postal_code: '',
-      mobile: '',
-      landline: '',
-      address_type: 'home',
-      landmark: '',
-      delivery_instructions: '',
+      address_line: "",
+      address_line_2: "",
+      city: "",
+      state: "",
+      lga: "",
+      area: "",
+      postal_code: "",
+      mobile: "",
+      landline: "",
+      address_type: "home",
+      landmark: "",
+      delivery_instructions: "",
       is_primary: false,
       coordinates: {
-        latitude: '',
-        longitude: '',
+        latitude: "",
+        longitude: "",
       },
     },
   });
 
-  const watchedState = watch('state');
+  const watchedState = watch("state");
 
   // Load Nigerian states on component mount
   useEffect(() => {
@@ -74,9 +74,9 @@ const AddressForm = ({
   useEffect(() => {
     if (initialData) {
       Object.keys(initialData).forEach((key) => {
-        if (key === 'coordinates' && initialData[key]) {
-          setValue('coordinates.latitude', initialData[key].latitude || '');
-          setValue('coordinates.longitude', initialData[key].longitude || '');
+        if (key === "coordinates" && initialData[key]) {
+          setValue("coordinates.latitude", initialData[key].latitude || "");
+          setValue("coordinates.longitude", initialData[key].longitude || "");
         } else {
           setValue(key, initialData[key]);
         }
@@ -93,18 +93,18 @@ const AddressForm = ({
     try {
       setLoadingStates(true);
       const response = await Axios({
-        url: '/api/address/nigeria-locations?type=states',
-        method: 'GET',
+        url: "/api/address/nigeria-locations?type=states",
+        method: "GET",
       });
 
       if (response.data.success) {
         setNigerianStates(response.data.data);
       } else {
-        toast.error('Failed to load Nigerian states');
+        toast.error("Failed to load Nigerian states");
       }
     } catch (error) {
-      console.error('Error fetching states:', error);
-      toast.error('Failed to load Nigerian states');
+      console.error("Error fetching states:", error);
+      toast.error("Failed to load Nigerian states");
     } finally {
       setLoadingStates(false);
     }
@@ -119,18 +119,18 @@ const AddressForm = ({
         url: `/api/address/nigeria-locations?type=lgas&state=${encodeURIComponent(
           stateName
         )}`,
-        method: 'GET',
+        method: "GET",
       });
 
       if (response.data.success) {
         setLgas(response.data.data);
       } else {
-        toast.error('Failed to load LGAs');
+        toast.error("Failed to load LGAs");
         setLgas([]);
       }
     } catch (error) {
-      console.error('Error fetching LGAs:', error);
-      toast.error('Failed to load LGAs');
+      console.error("Error fetching LGAs:", error);
+      toast.error("Failed to load LGAs");
       setLgas([]);
     } finally {
       setLoadingLgas(false);
@@ -141,14 +141,14 @@ const AddressForm = ({
     try {
       // Validate mobile number format
       const mobileRegex = /^(\+234|0)[789][01]\d{8}$/;
-      if (!mobileRegex.test(data.mobile.replace(/\s/g, ''))) {
-        toast.error('Please enter a valid Nigerian mobile number');
+      if (!mobileRegex.test(data.mobile.replace(/\s/g, ""))) {
+        toast.error("Please enter a valid Nigerian mobile number");
         return;
       }
 
       // Validate postal code format
       if (!/^\d{6}$/.test(data.postal_code)) {
-        toast.error('Postal code must be exactly 6 digits');
+        toast.error("Postal code must be exactly 6 digits");
         return;
       }
 
@@ -180,31 +180,31 @@ const AddressForm = ({
   };
 
   const addressTypes = [
-    { value: 'home', label: 'Home', icon: '🏠' },
-    { value: 'office', label: 'Office', icon: '🏢' },
-    { value: 'warehouse', label: 'Warehouse', icon: '🏭' },
-    { value: 'pickup_point', label: 'Pickup Point', icon: '📦' },
-    { value: 'other', label: 'Other', icon: '📍' },
+    { value: "home", label: "Home", icon: "🏠" },
+    { value: "office", label: "Office", icon: "🏢" },
+    { value: "warehouse", label: "Warehouse", icon: "🏭" },
+    { value: "pickup_point", label: "Pickup Point", icon: "📦" },
+    { value: "other", label: "Other", icon: "📍" },
   ];
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          setValue('coordinates.latitude', position.coords.latitude.toString());
+          setValue("coordinates.latitude", position.coords.latitude.toString());
           setValue(
-            'coordinates.longitude',
+            "coordinates.longitude",
             position.coords.longitude.toString()
           );
-          toast.success('Location captured successfully');
+          toast.success("Location captured successfully");
         },
         (error) => {
-          console.error('Error getting location:', error);
-          toast.error('Failed to get current location');
+          console.error("Error getting location:", error);
+          toast.error("Failed to get current location");
         }
       );
     } else {
-      toast.error('Geolocation is not supported by this browser');
+      toast.error("Geolocation is not supported by this browser");
     }
   };
 
@@ -212,7 +212,7 @@ const AddressForm = ({
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {initialData ? 'Edit Address' : 'Add New Address'}
+          {initialData ? "Edit Address" : "Add New Address"}
         </h2>
         <p className="text-gray-600">
           Please provide your complete Nigerian address details
@@ -229,7 +229,7 @@ const AddressForm = ({
             <Controller
               name="address_line"
               control={control}
-              rules={{ required: 'Address line is required' }}
+              rules={{ required: "Address line is required" }}
               render={({ field }) => (
                 <div className="relative">
                   <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -237,7 +237,7 @@ const AddressForm = ({
                     {...field}
                     type="text"
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.address_line ? 'border-red-300' : 'border-gray-300'
+                      errors.address_line ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="Enter your street address"
                     maxLength={500}
@@ -285,14 +285,14 @@ const AddressForm = ({
             <Controller
               name="state"
               control={control}
-              rules={{ required: 'State is required' }}
+              rules={{ required: "State is required" }}
               render={({ field }) => (
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <select
                     {...field}
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.state ? 'border-red-300' : 'border-gray-300'
+                      errors.state ? "border-red-300" : "border-gray-300"
                     }`}
                     disabled={loadingStates}
                   >
@@ -321,19 +321,19 @@ const AddressForm = ({
             <Controller
               name="lga"
               control={control}
-              rules={{ required: 'LGA is required' }}
+              rules={{ required: "LGA is required" }}
               render={({ field }) => (
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <select
                     {...field}
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.lga ? 'border-red-300' : 'border-gray-300'
+                      errors.lga ? "border-red-300" : "border-gray-300"
                     }`}
                     disabled={!watchedState || loadingLgas}
                   >
                     <option value="">
-                      {loadingLgas ? 'Loading LGAs...' : 'Select LGA'}
+                      {loadingLgas ? "Loading LGAs..." : "Select LGA"}
                     </option>
                     {lgas.map((lga) => (
                       <option key={lga.name} value={lga.name}>
@@ -362,7 +362,7 @@ const AddressForm = ({
             <Controller
               name="city"
               control={control}
-              rules={{ required: 'City is required' }}
+              rules={{ required: "City is required" }}
               render={({ field }) => (
                 <div className="relative">
                   <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -370,7 +370,7 @@ const AddressForm = ({
                     {...field}
                     type="text"
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.city ? 'border-red-300' : 'border-gray-300'
+                      errors.city ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="Enter city or town"
                   />
@@ -419,7 +419,7 @@ const AddressForm = ({
               rules={{
                 pattern: {
                   value: /^\d{6}$/,
-                  message: 'Postal code must be exactly 6 digits',
+                  message: "Postal code must be exactly 6 digits",
                 },
               }}
               render={({ field }) => (
@@ -429,7 +429,7 @@ const AddressForm = ({
                     {...field}
                     type="text"
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.postal_code ? 'border-red-300' : 'border-gray-300'
+                      errors.postal_code ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="000000"
                     maxLength={6}
@@ -453,10 +453,10 @@ const AddressForm = ({
               name="mobile"
               control={control}
               rules={{
-                required: 'Mobile number is required',
+                required: "Mobile number is required",
                 pattern: {
                   value: /^(\+234|0)[789][01]\d{8}$/,
-                  message: 'Please enter a valid Nigerian mobile number',
+                  message: "Please enter a valid Nigerian mobile number",
                 },
               }}
               render={({ field }) => (
@@ -466,7 +466,7 @@ const AddressForm = ({
                     {...field}
                     type="tel"
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.mobile ? 'border-red-300' : 'border-gray-300'
+                      errors.mobile ? "border-red-300" : "border-gray-300"
                     }`}
                     placeholder="+234 801 234 5678"
                   />
@@ -667,10 +667,10 @@ const AddressForm = ({
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading
-              ? 'Saving...'
+              ? "Saving..."
               : initialData
-              ? 'Update Address'
-              : 'Add Address'}
+              ? "Update Address"
+              : "Add Address"}
           </button>
         </div>
       </form>

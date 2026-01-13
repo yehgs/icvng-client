@@ -1,5 +1,5 @@
-// client/src/components/ShippingMethodSelector.jsx - Enhanced version
-import React, { useState, useEffect } from 'react';
+// client/src/components/ShippingMethodSelector.jsx
+import React, { useState, useEffect } from "react";
 import {
   Truck,
   Clock,
@@ -8,8 +8,9 @@ import {
   AlertCircle,
   CheckCircle,
   Info,
-} from 'lucide-react';
-import { useCurrency } from '../provider/GlobalProvider';
+} from "lucide-react";
+import { useCurrency } from "../provider/GlobalProvider";
+import { SHIPPING_METHOD_PRIORITY } from "../config/shippingConfig";
 
 const ShippingMethodSelector = ({
   selectedAddress,
@@ -19,25 +20,195 @@ const ShippingMethodSelector = ({
   selectedMethodId,
   loading = false,
   methods = [],
-  error = '',
+  error = "",
 }) => {
   const { formatPrice } = useCurrency();
   const [selectedMethod, setSelectedMethod] = useState(null);
 
   useEffect(() => {
     if (methods.length > 0 && !selectedMethodId) {
-      // Auto-select first free method or cheapest method
-      const freeMethod = methods.find((m) => m.cost === 0);
-      const cheapestMethod = methods.reduce((prev, current) =>
-        prev.cost < current.cost ? prev : current
-      );
-      const autoSelected = freeMethod || cheapestMethod;
+      let autoSelected = null;
 
-      setSelectedMethod(autoSelected);
-      onMethodSelect(autoSelected);
+      console.log("=== 🔍 AUTO-SELECTING SHIPPING METHOD ===");
+      console.log("📋 Configuration:", SHIPPING_METHOD_PRIORITY);
+      console.log(
+        "📦 Available methods:",
+        methods.map((m) => ({
+          name: m.name,
+          type: m.type,
+          cost: m.cost,
+          _id: m._id,
+        }))
+      );
+
+      // STRICT MODE: Only select the preferred type, ignore everything else
+      if (SHIPPING_METHOD_PRIORITY.strictMode) {
+        console.log(
+          `🎯 STRICT MODE ACTIVE: Looking for type "${SHIPPING_METHOD_PRIORITY.defaultType}"`
+        );
+
+        autoSelected = methods.find(
+          (m) => m.type === SHIPPING_METHOD_PRIORITY.defaultType
+        );
+
+        if (autoSelected) {
+          console.log(
+            `✅ STRICT: Selected ${autoSelected.name} (${autoSelected.type}) - Cost: ${autoSelected.cost}`
+          );
+        } else {
+          console.warn(
+            `⚠️ STRICT MODE: Preferred type "${SHIPPING_METHOD_PRIORITY.defaultType}" not found`
+          );
+          console.log(
+            "📌 Available types:",
+            methods.map((m) => m.type)
+          );
+          console.log("⚠️ Falling back to first available method");
+          autoSelected = methods[0];
+          console.log(
+            `✅ Fallback: Selected ${autoSelected.name} (${autoSelected.type})`
+          );
+        }
+      } else {
+        // NORMAL MODE: Priority-based selection
+        console.log("📊 NORMAL MODE: Using priority-based selection");
+
+        // Priority 1: Select free shipping FIRST (if enabled in config)
+        if (SHIPPING_METHOD_PRIORITY.selectFreeIfAvailable) {
+          console.log("🔍 Priority 1: Checking for free shipping...");
+          const freeMethod = methods.find((m) => m.cost === 0);
+
+          if (freeMethod) {
+            autoSelected = freeMethod;
+            console.log(
+              `✅ Priority 1 HIT: Selected free shipping - ${autoSelected.name} (${autoSelected.type})`
+            );
+          } else {
+            console.log("❌ Priority 1 MISS: No free shipping found");
+          }
+        } else {
+          console.log("⏭️ Priority 1 SKIPPED: selectFreeIfAvailable = false");
+        }
+
+        // Priority 2: Select preferred type (if not already selected)
+        if (!autoSelected && SHIPPING_METHOD_PRIORITY.defaultType) {
+          console.log(
+            `🔍 Priority 2: Looking for preferred type "${SHIPPING_METHOD_PRIORITY.defaultType}"...`
+          );
+
+          const preferredMethod = methods.find(
+            (m) => m.type === SHIPPING_METHOD_PRIORITY.defaultType
+          );
+
+          if (preferredMethod) {
+            autoSelected = preferredMethod;
+            console.log(
+              `✅ Priority 2 HIT: Selected preferred type - ${autoSelected.name} (${autoSelected.type}) - Cost: ${autoSelected.cost}`
+            );
+          } else {
+            console.warn(
+              `❌ Priority 2 MISS: Preferred type "${SHIPPING_METHOD_PRIORITY.defaultType}" not found`
+            );
+            console.log(
+              "📌 Available types:",
+              methods.map((m) => m.type)
+            );
+          }
+        } else if (!autoSelected) {
+          console.log("⏭️ Priority 2 SKIPPED: No defaultType configured");
+        }
+
+        // Priority 3: Free shipping as fallback (if not already checked)
+        if (!autoSelected && !SHIPPING_METHOD_PRIORITY.selectFreeIfAvailable) {
+          console.log(
+            "🔍 Priority 3: Checking for free shipping as fallback..."
+          );
+          const freeMethod = methods.find((m) => m.cost === 0);
+
+          if (freeMethod) {
+            autoSelected = freeMethod;
+            console.log(
+              `✅ Priority 3 HIT: Selected free shipping fallback - ${autoSelected.name} (${autoSelected.type})`
+            );
+          } else {
+            console.log("❌ Priority 3 MISS: No free shipping available");
+          }
+        } else if (!autoSelected) {
+          console.log(
+            "⏭️ Priority 3 SKIPPED: Free shipping already checked or selected"
+          );
+        }
+
+        // Priority 4: Cheapest method (if enabled in config)
+        if (
+          !autoSelected &&
+          SHIPPING_METHOD_PRIORITY.selectCheapestAsFallback
+        ) {
+          console.log("🔍 Priority 4: Selecting cheapest method...");
+
+          autoSelected = methods.reduce((prev, current) => {
+            console.log(
+              `   Comparing: ${prev.name} (${prev.cost}) vs ${current.name} (${current.cost})`
+            );
+            return prev.cost < current.cost ? prev : current;
+          });
+
+          console.log(
+            `✅ Priority 4 HIT: Selected cheapest - ${autoSelected.name} (${autoSelected.type}) - Cost: ${autoSelected.cost}`
+          );
+        } else if (!autoSelected) {
+          console.log(
+            "⏭️ Priority 4 SKIPPED: selectCheapestAsFallback = false"
+          );
+        }
+
+        // Last resort: Select first method
+        if (!autoSelected && methods.length > 0) {
+          console.warn(
+            "⚠️ All priorities failed, selecting first available method"
+          );
+          autoSelected = methods[0];
+          console.log(
+            `✅ Last Resort: Selected ${autoSelected.name} (${autoSelected.type})`
+          );
+        }
+      }
+
+      // Final selection
+      if (autoSelected) {
+        console.log("=== 🎯 FINAL SELECTION ===");
+        console.log(`Name: ${autoSelected.name}`);
+        console.log(`Type: ${autoSelected.type}`);
+        console.log(`Cost: ${autoSelected.cost}`);
+        console.log(`ID: ${autoSelected._id}`);
+        console.log("========================");
+
+        setSelectedMethod(autoSelected);
+        onMethodSelect(autoSelected);
+      } else {
+        console.error(
+          "❌ CRITICAL: No shipping method could be auto-selected!"
+        );
+        console.error("This should never happen. Available methods:", methods);
+      }
     } else if (selectedMethodId) {
+      // User has already selected a method or it's pre-selected
       const selected = methods.find((m) => m._id === selectedMethodId);
-      setSelectedMethod(selected);
+
+      if (selected) {
+        console.log("=== ✅ USING PRE-SELECTED METHOD ===");
+        console.log(`Name: ${selected.name}`);
+        console.log(`Type: ${selected.type}`);
+        console.log(`Cost: ${selected.cost}`);
+        console.log("===================================");
+        setSelectedMethod(selected);
+      } else {
+        console.warn(
+          `⚠️ Pre-selected method ID ${selectedMethodId} not found in available methods`
+        );
+      }
+    } else if (methods.length === 0) {
+      console.warn("⚠️ No shipping methods available");
     }
   }, [methods, selectedMethodId, onMethodSelect]);
 
@@ -50,48 +221,48 @@ const ShippingMethodSelector = ({
     const icons = {
       free: Package,
       flat_rate: Truck,
+      table_shipping: Package, // ✅ FIXED: was "table_rate"
       weight_based: Package,
       zone_based: MapPin,
       pickup: MapPin,
-      table_rate: Truck,
     };
     return icons[type] || Truck;
   };
 
   const getMethodColor = (type) => {
     const colors = {
-      free: 'text-green-600 bg-green-50 border-green-200',
-      flat_rate: 'text-blue-600 bg-blue-50 border-blue-200',
-      weight_based: 'text-purple-600 bg-purple-50 border-purple-200',
-      zone_based: 'text-orange-600 bg-orange-50 border-orange-200',
-      pickup: 'text-gray-600 bg-gray-50 border-gray-200',
-      table_rate: 'text-indigo-600 bg-indigo-50 border-indigo-200',
+      free: "text-green-600 bg-green-50 border-green-200",
+      flat_rate: "text-blue-600 bg-blue-50 border-blue-200",
+      table_shipping: "text-indigo-600 bg-indigo-50 border-indigo-200", // ✅ FIXED
+      weight_based: "text-purple-600 bg-purple-50 border-purple-200",
+      zone_based: "text-orange-600 bg-orange-50 border-orange-200",
+      pickup: "text-gray-600 bg-gray-50 border-gray-200",
     };
-    return colors[type] || 'text-gray-600 bg-gray-50 border-gray-200';
-  };
-
-  const getDeliveryEstimate = (method) => {
-    if (!method.estimatedDelivery) return 'To be confirmed';
-
-    const { minDays, maxDays } = method.estimatedDelivery;
-    if (minDays === maxDays) {
-      return `${minDays} day${minDays !== 1 ? 's' : ''}`;
-    }
-    return `${minDays}-${maxDays} days`;
+    return colors[type] || "text-gray-600 bg-gray-50 border-gray-200";
   };
 
   const getMethodDescription = (method) => {
     const descriptions = {
-      free: 'Free shipping on qualifying orders',
-      flat_rate: 'Standard flat rate shipping',
-      weight_based: 'Shipping cost based on package weight',
-      zone_based: 'Shipping cost varies by delivery zone',
-      pickup: 'Pick up your order at our location',
-      table_rate: 'Flexible shipping rates',
+      free: "Free shipping on qualifying orders",
+      flat_rate: "Standard flat rate shipping",
+      table_shipping: "Weight-based shipping rates", // ✅ FIXED
+      weight_based: "Shipping cost based on package weight",
+      zone_based: "Shipping cost varies by delivery zone",
+      pickup: "Pick up your order at our location",
     };
     return (
-      method.description || descriptions[method.type] || 'Shipping available'
+      method.description || descriptions[method.type] || "Shipping available"
     );
+  };
+
+  const getDeliveryEstimate = (method) => {
+    if (!method.estimatedDelivery) return "To be confirmed";
+
+    const { minDays, maxDays } = method.estimatedDelivery;
+    if (minDays === maxDays) {
+      return `${minDays} day${minDays !== 1 ? "s" : ""}`;
+    }
+    return `${minDays}-${maxDays} days`;
   };
 
   if (loading) {
@@ -121,17 +292,17 @@ const ShippingMethodSelector = ({
         <div className="text-center py-8">
           <AlertCircle className="mx-auto h-12 w-12 text-red-400 mb-4" />
           <h4 className="text-lg font-medium text-gray-900 mb-2">
-            {error ? 'Shipping Error' : 'No Shipping Available'}
+            {error ? "Shipping Error" : "No Shipping Available"}
           </h4>
           <p className="text-gray-600 mb-4">
-            {error || 'No shipping methods available for your location'}
+            {error || "No shipping methods available for your location"}
           </p>
           {selectedAddress && (
             <div className="bg-gray-50 rounded-lg p-4 mb-4">
               <div className="flex items-center justify-center text-sm text-gray-600">
                 <MapPin className="h-4 w-4 mr-2" />
                 <span>
-                  {selectedAddress.city}, {selectedAddress.state},{' '}
+                  {selectedAddress.city}, {selectedAddress.state},{" "}
                   {selectedAddress.country}
                 </span>
               </div>
@@ -165,7 +336,7 @@ const ShippingMethodSelector = ({
                 Shipping to: {selectedAddress.city}, {selectedAddress.state}
               </p>
               <p className="text-xs text-blue-700">
-                {methods.length} shipping option{methods.length > 1 ? 's' : ''}{' '}
+                {methods.length} shipping option{methods.length > 1 ? "s" : ""}{" "}
                 available
               </p>
             </div>
@@ -179,16 +350,16 @@ const ShippingMethodSelector = ({
           const isSelected = selectedMethod?._id === method._id;
           const isFree = method.cost === 0;
           const isRecommended =
-            method.type === 'free' ||
-            (method.cost === 0 && method.type === 'flat_rate');
+            method.type === "free" ||
+            (method.cost === 0 && method.type === "flat_rate");
 
           return (
             <div
               key={method._id}
               className={`relative border rounded-lg p-4 cursor-pointer transition-all ${
                 isSelected
-                  ? 'border-blue-500 bg-blue-50 shadow-md'
-                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                  ? "border-blue-500 bg-blue-50 shadow-md"
+                  : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
               }`}
               onClick={() => handleMethodSelect(method)}
             >
@@ -232,7 +403,7 @@ const ShippingMethodSelector = ({
 
                     <div className="text-right">
                       <p className="text-xl font-bold text-gray-900">
-                        {isFree ? 'Free' : formatPrice(method.cost)}
+                        {isFree ? "Free" : formatPrice(method.cost)}
                       </p>
                       <div className="flex items-center text-sm text-gray-500 mt-1">
                         <Clock className="h-3 w-3 mr-1" />
@@ -250,16 +421,16 @@ const ShippingMethodSelector = ({
                           method.type
                         )}`}
                       >
-                        {method.type.replace('_', ' ').toUpperCase()}
+                        {method.type.replace("_", " ").toUpperCase()}
                       </span>
 
                       {/* Additional Info */}
-                      {method.type === 'weight_based' && (
+                      {method.type === "weight_based" && (
                         <span className="text-xs text-gray-500">
                           Based on package weight
                         </span>
                       )}
-                      {method.type === 'zone_based' && (
+                      {method.type === "zone_based" && (
                         <span className="text-xs text-gray-500">
                           Zone-specific rate
                         </span>
@@ -269,7 +440,7 @@ const ShippingMethodSelector = ({
                     {/* Estimated Delivery Date */}
                     {method.estimatedDelivery && (
                       <div className="text-xs text-gray-500">
-                        Est.{' '}
+                        Est.{" "}
                         {new Date(
                           Date.now() +
                             method.estimatedDelivery.maxDays *
@@ -277,16 +448,16 @@ const ShippingMethodSelector = ({
                               60 *
                               60 *
                               1000
-                        ).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric',
+                        ).toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
                         })}
                       </div>
                     )}
                   </div>
 
                   {/* Pickup Locations */}
-                  {method.type === 'pickup' &&
+                  {method.type === "pickup" &&
                     method.pickupLocations &&
                     method.pickupLocations.length > 0 && (
                       <div className="mt-4 p-3 bg-gray-50 rounded-md">
@@ -304,7 +475,7 @@ const ShippingMethodSelector = ({
                               >
                                 <p className="font-medium">{location.name}</p>
                                 <p className="text-xs">
-                                  {location.address}, {location.city},{' '}
+                                  {location.address}, {location.city},{" "}
                                   {location.state}
                                 </p>
                                 {location.phone && (
@@ -317,7 +488,7 @@ const ShippingMethodSelector = ({
                           {method.pickupLocations.length > 2 && (
                             <p className="text-xs text-gray-500">
                               +{method.pickupLocations.length - 2} more location
-                              {method.pickupLocations.length > 3 ? 's' : ''}
+                              {method.pickupLocations.length > 3 ? "s" : ""}
                             </p>
                           )}
                         </div>
@@ -334,17 +505,17 @@ const ShippingMethodSelector = ({
                             Selected Shipping Method
                           </p>
                           <p>
-                            {method.type === 'pickup'
-                              ? 'You can pick up your order at any of the listed locations during business hours.'
+                            {method.type === "pickup"
+                              ? "You can pick up your order at any of the listed locations during business hours."
                               : `Your order will be shipped via ${
                                   method.name
                                 } and should arrive within ${getDeliveryEstimate(
                                   method
                                 )}.`}
                           </p>
-                          {method.type !== 'pickup' && (
+                          {method.type !== "pickup" && (
                             <p className="mt-1 text-xs">
-                              You'll receive tracking information once your
+                              You&apos;ll receive tracking information once your
                               order is shipped.
                             </p>
                           )}
@@ -373,7 +544,7 @@ const ShippingMethodSelector = ({
               <p className="text-sm text-green-700">{selectedMethod.name}</p>
               <p className="text-lg font-bold text-green-800">
                 {selectedMethod.cost === 0
-                  ? 'Free'
+                  ? "Free"
                   : formatPrice(selectedMethod.cost)}
               </p>
             </div>

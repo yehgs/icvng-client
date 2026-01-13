@@ -1,17 +1,17 @@
-// src/pages/Complete CheckoutPage.jsx
-import React, { useState, useEffect } from 'react';
-import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
-import CurrencySelector from '../components/CurrencySelector';
-import CheckoutCartDisplay from '../components/CheckoutCartDisplay';
-import ShippingMethodSelector from '../components/ShippingMethodSelector';
-import AddressFormModal from '../components/AddressFormModal';
-import AuthModal from '../components/AuthModel';
-import { useSelector } from 'react-redux';
-import AxiosToastError from '../utils/AxiosToastError';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import toast from 'react-hot-toast';
-import { useNavigate, Link } from 'react-router-dom';
+// icvng-client/src/pages/Complete CheckoutPage.jsx
+import React, { useState, useEffect } from "react";
+import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
+import CurrencySelector from "../components/CurrencySelector";
+import CheckoutCartDisplay from "../components/CheckoutCartDisplay";
+import ShippingMethodSelector from "../components/ShippingMethodSelector";
+import AddressFormModal from "../components/AddressFormModal";
+import AuthModal from "../components/AuthModel";
+import { useSelector } from "react-redux";
+import AxiosToastError from "../utils/AxiosToastError";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import toast from "react-hot-toast";
+import { useNavigate, Link } from "react-router-dom";
 import {
   FaUser,
   FaLock,
@@ -21,10 +21,8 @@ import {
   FaMapMarkerAlt,
   FaPlus,
   FaEdit,
-  FaInfoCircle,
   FaShieldAlt,
-  FaCheckCircle,
-} from 'react-icons/fa';
+} from "react-icons/fa";
 
 const CheckoutPage = () => {
   const {
@@ -80,7 +78,7 @@ const CheckoutPage = () => {
   const hasDiscount = discountAmount > 0;
 
   const handleAuthSuccess = (userData) => {
-    toast.success('Welcome! Your cart has been preserved.');
+    toast.success("Welcome! Your cart has been preserved.");
     setShowAuthModal(false);
     fetchCartItem();
     fetchAddress();
@@ -94,14 +92,14 @@ const CheckoutPage = () => {
     if (selectedAddr) {
       setSelectedAddressId(selectedAddr._id);
 
-      toast.loading('Loading shipping options...', { id: 'shipping-load' });
+      toast.loading("Loading shipping options...", { id: "shipping-load" });
 
       try {
         await fetchShippingMethods(selectedAddr._id, totalPrice);
-        toast.dismiss('shipping-load');
+        toast.dismiss("shipping-load");
       } catch (error) {
-        toast.dismiss('shipping-load');
-        console.error('Error in address selection:', error);
+        toast.dismiss("shipping-load");
+        console.error("Error in address selection:", error);
       }
     }
   };
@@ -117,36 +115,34 @@ const CheckoutPage = () => {
       const cartItems = isLoggedIn ? cartItemsList : guestCart;
 
       if (!cartItems || cartItems.length === 0) {
-        throw new Error('No items in cart');
+        throw new Error("No items in cart");
       }
 
       // DEBUG: Verify orderValue
-      console.log('💰 Order Value received:', orderValue);
+      console.log("💰 Order Value received:", orderValue);
       if (!orderValue || orderValue === 0) {
-        console.warn('⚠️ Warning: orderValue is 0 or undefined!');
+        console.warn("⚠️ Warning: orderValue is 0 or undefined!");
       }
 
       const itemsForShipping = cartItems.map((item) => {
         if (isLoggedIn && item.productId) {
-          // Logged in user - use populated productId
           return {
             productId: item.productId._id,
             quantity: item.quantity,
             category: item.productId.category?._id || item.productId.category,
             weight: item.productId.weight || 1,
             name: item.productId.name,
-            priceOption: item.priceOption || 'regular',
+            priceOption: item.priceOption || "regular",
             selectedPrice: item.selectedPrice || item.productId.price,
           };
         } else {
-          // Guest user - use direct product data
           return {
             productId: item.productId || item._id,
             quantity: item.quantity,
             category: item.category?._id || item.category,
             weight: item.weight || 1,
             name: item.name,
-            priceOption: item.priceOption || 'regular',
+            priceOption: item.priceOption || "regular",
             selectedPrice: item.price,
           };
         }
@@ -157,7 +153,7 @@ const CheckoutPage = () => {
         return total + weight * item.quantity;
       }, 0);
 
-      console.log('Fetching shipping for:', {
+      console.log("Fetching shipping for:", {
         addressId,
         items: itemsForShipping,
         itemCount: itemsForShipping.length,
@@ -166,8 +162,8 @@ const CheckoutPage = () => {
       });
 
       const response = await Axios({
-        url: '/api/shipping/calculate-checkout',
-        method: 'post',
+        url: "/api/shipping/calculate-checkout",
+        method: "post",
         data: {
           addressId,
           items: itemsForShipping,
@@ -178,34 +174,48 @@ const CheckoutPage = () => {
 
       if (response.data.success) {
         const methods = response.data.data.methods || [];
-        setShippingMethods(methods);
 
-        console.log(`Received ${methods.length} shipping methods`);
+        // ✅ SORT METHODS: Paid shipping first, then pickup last
+        const sortedMethods = methods.sort((a, b) => {
+          // Pickup always goes to bottom
+          if (a.type === "pickup" && b.type !== "pickup") return 1;
+          if (b.type === "pickup" && a.type !== "pickup") return -1;
 
-        if (methods.length > 0) {
-          // Auto-select: prefer free shipping, then cheapest
-          const freeMethod = methods.find((m) => m.cost === 0);
-          const cheapestMethod = methods.reduce((prev, current) =>
-            prev.cost < current.cost ? prev : current
-          );
+          // Among non-pickup methods, sort by cost (free first, then by price)
+          if (a.type !== "pickup" && b.type !== "pickup") {
+            // Both free or both paid - maintain original order
+            if ((a.cost === 0 && b.cost === 0) || (a.cost > 0 && b.cost > 0)) {
+              return 0;
+            }
+            // Free methods before paid methods (among non-pickup)
+            return a.cost === 0 ? -1 : 1;
+          }
 
-          const selectedMethod = freeMethod || cheapestMethod;
-          setSelectedShippingMethod(selectedMethod);
-          setShippingCost(selectedMethod.cost || 0);
+          return 0;
+        });
 
+        setShippingMethods(sortedMethods);
+
+        console.log(`Received ${sortedMethods.length} shipping methods`);
+        console.log(
+          "Sorted order:",
+          sortedMethods.map((m) => `${m.name} (${m.type})`)
+        );
+
+        if (sortedMethods.length > 0) {
           toast.success(
-            `${methods.length} shipping option${
-              methods.length > 1 ? 's' : ''
+            `${sortedMethods.length} shipping option${
+              sortedMethods.length > 1 ? "s" : ""
             } available`
           );
         } else {
-          toast.error('No shipping methods available for your location');
+          toast.error("No shipping methods available for your location");
         }
       }
     } catch (error) {
-      console.error('Error fetching shipping methods:', error);
+      console.error("Error fetching shipping methods:", error);
       toast.error(
-        error.response?.data?.message || 'Failed to load shipping methods'
+        error.response?.data?.message || "Failed to load shipping methods"
       );
       setShippingMethods([]);
       setSelectedShippingMethod(null);
@@ -230,7 +240,7 @@ const CheckoutPage = () => {
       });
 
       if (response.data.success) {
-        toast.success('Address saved successfully');
+        toast.success("Address saved successfully");
         fetchAddress();
         setShowAddressForm(false);
 
@@ -262,7 +272,7 @@ const CheckoutPage = () => {
       });
 
       if (response.data.success) {
-        toast.success('Address updated successfully');
+        toast.success("Address updated successfully");
         fetchAddress();
         setShowAddressForm(false);
         setEditingAddress(null);
@@ -279,14 +289,14 @@ const CheckoutPage = () => {
         return {
           productId: item.productId._id,
           quantity: item.quantity,
-          priceOption: item.priceOption || 'regular',
+          priceOption: item.priceOption || "regular",
           selectedPrice: item.selectedPrice || item.productId.price,
         };
       } else {
         return {
           productId: item.productId || item._id,
           quantity: item.quantity,
-          priceOption: item.priceOption || 'regular',
+          priceOption: item.priceOption || "regular",
           selectedPrice: item.price,
         };
       }
@@ -295,13 +305,13 @@ const CheckoutPage = () => {
 
   // Handle Direct Bank Transfer
   const handleDirectBankTransfer = async () => {
-    if (selectedCurrency !== 'NGN') {
-      toast.error('Direct Bank Transfer is only available for NGN currency');
+    if (selectedCurrency !== "NGN") {
+      toast.error("Direct Bank Transfer is only available for NGN currency");
       return;
     }
 
     if (!isLoggedIn) {
-      toast.error('Please login to complete your order');
+      toast.error("Please login to complete your order");
       setShowAuthModal(true);
       return;
     }
@@ -312,11 +322,11 @@ const CheckoutPage = () => {
       setLoading(true);
 
       const bankDetails = {
-        bankName: import.meta.env.VITE_BANK_NAME || 'ZENITH BANK PLC',
+        bankName: import.meta.env.VITE_BANK_NAME || "ZENITH BANK PLC",
         accountName:
-          import.meta.env.VITE_BANK_ACCOUNT_NAME || 'I-COFFEE VENTURES',
-        accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || '1310523997',
-        sortCode: import.meta.env.VITE_BANK_SORT_CODE || '057150042',
+          import.meta.env.VITE_BANK_ACCOUNT_NAME || "I-COFFEE VENTURES",
+        accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "1310523997",
+        sortCode: import.meta.env.VITE_BANK_SORT_CODE || "057150042",
         reference: `ICOFFEE-${Date.now()}-${user._id}`,
       };
 
@@ -339,12 +349,12 @@ const CheckoutPage = () => {
       const { data: responseData } = response;
 
       if (responseData.success) {
-        toast.success('Order created! Please complete bank transfer.');
+        toast.success("Order created! Please complete bank transfer.");
 
         if (fetchCartItem) fetchCartItem();
         if (fetchOrder) fetchOrder();
 
-        navigate('/bank-transfer-instructions', {
+        navigate("/bank-transfer-instructions", {
           state: {
             orderDetails: responseData.data,
             bankDetails: bankDetails,
@@ -364,17 +374,17 @@ const CheckoutPage = () => {
   // Validate checkout form
   const validateCheckout = () => {
     if (!selectedShippingMethod) {
-      toast.error('Please select a shipping method');
+      toast.error("Please select a shipping method");
       return false;
     }
 
     if (!selectedAddressId) {
-      toast.error('Please select a delivery address');
+      toast.error("Please select a delivery address");
       return false;
     }
 
     if (!agreeToTerms) {
-      toast.error('Please agree to the terms and conditions');
+      toast.error("Please agree to the terms and conditions");
       return false;
     }
 
@@ -384,7 +394,7 @@ const CheckoutPage = () => {
   // Handle Online Payment (Paystack or Stripe)
   const handleOnlinePayment = async () => {
     if (!isLoggedIn) {
-      toast.error('Please login to complete your order');
+      toast.error("Please login to complete your order");
       setShowAuthModal(true);
       return;
     }
@@ -393,11 +403,11 @@ const CheckoutPage = () => {
 
     try {
       setLoading(true);
-      toast.loading('Processing payment...', { id: 'payment-processing' });
+      toast.loading("Processing payment...", { id: "payment-processing" });
 
       const paymentMethod = getPaymentMethod();
 
-      if (paymentMethod === 'stripe') {
+      if (paymentMethod === "stripe") {
         await handleStripePayment();
       } else {
         await handlePaystackPayment();
@@ -406,17 +416,17 @@ const CheckoutPage = () => {
       AxiosToastError(error);
     } finally {
       setLoading(false);
-      toast.dismiss('payment-processing');
+      toast.dismiss("payment-processing");
     }
   };
 
   const handleStripePayment = async () => {
     try {
-      const { loadStripe } = await import('@stripe/stripe-js');
+      const { loadStripe } = await import("@stripe/stripe-js");
       const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
 
       if (!stripePublicKey) {
-        throw new Error('Stripe configuration missing');
+        throw new Error("Stripe configuration missing");
       }
 
       const stripePromise = await loadStripe(stripePublicKey);
@@ -426,7 +436,7 @@ const CheckoutPage = () => {
       const convertedTotal = convertPrice(finalTotal, selectedCurrency);
       const exchangeRate = exchangeRates[selectedCurrency] || 1;
 
-      console.log('💰 Sending to Stripe:', {
+      console.log("💰 Sending to Stripe:", {
         currency: selectedCurrency,
         originalNGN: {
           subtotal: totalPrice,
@@ -462,15 +472,15 @@ const CheckoutPage = () => {
           // ✅ Send exchange rate info for admin records
           exchangeRateInfo: {
             rate: exchangeRate,
-            fromCurrency: 'NGN',
+            fromCurrency: "NGN",
             toCurrency: selectedCurrency,
-            rateSource: 'manual',
+            rateSource: "manual",
             appliedAt: new Date().toISOString(),
           },
 
           shippingMethodId: selectedShippingMethod._id,
           currency: selectedCurrency, // Target currency
-          paymentMethod: 'stripe',
+          paymentMethod: "stripe",
         },
       });
 
@@ -485,7 +495,7 @@ const CheckoutPage = () => {
         fetchOrder();
       }
     } catch (error) {
-      console.error('Stripe payment error:', error);
+      console.error("Stripe payment error:", error);
       throw error;
     }
   };
@@ -507,15 +517,15 @@ const CheckoutPage = () => {
           // ✅ For NGN, exchange rate is 1:1
           exchangeRateInfo: {
             rate: 1,
-            fromCurrency: 'NGN',
-            toCurrency: 'NGN',
-            rateSource: 'manual',
+            fromCurrency: "NGN",
+            toCurrency: "NGN",
+            rateSource: "manual",
             appliedAt: new Date().toISOString(),
           },
 
           shippingMethodId: selectedShippingMethod._id,
-          currency: 'NGN',
-          paymentMethod: 'paystack',
+          currency: "NGN",
+          paymentMethod: "paystack",
         },
       });
 
@@ -527,7 +537,7 @@ const CheckoutPage = () => {
         fetchOrder();
       }
     } catch (error) {
-      console.error('Paystack payment error:', error);
+      console.error("Paystack payment error:", error);
       throw error;
     }
   };
@@ -639,7 +649,7 @@ const CheckoutPage = () => {
                 <CurrencySelector />
               </div>
               <div className="text-sm text-gray-600">
-                {selectedCurrency === 'NGN' ? (
+                {selectedCurrency === "NGN" ? (
                   <div className="space-y-1">
                     <p className="text-green-600">
                       ✓ Paystack payment available (Cards, Bank Transfer)
@@ -678,12 +688,12 @@ const CheckoutPage = () => {
                     {addressList.map((address, index) => (
                       <label
                         key={address._id}
-                        htmlFor={'address' + index}
-                        className={!address.status ? 'hidden' : 'block'}
+                        htmlFor={"address" + index}
+                        className={!address.status ? "hidden" : "block"}
                       >
                         <div className="border rounded-lg p-4 flex gap-3 hover:bg-blue-50 cursor-pointer transition-colors">
                           <input
-                            id={'address' + index}
+                            id={"address" + index}
                             type="radio"
                             value={index}
                             onChange={(e) =>
@@ -710,7 +720,7 @@ const CheckoutPage = () => {
                               </button>
                             </div>
                             <p className="text-sm text-gray-600">
-                              {address.city}, {address.state}, {address.country}{' '}
+                              {address.city}, {address.state}, {address.country}{" "}
                               - {address.postal_code}
                             </p>
                             <p className="text-sm text-gray-600">
@@ -773,7 +783,7 @@ const CheckoutPage = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Quantity</span>
                   <span className="font-medium">
-                    {totalQty} item{totalQty > 1 ? 's' : ''}
+                    {totalQty} item{totalQty > 1 ? "s" : ""}
                   </span>
                 </div>
 
@@ -781,10 +791,10 @@ const CheckoutPage = () => {
                   <span className="text-gray-600">Shipping</span>
                   <span
                     className={`font-medium ${
-                      shippingCost === 0 ? 'text-green-600' : 'text-gray-900'
+                      shippingCost === 0 ? "text-green-600" : "text-gray-900"
                     }`}
                   >
-                    {shippingCost === 0 ? 'Free' : formatPrice(shippingCost)}
+                    {shippingCost === 0 ? "Free" : formatPrice(shippingCost)}
                   </span>
                 </div>
 
@@ -794,7 +804,7 @@ const CheckoutPage = () => {
                   </div>
                 )}
 
-                {selectedCurrency !== 'NGN' && (
+                {selectedCurrency !== "NGN" && (
                   <div className="flex justify-between items-center text-sm">
                     <span className="text-gray-500">Exchange Rate</span>
                     <span className="text-gray-500">Live rates applied</span>
@@ -820,8 +830,8 @@ const CheckoutPage = () => {
                   disabled={!canProceed || loading || !isLoggedIn}
                   className={`w-full py-4 px-6 rounded-lg font-semibold transition flex items-center justify-center ${
                     canProceed && isLoggedIn && !loading
-                      ? 'bg-green-600 hover:bg-green-700 text-white'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                      ? "bg-green-600 hover:bg-green-700 text-white"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
                 >
                   {loading ? (
@@ -832,22 +842,22 @@ const CheckoutPage = () => {
                   ) : (
                     <>
                       <FaCreditCard className="mr-2" />
-                      {selectedCurrency === 'NGN'
-                        ? 'Pay with Paystack'
-                        : 'Pay with Stripe'}
-                      {!isLoggedIn && ' (Login Required)'}
+                      {selectedCurrency === "NGN"
+                        ? "Pay with Paystack"
+                        : "Pay with Stripe"}
+                      {!isLoggedIn && " (Login Required)"}
                     </>
                   )}
                 </button>
 
-                {selectedCurrency === 'NGN' && (
+                {selectedCurrency === "NGN" && (
                   <button
                     onClick={handleDirectBankTransfer}
                     disabled={!canProceed || loading || !isLoggedIn}
                     className={`w-full py-4 px-6 border-2 font-semibold rounded-lg transition flex items-center justify-center ${
                       canProceed && isLoggedIn && !loading
-                        ? 'border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white'
-                        : 'border-gray-300 text-gray-400 cursor-not-allowed'
+                        ? "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                        : "border-gray-300 text-gray-400 cursor-not-allowed"
                     }`}
                   >
                     {loading ? (
@@ -859,7 +869,7 @@ const CheckoutPage = () => {
                       <>
                         <FaUniversity className="mr-2" />
                         Direct Bank Transfer
-                        {!isLoggedIn && ' (Login Required)'}
+                        {!isLoggedIn && " (Login Required)"}
                       </>
                     )}
                   </button>
@@ -879,14 +889,14 @@ const CheckoutPage = () => {
                 <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                   <p className="text-sm text-yellow-800 text-center">
                     {currentCartItems.length === 0
-                      ? 'Your cart is empty'
+                      ? "Your cart is empty"
                       : !selectedAddressId
-                      ? 'Please select a delivery address'
+                      ? "Please select a delivery address"
                       : !selectedShippingMethod
-                      ? 'Please select a shipping method'
+                      ? "Please select a shipping method"
                       : !agreeToTerms
-                      ? 'Please agree to the terms and conditions'
-                      : 'Please complete all required fields'}
+                      ? "Please agree to the terms and conditions"
+                      : "Please complete all required fields"}
                   </p>
                 </div>
               )}
@@ -913,7 +923,7 @@ const CheckoutPage = () => {
                         </span>
                       </div>
                       <p className="text-sm text-gray-600">
-                        I agree to the{' '}
+                        I agree to the{" "}
                         <Link
                           to="/terms-and-conditions"
                           target="_blank"
@@ -921,7 +931,7 @@ const CheckoutPage = () => {
                         >
                           Terms and Conditions
                         </Link>
-                        ,{' '}
+                        ,{" "}
                         <Link
                           to="/privacy-policy"
                           target="_blank"
@@ -929,7 +939,7 @@ const CheckoutPage = () => {
                         >
                           Privacy Policy
                         </Link>
-                        , and{' '}
+                        , and{" "}
                         <Link
                           to="/refund-policy"
                           target="_blank"

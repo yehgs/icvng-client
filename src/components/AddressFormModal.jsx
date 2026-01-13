@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 // client/src/components/address/AddressFormModal.jsx - Modal wrapper for AddressForm
 import React from 'react';
 import { X } from 'lucide-react';
