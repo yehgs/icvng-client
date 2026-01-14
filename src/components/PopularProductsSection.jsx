@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import ProductCarousel from './ProductCarousel';
-import AxiosToastError from '../utils/AxiosToastError';
+import React, { useState, useEffect } from "react";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import ProductCarousel from "./ProductCarousel";
+import AxiosToastError from "../utils/AxiosToastError";
 
 /**
  * Section component for displaying popular/best-selling products
+ * Layout: 2 rows (6+6 on desktop, 4+4 on tablet, 2+2 on mobile)
+ * Products sorted by: 1) Average rating, 2) Review count, 3) Featured status
  */
 const PopularProductsSection = () => {
   const [products, setProducts] = useState([]);
@@ -18,23 +20,27 @@ const PopularProductsSection = () => {
   const fetchPopularProducts = async () => {
     try {
       setLoading(true);
-      // For popular products, we might sort by average rating or sales count
-      // Adjust based on your API capabilities
+
+      // Use the dedicated popular products endpoint
+      // Backend sorts by averageRating DESC, reviewCount DESC, featured DESC
       const response = await Axios({
-        ...SummaryApi.getProduct,
+        ...SummaryApi.getPopularProducts,
         data: {
           page: 1,
-          limit: 8,
-          sort: { averageRating: -1 }, // Sort by highest rated first
+          limit: 24, // Fetch 24 products (12 per slide × 2 slides for 2-row layout)
         },
       });
 
       const { data: responseData } = response;
 
-      if (responseData.success) {
+      if (responseData.success && responseData.data) {
+        console.log(
+          `PopularProductsSection: Loaded ${responseData.data.length} popular products`
+        );
         setProducts(responseData.data);
       }
     } catch (error) {
+      console.error("PopularProductsSection: Error fetching products", error);
       AxiosToastError(error);
     } finally {
       setLoading(false);
@@ -49,7 +55,7 @@ const PopularProductsSection = () => {
         subtitle="Loved by our customers"
         autoplay={true}
         autoplaySpeed={7000}
-        itemsPerSlide={4}
+        itemsPerSlide={6}
       />
     </section>
   );

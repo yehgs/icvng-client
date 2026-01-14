@@ -1,55 +1,74 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import CardProduct from './CardProduct';
+import React, { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import CardProduct from "./CardProduct";
 
 /**
- * Reusable Product Carousel component
+ * Reusable Product Carousel component with 2-row layout support
  * @param {Object} props
  * @param {Array} props.products - Array of product objects
  * @param {String} props.title - Title for the carousel section
  * @param {String} props.subtitle - Optional subtitle for the carousel
- * @param {Number} props.itemsPerSlide - Number of products per slide (default: 4)
+ * @param {Number} props.itemsPerSlide - Number of products per slide on desktop (default: 4, supports 8 or 12 for 2-row)
  * @param {Boolean} props.autoplay - Enable autoplay (default: false)
  * @param {Number} props.autoplaySpeed - Autoplay speed in ms (default: 5000)
+ * @param {Boolean} props.twoRowLayout - Enable 2-row layout (default: false)
  */
 const ProductCarousel = ({
   products = [],
-  title = 'Products',
+  title = "Products",
   subtitle,
   itemsPerSlide = 4,
   autoplay = false,
   autoplaySpeed = 5000,
+  twoRowLayout = false,
 }) => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-
-  // Calculate the number of slides needed
-  const slidesCount = Math.max(
-    Math.ceil(products.length / itemsPerSlide) - 1,
-    0
-  );
+  const [responsiveItemsPerSlide, setResponsiveItemsPerSlide] =
+    useState(itemsPerSlide);
 
   // Adjust itemsPerSlide based on screen size
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 640) {
-        itemsPerSlide = 1;
-      } else if (window.innerWidth < 768) {
-        itemsPerSlide = 2;
-      } else if (window.innerWidth < 1024) {
-        itemsPerSlide = 3;
+      if (twoRowLayout) {
+        // 2-row layout: 6+6 (desktop), 4+4 (tablet), 2+2 (mobile)
+        if (window.innerWidth < 640) {
+          setResponsiveItemsPerSlide(4); // Mobile: 2x2 = 4 items
+        } else if (window.innerWidth < 1024) {
+          setResponsiveItemsPerSlide(8); // Tablet: 4x2 = 8 items
+        } else {
+          setResponsiveItemsPerSlide(12); // Desktop: 6x2 = 12 items
+        }
+      } else {
+        // Single row layout (responsive by columns)
+        if (window.innerWidth < 640) {
+          setResponsiveItemsPerSlide(2); // Mobile: 2 items
+        } else if (window.innerWidth < 768) {
+          setResponsiveItemsPerSlide(3); // Small tablet: 3 items
+        } else if (window.innerWidth < 1024) {
+          setResponsiveItemsPerSlide(4); // Tablet: 4 items
+        } else {
+          setResponsiveItemsPerSlide(itemsPerSlide); // Desktop: use prop value (4 or 6)
+        }
       }
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
     handleResize(); // Call on initial render
 
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [itemsPerSlide, twoRowLayout]);
+
+  // Calculate the number of slides needed
+  const slidesCount = Math.max(
+    Math.ceil(products.length / responsiveItemsPerSlide) - 1,
+    0
+  );
 
   // Autoplay functionality
   useEffect(() => {
-    if (!autoplay || isHovered || products.length <= itemsPerSlide) return;
+    if (!autoplay || isHovered || products.length <= responsiveItemsPerSlide)
+      return;
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev >= slidesCount ? 0 : prev + 1));
@@ -62,7 +81,7 @@ const ProductCarousel = ({
     slidesCount,
     autoplaySpeed,
     products.length,
-    itemsPerSlide,
+    responsiveItemsPerSlide,
   ]);
 
   // Navigation functions
@@ -80,7 +99,15 @@ const ProductCarousel = ({
       <div className="container mx-auto px-4 my-6">
         <h2 className="text-2xl font-bold text-gray-800 mb-2">{title}</h2>
         {subtitle && <p className="text-gray-600 mb-4">{subtitle}</p>}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div
+          className={`grid gap-4 ${
+            twoRowLayout
+              ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-6"
+              : itemsPerSlide === 6
+              ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
+              : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+          }`}
+        >
           {[1, 2, 3, 4].map((item) => (
             <div
               key={`skeleton-${item}`}
@@ -96,6 +123,13 @@ const ProductCarousel = ({
       </div>
     );
   }
+
+  // Determine grid classes based on layout type
+  const gridClasses = twoRowLayout
+    ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-6" // 2-row layout: 2 (mobile), 4 (tablet), 6 (desktop)
+    : itemsPerSlide === 6
+    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6" // Single row: 6 items (desktop)
+    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"; // Single row: 4 items (desktop)
 
   return (
     <div
@@ -117,7 +151,7 @@ const ProductCarousel = ({
                 key={`dot-${index}`}
                 onClick={() => setCurrentSlide(index)}
                 className={`w-2.5 h-2.5 rounded-full ${
-                  currentSlide === index ? 'bg-green-700' : 'bg-gray-300'
+                  currentSlide === index ? "bg-green-700" : "bg-gray-300"
                 } transition-colors`}
                 aria-label={`Go to slide ${index + 1}`}
               />
@@ -133,14 +167,18 @@ const ProductCarousel = ({
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
             {Array.from({
-              length: Math.max(Math.ceil(products.length / itemsPerSlide), 1),
+              length: Math.max(
+                Math.ceil(products.length / responsiveItemsPerSlide),
+                1
+              ),
             }).map((_, slideIndex) => (
               <div key={`slide-${slideIndex}`} className="w-full flex-shrink-0">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className={`grid ${gridClasses} gap-4`}>
                   {products
                     .slice(
-                      slideIndex * itemsPerSlide,
-                      slideIndex * itemsPerSlide + itemsPerSlide
+                      slideIndex * responsiveItemsPerSlide,
+                      slideIndex * responsiveItemsPerSlide +
+                        responsiveItemsPerSlide
                     )
                     .map((product) => (
                       <CardProduct key={product._id} data={product} />

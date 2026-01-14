@@ -1,18 +1,18 @@
 //client/src/pages/Home.jsx
-import React, { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { Link } from 'react-router-dom';
-import HomeSlider from '../components/HomeSlider';
-import CustomerMarquee from '../components/CustomerMarquee';
-import BrandMarquee from '../components/BrandMarquee';
-import NewArrivalsSection from '../components/NewArrivalsSection';
-import FeaturedProductsSection from '../components/FeaturedProductsSection';
-import CategoryFilterSection from '../components/CategoryFilterSection';
-import BlogSection from '../components/BlogSection';
-import PopularProductsSection from '../components/PopularProductsSection';
-import CoffeeOriginSection from '../components/CoffeeOriginSection';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
+import React, { useEffect, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link } from "react-router-dom";
+import HomeSlider from "../components/HomeSlider";
+import CustomerMarquee from "../components/CustomerMarquee";
+import BrandMarquee from "../components/BrandMarquee";
+import NewArrivalsSection from "../components/NewArrivalsSection";
+import FeaturedProductsSection from "../components/FeaturedProductsSection";
+import CategoryFilterSection from "../components/CategoryFilterSection";
+import BlogSection from "../components/BlogSection";
+import PopularProductsSection from "../components/PopularProductsSection";
+import CoffeeOriginSection from "../components/CoffeeOriginSection";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
 
 const Home = () => {
   const brands = useSelector((state) => state.product.allBrands) || [];
@@ -28,7 +28,7 @@ const Home = () => {
       // Fetch side banner 1
       const response1 = await Axios({
         ...SummaryApi.getActiveBanners,
-        params: { position: 'homepage_side1' },
+        params: { position: "homepage_side1" },
       });
 
       if (response1.data.success && response1.data.data.length > 0) {
@@ -38,27 +38,27 @@ const Home = () => {
       // Fetch side banner 2
       const response2 = await Axios({
         ...SummaryApi.getActiveBanners,
-        params: { position: 'homepage_side2' },
+        params: { position: "homepage_side2" },
       });
 
       if (response2.data.success && response2.data.data.length > 0) {
         setSideBanner2(response2.data.data[0]);
       }
     } catch (error) {
-      console.error('Error fetching side banners:', error);
+      console.error("Error fetching side banners:", error);
       // Set fallback banners if API fails
       setSideBanner1({
         id: 1,
         image:
-          'https://dummyimage.com/600x300/5e3a19/ffffff&text=Coffee+Subscriptions',
-        title: 'Coffee Subscriptions',
-        link: '/subscriptions',
+          "https://dummyimage.com/600x300/5e3a19/ffffff&text=Coffee+Subscriptions",
+        title: "Coffee Subscriptions",
+        link: "/subscriptions",
       });
       setSideBanner2({
         id: 2,
-        image: 'https://dummyimage.com/600x300/3e2a12/ffffff&text=Gift+Sets',
-        title: 'Gift Sets',
-        link: '/gift-sets',
+        image: "https://dummyimage.com/600x300/3e2a12/ffffff&text=Gift+Sets",
+        title: "Gift Sets",
+        link: "/gift-sets",
       });
     } finally {
       setLoading(false);
@@ -72,7 +72,7 @@ const Home = () => {
   const renderSideBanner = (banner, index) => {
     if (!banner) return null;
 
-    const BannerWrapper = banner.link ? Link : 'div';
+    const BannerWrapper = banner.link ? Link : "div";
     const bannerProps = banner.link ? { to: banner.link } : {};
 
     return (
@@ -80,12 +80,12 @@ const Home = () => {
         key={banner._id || banner.id || `banner-${index}`}
         {...bannerProps}
         className={`w-1/2 md:w-full h-32 md:h-48 relative overflow-hidden rounded shadow-md hover:shadow-lg transition-shadow ${
-          banner.link ? 'cursor-pointer' : ''
+          banner.link ? "cursor-pointer" : ""
         }`}
       >
         <img
           src={banner.image}
-          alt={banner.title || 'Banner'}
+          alt={banner.title || "Banner"}
           className="w-full h-full object-cover"
         />
         {(banner.title || banner.subtitle) && (

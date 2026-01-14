@@ -1,41 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import CardProduct from './CardProduct';
+import React, { useState, useEffect } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import CardProduct from "./CardProduct";
 
-/**
- * Product Carousel with Category Filtering
- * @param {Object} props
- * @param {Array} props.products - Array of product objects
- * @param {Array} props.categories - Array of category objects
- * @param {String} props.title - Title for the carousel section
- * @param {Number} props.itemsPerSlide - Number of products per slide (default: 4)
- */
 const CategoryFilterProductCarousel = ({
   products = [],
   categories = [],
-  title = 'Products by Category',
-  itemsPerSlide = 4,
+  title = "Products by Category",
+  itemsPerSlide = 12, // Default 12 for desktop (6x2)
 }) => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState("all");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [responsiveItemsPerSlide, setResponsiveItemsPerSlide] =
+    useState(itemsPerSlide);
+
+  // Adjust itemsPerSlide based on screen size (2 rows)
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 640) {
+        setResponsiveItemsPerSlide(4); // Mobile: 2x2 = 4 items
+      } else if (window.innerWidth < 1024) {
+        setResponsiveItemsPerSlide(8); // Tablet: 4x2 = 8 items
+      } else {
+        setResponsiveItemsPerSlide(12); // Desktop: 6x2 = 12 items
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize();
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, [itemsPerSlide]);
 
   // Filter products based on selected category
   useEffect(() => {
     setLoading(true);
 
-    if (selectedCategory === 'all') {
+    if (selectedCategory === "all") {
       setFilteredProducts(products);
     } else {
-      setFilteredProducts(
-        products.filter(
-          (product) =>
-            product &&
-            product.category &&
-            product.category._id === selectedCategory
-        )
+      const filtered = products.filter((product) => {
+        if (!product || !product.category) return false;
+
+        // Handle both string IDs and object IDs
+        const productCategoryId =
+          typeof product.category === "object"
+            ? product.category._id
+            : product.category;
+
+        return productCategoryId === selectedCategory;
+      });
+
+      console.log(
+        `Filtered ${filtered.length} products for category:`,
+        selectedCategory
       );
+      setFilteredProducts(filtered);
     }
 
     // Reset to first slide when category changes
@@ -45,7 +66,7 @@ const CategoryFilterProductCarousel = ({
 
   // Calculate the number of slides needed
   const slidesCount = Math.max(
-    Math.ceil(filteredProducts.length / itemsPerSlide) - 1,
+    Math.ceil(filteredProducts.length / responsiveItemsPerSlide) - 1,
     0
   );
 
@@ -60,6 +81,31 @@ const CategoryFilterProductCarousel = ({
     setCurrentSlide((prev) => (prev <= 0 ? slidesCount : prev - 1));
   };
 
+  // Grid configuration for 2-row layout
+  const getGridConfig = () => {
+    if (window.innerWidth < 640) {
+      return {
+        cols: 2, // 2 columns on mobile
+        rows: 2, // 2 rows
+        gridClass: "grid-cols-2", // 2 products per row
+      };
+    } else if (window.innerWidth < 1024) {
+      return {
+        cols: 4, // 4 columns on tablet
+        rows: 2, // 2 rows
+        gridClass: "grid-cols-4", // 4 products per row
+      };
+    } else {
+      return {
+        cols: 6, // 6 columns on desktop
+        rows: 2, // 2 rows
+        gridClass: "grid-cols-6", // 6 products per row
+      };
+    }
+  };
+
+  const gridConfig = getGridConfig();
+
   return (
     <div className="container mx-auto px-4 my-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
@@ -71,11 +117,11 @@ const CategoryFilterProductCarousel = ({
         <div className="flex overflow-x-auto gap-2 pb-2 md:pb-0 whitespace-nowrap">
           <button
             className={`px-3 py-1.5 text-sm rounded-full ${
-              selectedCategory === 'all'
-                ? 'bg-secondary-200 text-white'
-                : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+              selectedCategory === "all"
+                ? "bg-green-700 text-white"
+                : "bg-gray-100 hover:bg-gray-200 text-gray-800"
             } transition-colors`}
-            onClick={() => setSelectedCategory('all')}
+            onClick={() => setSelectedCategory("all")}
           >
             All Products
           </button>
@@ -86,8 +132,8 @@ const CategoryFilterProductCarousel = ({
                 key={cat._id}
                 className={`px-3 py-1.5 text-sm rounded-full ${
                   selectedCategory === cat._id
-                    ? 'bg-green-700 text-white'
-                    : 'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                    ? "bg-green-700 text-white"
+                    : "bg-gray-100 hover:bg-gray-200 text-gray-800"
                 } transition-colors`}
                 onClick={() => setSelectedCategory(cat._id)}
               >
@@ -101,18 +147,20 @@ const CategoryFilterProductCarousel = ({
       <div className="relative">
         <div className="overflow-hidden">
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {[1, 2, 3, 4].map((item) => (
-                <div
-                  key={`loading-${item}`}
-                  className="border rounded-lg p-4 h-80 animate-pulse"
-                >
-                  <div className="w-full h-40 bg-gray-200 rounded-md mb-4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
-                  <div className="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
-                  <div className="h-8 bg-gray-200 rounded w-full"></div>
-                </div>
-              ))}
+            <div className={`grid ${gridConfig.gridClass} gap-4`}>
+              {Array.from({ length: responsiveItemsPerSlide }).map(
+                (_, item) => (
+                  <div
+                    key={`loading-${item}`}
+                    className="border rounded-lg p-4 h-80 animate-pulse"
+                  >
+                    <div className="w-full h-40 bg-gray-200 rounded-md mb-4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-2 w-3/4"></div>
+                    <div className="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
+                    <div className="h-8 bg-gray-200 rounded w-full"></div>
+                  </div>
+                )
+              )}
             </div>
           ) : filteredProducts.length > 0 ? (
             <div
@@ -123,7 +171,7 @@ const CategoryFilterProductCarousel = ({
             >
               {Array.from({
                 length: Math.max(
-                  Math.ceil(filteredProducts.length / itemsPerSlide),
+                  Math.ceil(filteredProducts.length / responsiveItemsPerSlide),
                   1
                 ),
               }).map((_, slideIndex) => (
@@ -131,11 +179,13 @@ const CategoryFilterProductCarousel = ({
                   key={`category-slide-${slideIndex}`}
                   className="w-full flex-shrink-0"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {/* 2-Row Grid Layout */}
+                  <div className={`grid ${gridConfig.gridClass} gap-4`}>
                     {filteredProducts
                       .slice(
-                        slideIndex * itemsPerSlide,
-                        slideIndex * itemsPerSlide + itemsPerSlide
+                        slideIndex * responsiveItemsPerSlide,
+                        slideIndex * responsiveItemsPerSlide +
+                          responsiveItemsPerSlide
                       )
                       .map((product) => (
                         <CardProduct key={product._id} data={product} />
@@ -154,7 +204,7 @@ const CategoryFilterProductCarousel = ({
         </div>
 
         {/* Navigation buttons - only show if we have multiple slides */}
-        {filteredProducts.length > itemsPerSlide && (
+        {filteredProducts.length > responsiveItemsPerSlide && (
           <>
             <button
               className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 md:-translate-x-4 bg-white shadow rounded-full p-2 hover:bg-gray-100 transition-colors z-10"
@@ -175,14 +225,14 @@ const CategoryFilterProductCarousel = ({
       </div>
 
       {/* Slide indicators */}
-      {filteredProducts.length > itemsPerSlide && (
+      {filteredProducts.length > responsiveItemsPerSlide && (
         <div className="flex justify-center mt-4 space-x-1">
           {Array.from({ length: slidesCount + 1 }).map((_, index) => (
             <button
               key={`indicator-${index}`}
               onClick={() => setCurrentSlide(index)}
               className={`w-2 h-2 rounded-full ${
-                currentSlide === index ? 'bg-green-700' : 'bg-gray-300'
+                currentSlide === index ? "bg-green-700" : "bg-gray-300"
               } transition-colors`}
               aria-label={`Go to slide ${index + 1}`}
             />
