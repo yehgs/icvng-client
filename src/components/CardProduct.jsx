@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { valideURLConvert } from '../utils/valideURLConvert';
-import { pricewithDiscount } from '../utils/PriceWithDiscount';
-import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { valideURLConvert } from "../utils/valideURLConvert";
+import { pricewithDiscount } from "../utils/PriceWithDiscount";
+import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
+import { useSelector } from "react-redux";
 import {
   FaShoppingCart,
   FaStar,
@@ -14,33 +14,33 @@ import {
   FaShare,
   FaPlus,
   FaMinus,
-} from 'react-icons/fa';
-import { BsCart4 } from 'react-icons/bs';
-import toast from 'react-hot-toast';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import AxiosToastError from '../utils/AxiosToastError';
-import WishlistButton from './WishlistButton';
-import CompareButton from './CompareButton';
-import ProductRequestModal from './ProductRequestModal';
+} from "react-icons/fa";
+import { BsCart4 } from "react-icons/bs";
+import toast from "react-hot-toast";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import AxiosToastError from "../utils/AxiosToastError";
+import WishlistButton from "./WishlistButton";
+import CompareButton from "./CompareButton";
+import ProductRequestModal from "./ProductRequestModal";
 
 const CardProduct = ({ data }) => {
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const [selectedPriceOption, setSelectedPriceOption] = useState('regular');
+  const [selectedPriceOption, setSelectedPriceOption] = useState("regular");
   const [quickCartLoading, setQuickCartLoading] = useState(false);
 
   // Track quantities and cart IDs for each price option separately
   const [priceOptionQuantities, setPriceOptionQuantities] = useState({
     regular: 0,
-    '3weeks': 0,
-    '5weeks': 0,
+    "3weeks": 0,
+    "5weeks": 0,
   });
 
   const [priceOptionCartIds, setPriceOptionCartIds] = useState({
     regular: null,
-    '3weeks': null,
-    '5weeks': null,
+    "3weeks": null,
+    "5weeks": null,
   });
 
   const navigate = useNavigate();
@@ -70,20 +70,20 @@ const CardProduct = ({ data }) => {
   useEffect(() => {
     const quantities = {
       regular: 0,
-      '3weeks': 0,
-      '5weeks': 0,
+      "3weeks": 0,
+      "5weeks": 0,
     };
 
     const cartIds = {
       regular: null,
-      '3weeks': null,
-      '5weeks': null,
+      "3weeks": null,
+      "5weeks": null,
     };
 
     if (isLoggedIn) {
       cartItem.forEach((item) => {
         if (item.productId._id === data._id) {
-          const option = item.priceOption || 'regular';
+          const option = item.priceOption || "regular";
           quantities[option] = item.quantity;
           cartIds[option] = item._id;
         }
@@ -91,7 +91,7 @@ const CardProduct = ({ data }) => {
     } else {
       guestCart.forEach((item) => {
         if (item.productId === data._id) {
-          const option = item.priceOption || 'regular';
+          const option = item.priceOption || "regular";
           quantities[option] = item.quantity;
         }
       });
@@ -105,11 +105,11 @@ const CardProduct = ({ data }) => {
     const primaryPrice = getPrimaryPrice(data);
 
     switch (priceOption) {
-      case '3weeks':
+      case "3weeks":
         return data.price3weeksDelivery > 0
           ? data.price3weeksDelivery
           : primaryPrice;
-      case '5weeks':
+      case "5weeks":
         return data.price5weeksDelivery > 0
           ? data.price5weeksDelivery
           : primaryPrice;
@@ -122,9 +122,9 @@ const CardProduct = ({ data }) => {
     if (!data.roastLevel) return null;
 
     const levels = {
-      LIGHT: { color: 'text-amber-300', label: 'Light Roast' },
-      MEDIUM: { color: 'text-amber-600', label: 'Medium Roast' },
-      DARK: { color: 'text-amber-900', label: 'Dark Roast' },
+      LIGHT: { color: "text-amber-300", label: "Light Roast" },
+      MEDIUM: { color: "text-amber-600", label: "Medium Roast" },
+      DARK: { color: "text-amber-900", label: "Dark Roast" },
     };
 
     return levels[data.roastLevel] || null;
@@ -133,8 +133,8 @@ const CardProduct = ({ data }) => {
   const getIntensityLevel = () => {
     if (!data.intensity) return null;
 
-    const level = parseInt(data.intensity.split('/')[0]);
-    const total = parseInt(data.intensity.split('/')[1]);
+    const level = parseInt(data.intensity.split("/")[0]);
+    const total = parseInt(data.intensity.split("/")[1]);
 
     return { level, total };
   };
@@ -146,7 +146,7 @@ const CardProduct = ({ data }) => {
     if (data.packaging) details.push(data.packaging);
     if (data.weight) details.push(`${data.weight}kg`);
 
-    return details.join(' • ');
+    return details.join(" • ");
   };
 
   const getProductBadges = () => {
@@ -155,14 +155,14 @@ const CardProduct = ({ data }) => {
     if (data.blend) {
       badges.push({
         label: data.blend,
-        class: 'bg-amber-50 text-amber-800',
+        class: "bg-amber-50 text-amber-800",
       });
     }
 
     if (data.coffeeOrigin) {
       badges.push({
         label: data.coffeeOrigin,
-        class: 'bg-green-50 text-green-800',
+        class: "bg-green-50 text-green-800",
       });
     }
 
@@ -177,33 +177,33 @@ const CardProduct = ({ data }) => {
     if (primaryPrice > 0) {
       options.push({
         price: primaryPrice,
-        label: 'Regular',
+        label: "Regular",
         icon: <FaShippingFast className="w-3 h-3" />,
-        color: 'text-green-600',
-        bgColor: 'bg-green-50',
-        key: 'regular',
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+        key: "regular",
       });
     }
 
     if (data.price3weeksDelivery > 0) {
       options.push({
         price: data.price3weeksDelivery,
-        label: '3 Weeks',
+        label: "3 Weeks",
         icon: <FaClock className="w-3 h-3" />,
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-50',
-        key: '3weeks',
+        color: "text-orange-600",
+        bgColor: "bg-orange-50",
+        key: "3weeks",
       });
     }
 
     if (data.price5weeksDelivery > 0) {
       options.push({
         price: data.price5weeksDelivery,
-        label: '5 Weeks',
+        label: "5 Weeks",
         icon: <FaCalendarAlt className="w-3 h-3" />,
-        color: 'text-red-600',
-        bgColor: 'bg-red-50',
-        key: '5weeks',
+        color: "text-red-600",
+        bgColor: "bg-red-50",
+        key: "5weeks",
       });
     }
 
@@ -223,7 +223,7 @@ const CardProduct = ({ data }) => {
     try {
       setQuickCartLoading(true);
 
-      const priceOptionToUse = selectedPriceOption || 'regular';
+      const priceOptionToUse = selectedPriceOption || "regular";
       const selectedPrice = getSelectedPrice(priceOptionToUse);
 
       if (!isLoggedIn) {
@@ -243,8 +243,8 @@ const CardProduct = ({ data }) => {
         };
 
         addToGuestCart(cartData);
-        toast.success('Added to cart');
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        toast.success("Added to cart");
+        window.dispatchEvent(new CustomEvent("cart-updated"));
         return;
       }
 
@@ -260,9 +260,9 @@ const CardProduct = ({ data }) => {
       });
 
       if (response.data.success) {
-        toast.success('Added to cart');
+        toast.success("Added to cart");
         fetchCartItem();
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -277,19 +277,19 @@ const CardProduct = ({ data }) => {
 
     try {
       setQuickCartLoading(true);
-      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentPriceOption = selectedPriceOption || "regular";
       const currentQty = priceOptionQuantities[currentPriceOption] || 0;
       const cartId = priceOptionCartIds[currentPriceOption];
 
       if (!isLoggedIn) {
         updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
-        toast.success('Quantity updated');
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        toast.success("Quantity updated");
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       } else {
         const response = await updateCartItem(cartId, currentQty + 1);
         if (response.success) {
-          toast.success('Quantity updated');
-          window.dispatchEvent(new CustomEvent('cart-updated'));
+          toast.success("Quantity updated");
+          window.dispatchEvent(new CustomEvent("cart-updated"));
         }
       }
     } catch (error) {
@@ -305,30 +305,30 @@ const CardProduct = ({ data }) => {
 
     try {
       setQuickCartLoading(true);
-      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentPriceOption = selectedPriceOption || "regular";
       const currentQty = priceOptionQuantities[currentPriceOption] || 0;
       const cartId = priceOptionCartIds[currentPriceOption];
 
       if (!isLoggedIn) {
         if (currentQty === 1) {
           removeFromGuestCart(data._id, currentPriceOption);
-          toast.success('Removed from cart');
+          toast.success("Removed from cart");
         } else {
           updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
-          toast.success('Quantity updated');
+          toast.success("Quantity updated");
         }
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       } else {
         if (currentQty === 1) {
           await deleteCartItem(cartId);
-          toast.success('Removed from cart');
+          toast.success("Removed from cart");
         } else {
           const response = await updateCartItem(cartId, currentQty - 1);
           if (response.success) {
-            toast.success('Quantity updated');
+            toast.success("Quantity updated");
           }
         }
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -361,10 +361,10 @@ const CardProduct = ({ data }) => {
     navigator.clipboard
       .writeText(productUrl)
       .then(() => {
-        toast.success('Product link copied to clipboard!');
+        toast.success("Product link copied to clipboard!");
       })
       .catch(() => {
-        toast.error('Failed to copy link');
+        toast.error("Failed to copy link");
       });
   };
 
@@ -372,14 +372,14 @@ const CardProduct = ({ data }) => {
     e.preventDefault();
     e.stopPropagation();
 
-    const currentPriceOption = selectedPriceOption || 'regular';
+    const currentPriceOption = selectedPriceOption || "regular";
     const hasItemInCart = priceOptionQuantities[currentPriceOption] > 0;
 
     if (!hasItemInCart) {
       await handleQuickAddToCart(e);
     }
 
-    navigate('/checkout');
+    navigate("/checkout");
   };
 
   const pricingOptions = getPricingOptions();
@@ -388,9 +388,9 @@ const CardProduct = ({ data }) => {
   const badges = getProductBadges();
 
   const formatProductType = (type) => {
-    if (!type) return '';
+    if (!type) return "";
     return type
-      .replace('_', ' ')
+      .replace("_", " ")
       .toLowerCase()
       .replace(/\b\w/g, (l) => l.toUpperCase());
   };
@@ -490,8 +490,8 @@ const CardProduct = ({ data }) => {
       {/* Brand/Producer */}
       {data.producer && (
         <div className="text-xs text-gray-500 mb-1">
-          by{' '}
-          <span className="font-medium">{data.producer.name || 'Brand'}</span>
+          by{" "}
+          <span className="font-medium">{data.producer.name || "Brand"}</span>
         </div>
       )}
 
@@ -558,7 +558,7 @@ const CardProduct = ({ data }) => {
       )}
 
       {/* Action Buttons */}
-      <div className="mt-auto pt-2 border-t space-y-2">
+      <div className="mt-auto pt-2 border-t space-y-2 text-sm">
         {!data.productAvailability ? (
           <button
             onClick={() => setShowRequestModal(true)}
@@ -615,7 +615,7 @@ const CardProduct = ({ data }) => {
             {/* Quick Checkout Button */}
             <button
               onClick={handleQuickCheckout}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center text-sm"
             >
               <FaShoppingCart className="mr-2" />
               Quick Checkout

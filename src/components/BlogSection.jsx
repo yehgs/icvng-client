@@ -1,9 +1,9 @@
 // client/src/components/BlogSection.jsx
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, User, Clock, Coffee } from 'lucide-react';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Calendar, User, Clock, Coffee } from "lucide-react";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
 
 /**
  * Blog section component for homepage featuring latest blog posts
@@ -21,71 +21,71 @@ const BlogSection = () => {
       setLoading(true);
       const response = await Axios({
         ...SummaryApi.getFeaturedBlogPosts,
-        params: { limit: 8 }, // Get more posts for the 4-column layout
+        params: { limit: 4 }, // Get more posts for the 4-column layout
       });
 
       if (response.data.success) {
         setFeaturedPosts(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching featured posts:', error);
+      console.error("Error fetching featured posts:", error);
       // Fallback data for development - mark all as featured
       setFeaturedPosts([
         {
-          _id: '1',
-          title: 'The Ethiopian Coffee Story: Birthplace of Coffee',
+          _id: "1",
+          title: "The Ethiopian Coffee Story: Birthplace of Coffee",
           excerpt:
-            'Discover the legendary birthplace of coffee in the highlands of Ethiopia, where coffee culture began over a thousand years ago.',
+            "Discover the legendary birthplace of coffee in the highlands of Ethiopia, where coffee culture began over a thousand years ago.",
           featuredImage:
-            'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&h=400&fit=crop',
-          slug: 'ethiopian-coffee-story-birthplace-of-coffee',
-          category: { name: 'Coffee Origins', slug: 'coffee-origins' },
-          author: { name: 'Coffee Expert' },
+            "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&h=400&fit=crop",
+          slug: "ethiopian-coffee-story-birthplace-of-coffee",
+          category: { name: "Coffee Origins", slug: "coffee-origins" },
+          author: { name: "Coffee Expert" },
           publishedAt: new Date().toISOString(),
           readTime: 5,
           views: 1250,
           featured: true,
         },
         {
-          _id: '2',
-          title: 'Colombian Coffee: The Perfect Climate for Perfect Beans',
+          _id: "2",
+          title: "Colombian Coffee: The Perfect Climate for Perfect Beans",
           excerpt:
             "Explore how Colombia's unique geography and climate create some of the world's most beloved coffee beans.",
           featuredImage:
-            'https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=600&h=400&fit=crop',
-          slug: 'colombian-coffee-perfect-climate-perfect-beans',
-          category: { name: 'Coffee Origins', slug: 'coffee-origins' },
-          author: { name: 'Coffee Expert' },
+            "https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=600&h=400&fit=crop",
+          slug: "colombian-coffee-perfect-climate-perfect-beans",
+          category: { name: "Coffee Origins", slug: "coffee-origins" },
+          author: { name: "Coffee Expert" },
           publishedAt: new Date().toISOString(),
           readTime: 7,
           views: 980,
           featured: true,
         },
         {
-          _id: '3',
+          _id: "3",
           title: "Jamaica Blue Mountain: The World's Most Expensive Coffee",
           excerpt:
-            'Uncover the secrets behind Jamaica Blue Mountain coffee, one of the rarest and most sought-after coffees in the world.',
+            "Uncover the secrets behind Jamaica Blue Mountain coffee, one of the rarest and most sought-after coffees in the world.",
           featuredImage:
-            'https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=600&h=400&fit=crop',
-          slug: 'jamaica-blue-mountain-worlds-most-expensive-coffee',
-          category: { name: 'Coffee Origins', slug: 'coffee-origins' },
-          author: { name: 'Coffee Expert' },
+            "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=600&h=400&fit=crop",
+          slug: "jamaica-blue-mountain-worlds-most-expensive-coffee",
+          category: { name: "Coffee Origins", slug: "coffee-origins" },
+          author: { name: "Coffee Expert" },
           publishedAt: new Date().toISOString(),
           readTime: 6,
           views: 1450,
           featured: true,
         },
         {
-          _id: '4',
-          title: 'Brazilian Coffee: The Giant of Global Coffee Production',
+          _id: "4",
+          title: "Brazilian Coffee: The Giant of Global Coffee Production",
           excerpt:
             "Learn about Brazil's dominance in the coffee world and the diverse regions that produce everything from commodity to specialty grade beans.",
           featuredImage:
-            'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop',
-          slug: 'brazilian-coffee-giant-global-production',
-          category: { name: 'Coffee Origins', slug: 'coffee-origins' },
-          author: { name: 'Coffee Expert' },
+            "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop",
+          slug: "brazilian-coffee-giant-global-production",
+          category: { name: "Coffee Origins", slug: "coffee-origins" },
+          author: { name: "Coffee Expert" },
           publishedAt: new Date().toISOString(),
           readTime: 8,
           views: 890,
@@ -98,10 +98,10 @@ const BlogSection = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   };
 
@@ -118,7 +118,7 @@ const BlogSection = () => {
         />
         <div className="absolute top-4 left-4">
           <span className="inline-block px-3 py-1 bg-amber-600 text-white text-xs font-semibold rounded-full">
-            {post.category?.name || 'Blog'}
+            {post.category?.name || "Blog"}
           </span>
         </div>
         {post.featured && (
@@ -180,7 +180,7 @@ const BlogSection = () => {
             <div className="h-4 bg-gray-200 rounded-lg w-96 mx-auto animate-pulse"></div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6">
-            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            {[1, 2, 3, 4].map((i) => (
               <div
                 key={i}
                 className="bg-white rounded-lg overflow-hidden shadow-md"
