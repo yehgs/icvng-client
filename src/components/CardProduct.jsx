@@ -1,3 +1,4 @@
+// icvng-client/src/components/CardProduct.jsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { valideURLConvert } from "../utils/valideURLConvert";
@@ -59,6 +60,7 @@ const CardProduct = ({ data }) => {
   const cartItem = useSelector((state) => state.cartItem.cart);
 
   const effectiveStock = getEffectiveStock(data);
+  const onlineStock = data.warehouseStock?.onlineStock || 0;
 
   const getPrimaryPrice = (product) => {
     return product.btcPrice && product.btcPrice > 0
@@ -169,15 +171,16 @@ const CardProduct = ({ data }) => {
     return badges.slice(0, 2);
   };
 
+  // ✅ UPDATED: Get pricing options based on stock availability
   const getPricingOptions = () => {
     const options = [];
-
     const primaryPrice = getPrimaryPrice(data);
 
-    if (primaryPrice > 0) {
+    // Only show regular price if online stock > 0
+    if (onlineStock > 0 && primaryPrice > 0) {
       options.push({
         price: primaryPrice,
-        label: "Regular",
+        label: "3 to 5 Days",
         icon: <FaShippingFast className="w-3 h-3" />,
         color: "text-green-600",
         bgColor: "bg-green-50",
@@ -185,6 +188,7 @@ const CardProduct = ({ data }) => {
       });
     }
 
+    // Always show 3-week delivery if price exists
     if (data.price3weeksDelivery > 0) {
       options.push({
         price: data.price3weeksDelivery,
@@ -196,6 +200,7 @@ const CardProduct = ({ data }) => {
       });
     }
 
+    // Always show 5-week delivery if price exists
     if (data.price5weeksDelivery > 0) {
       options.push({
         price: data.price5weeksDelivery,
@@ -399,6 +404,22 @@ const CardProduct = ({ data }) => {
   const currentQty = priceOptionQuantities[selectedPriceOption] || 0;
   const isInCart = currentQty > 0;
 
+  // ✅ Auto-select first available pricing option
+  useEffect(() => {
+    if (
+      pricingOptions.length > 0 &&
+      !pricingOptions.find((opt) => opt.key === selectedPriceOption)
+    ) {
+      setSelectedPriceOption(pricingOptions[0].key);
+    }
+  }, [
+    onlineStock,
+    data.price,
+    data.btcPrice,
+    data.price3weeksDelivery,
+    data.price5weeksDelivery,
+  ]);
+
   return (
     <div className="group relative border hover:shadow-md transition-shadow duration-300 p-3 lg:p-4 flex flex-col rounded-lg cursor-pointer bg-white h-full">
       {/* Floating Action Buttons */}
@@ -466,13 +487,16 @@ const CardProduct = ({ data }) => {
           </div>
         )}
 
-        {effectiveStock > 0 && (
+        {/* ✅ UPDATED: Stock indicator */}
+        {onlineStock > 0 ? (
           <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
-            {effectiveStock <= 5
-              ? `Only ${effectiveStock} left`
-              : `Stock: ${effectiveStock}`}
+            {onlineStock <= 5
+              ? `Only ${onlineStock} left`
+              : `Stock: ${onlineStock}`}
           </div>
-        )}
+        ) : pricingOptions.length > 0 ? (
+          <div className=""></div>
+        ) : null}
       </Link>
 
       {/* Product Name */}
@@ -527,8 +551,8 @@ const CardProduct = ({ data }) => {
         </div>
       )}
 
-      {/* Pricing Options with Currency Support */}
-      {data.productAvailability && pricingOptions.length > 0 && (
+      {/* ✅ UPDATED: Pricing Options - Only show if online stock > 0 OR has delivery prices */}
+      {data.productAvailability && pricingOptions.length > 0 ? (
         <div className="space-y-2 mb-3">
           {pricingOptions.map((option, index) => (
             <div
@@ -555,17 +579,21 @@ const CardProduct = ({ data }) => {
             </div>
           ))}
         </div>
+      ) : (
+        <div className="mb-3 p-2 bg-gray-100 rounded text-center">
+          <p className="text-xs text-gray-500">No delivery options available</p>
+        </div>
       )}
 
       {/* Action Buttons */}
       <div className="mt-auto pt-2 border-t space-y-2 text-sm">
-        {!data.productAvailability ? (
+        {!data.productAvailability || pricingOptions.length === 0 ? (
           <button
             onClick={() => setShowRequestModal(true)}
             className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-3 rounded-md transition flex items-center justify-center border border-yellow-300"
           >
             <FaSadTear className="mr-2 text-yellow-600" />
-            <span className="text-sm">Not in Production</span>
+            <span className="text-sm">Request Product</span>
           </button>
         ) : (
           <>

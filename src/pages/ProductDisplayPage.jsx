@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import SummaryApi from '../common/SummaryApi';
-import Axios from '../utils/Axios';
-import AxiosToastError from '../utils/AxiosToastError';
+// icvng-client/src/pages/ProductDisplayPage.jsx
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import SummaryApi from "../common/SummaryApi";
+import Axios from "../utils/Axios";
+import AxiosToastError from "../utils/AxiosToastError";
 import {
   FaStar,
   FaStarHalfAlt,
@@ -18,40 +19,40 @@ import {
   FaPlus,
   FaMinus,
   FaShoppingCart,
-} from 'react-icons/fa';
-import { BsCart4 } from 'react-icons/bs';
-import { pricewithDiscount } from '../utils/PriceWithDiscount';
-import ProductRequestModal from '../components/ProductRequestModal';
-import EditProductAdmin from '../components/EditProductAdmin';
-import { useSelector } from 'react-redux';
-import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
-import RoastIndicator from '../components/RoastIndicator';
-import IntensityMeter from '../components/IntensityMeter';
-import RatingReviewComponent from '../components/RatingReviewComponent';
-import toast from 'react-hot-toast';
+} from "react-icons/fa";
+import { BsCart4 } from "react-icons/bs";
+import { pricewithDiscount } from "../utils/PriceWithDiscount";
+import ProductRequestModal from "../components/ProductRequestModal";
+import EditProductAdmin from "../components/EditProductAdmin";
+import { useSelector } from "react-redux";
+import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
+import RoastIndicator from "../components/RoastIndicator";
+import IntensityMeter from "../components/IntensityMeter";
+import RatingReviewComponent from "../components/RatingReviewComponent";
+import toast from "react-hot-toast";
 
 const ProductDisplayPage = () => {
   const params = useParams();
-  let productId = params?.product?.split('-')?.slice(-1)[0];
+  let productId = params?.product?.split("-")?.slice(-1)[0];
 
   const [data, setData] = useState({
-    name: '',
+    name: "",
     image: [],
     brand: [],
-    roastLevel: '',
-    aromaticProfile: '',
-    blend: '',
-    intensity: '',
-    coffeeOrigin: '',
-    roastOrigin: '',
-    productType: '',
-    description: '',
-    shortDescription: '',
-    additionalInfo: '',
+    roastLevel: "",
+    aromaticProfile: "",
+    blend: "",
+    intensity: "",
+    coffeeOrigin: "",
+    roastOrigin: "",
+    productType: "",
+    description: "",
+    shortDescription: "",
+    additionalInfo: "",
     more_details: {},
     weight: 0,
-    unit: '',
-    packaging: '',
+    unit: "",
+    packaging: "",
     ratings: [],
     averageRating: 0,
     price: 0,
@@ -60,15 +61,19 @@ const ProductDisplayPage = () => {
     price5weeksDelivery: 0,
     discount: 0,
     stock: 0,
+    warehouseStock: {
+      enabled: false,
+      onlineStock: 0,
+    },
     productAvailability: true,
-    sku: '',
+    sku: "",
     featured: false,
   });
 
   const [image, setImage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('description');
-  const [selectedPriceOption, setSelectedPriceOption] = useState('regular');
+  const [activeTab, setActiveTab] = useState("description");
+  const [selectedPriceOption, setSelectedPriceOption] = useState("regular");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
@@ -81,18 +86,18 @@ const ProductDisplayPage = () => {
   // Track quantities and cart IDs for each price option separately
   const [priceOptionQuantities, setPriceOptionQuantities] = useState({
     regular: 0,
-    '3weeks': 0,
-    '5weeks': 0,
+    "3weeks": 0,
+    "5weeks": 0,
   });
 
   const [priceOptionCartIds, setPriceOptionCartIds] = useState({
     regular: null,
-    '3weeks': null,
-    '5weeks': null,
+    "3weeks": null,
+    "5weeks": null,
   });
 
   const user = useSelector((state) => state.user);
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.role === "ADMIN";
   const cartItem = useSelector((state) => state.cartItem.cart);
 
   const { formatPrice, selectedCurrency } = useCurrency();
@@ -109,6 +114,7 @@ const ProductDisplayPage = () => {
   } = useGlobalContext();
 
   const effectiveStock = getEffectiveStock(data);
+  const onlineStock = data.warehouseStock?.onlineStock || 0;
 
   const getPrimaryPrice = (product) => {
     return product.btcPrice && product.btcPrice > 0
@@ -120,20 +126,20 @@ const ProductDisplayPage = () => {
   useEffect(() => {
     const quantities = {
       regular: 0,
-      '3weeks': 0,
-      '5weeks': 0,
+      "3weeks": 0,
+      "5weeks": 0,
     };
 
     const cartIds = {
       regular: null,
-      '3weeks': null,
-      '5weeks': null,
+      "3weeks": null,
+      "5weeks": null,
     };
 
     if (isLoggedIn) {
       cartItem.forEach((item) => {
         if (item.productId._id === data._id) {
-          const option = item.priceOption || 'regular';
+          const option = item.priceOption || "regular";
           quantities[option] = item.quantity;
           cartIds[option] = item._id;
         }
@@ -141,7 +147,7 @@ const ProductDisplayPage = () => {
     } else {
       guestCart.forEach((item) => {
         if (item.productId === data._id) {
-          const option = item.priceOption || 'regular';
+          const option = item.priceOption || "regular";
           quantities[option] = item.quantity;
         }
       });
@@ -155,11 +161,11 @@ const ProductDisplayPage = () => {
     const primaryPrice = getPrimaryPrice(data);
 
     switch (priceOption) {
-      case '3weeks':
+      case "3weeks":
         return data.price3weeksDelivery > 0
           ? data.price3weeksDelivery
           : primaryPrice;
-      case '5weeks':
+      case "5weeks":
         return data.price5weeksDelivery > 0
           ? data.price5weeksDelivery
           : primaryPrice;
@@ -174,9 +180,9 @@ const ProductDisplayPage = () => {
       setSelectedPriceOption(selectedPriceOption);
     };
 
-    window.addEventListener('currency-changed', handleCurrencyChange);
+    window.addEventListener("currency-changed", handleCurrencyChange);
     return () =>
-      window.removeEventListener('currency-changed', handleCurrencyChange);
+      window.removeEventListener("currency-changed", handleCurrencyChange);
   }, [selectedPriceOption]);
 
   const fetchProductDetails = async () => {
@@ -209,7 +215,7 @@ const ProductDisplayPage = () => {
     try {
       setCartLoading(true);
 
-      const priceOptionToUse = selectedPriceOption || 'regular';
+      const priceOptionToUse = selectedPriceOption || "regular";
       const selectedPrice = getSelectedPrice(priceOptionToUse);
 
       if (!isLoggedIn) {
@@ -229,8 +235,8 @@ const ProductDisplayPage = () => {
         };
 
         addToGuestCart(cartData);
-        toast.success('Added to cart');
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        toast.success("Added to cart");
+        window.dispatchEvent(new CustomEvent("cart-updated"));
         return;
       }
 
@@ -246,9 +252,9 @@ const ProductDisplayPage = () => {
       });
 
       if (response.data.success) {
-        toast.success('Added to cart');
+        toast.success("Added to cart");
         fetchCartItem();
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -260,19 +266,19 @@ const ProductDisplayPage = () => {
   const handleIncreaseQty = async () => {
     try {
       setCartLoading(true);
-      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentPriceOption = selectedPriceOption || "regular";
       const currentQty = priceOptionQuantities[currentPriceOption] || 0;
       const cartId = priceOptionCartIds[currentPriceOption];
 
       if (!isLoggedIn) {
         updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
-        toast.success('Quantity updated');
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        toast.success("Quantity updated");
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       } else {
         const response = await updateCartItem(cartId, currentQty + 1);
         if (response.success) {
-          toast.success('Quantity updated');
-          window.dispatchEvent(new CustomEvent('cart-updated'));
+          toast.success("Quantity updated");
+          window.dispatchEvent(new CustomEvent("cart-updated"));
         }
       }
     } catch (error) {
@@ -285,30 +291,30 @@ const ProductDisplayPage = () => {
   const handleDecreaseQty = async () => {
     try {
       setCartLoading(true);
-      const currentPriceOption = selectedPriceOption || 'regular';
+      const currentPriceOption = selectedPriceOption || "regular";
       const currentQty = priceOptionQuantities[currentPriceOption] || 0;
       const cartId = priceOptionCartIds[currentPriceOption];
 
       if (!isLoggedIn) {
         if (currentQty === 1) {
           removeFromGuestCart(data._id, currentPriceOption);
-          toast.success('Removed from cart');
+          toast.success("Removed from cart");
         } else {
           updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
-          toast.success('Quantity updated');
+          toast.success("Quantity updated");
         }
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       } else {
         if (currentQty === 1) {
           await deleteCartItem(cartId);
-          toast.success('Removed from cart');
+          toast.success("Removed from cart");
         } else {
           const response = await updateCartItem(cartId, currentQty - 1);
           if (response.success) {
-            toast.success('Quantity updated');
+            toast.success("Quantity updated");
           }
         }
-        window.dispatchEvent(new CustomEvent('cart-updated'));
+        window.dispatchEvent(new CustomEvent("cart-updated"));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -355,57 +361,59 @@ const ProductDisplayPage = () => {
     setShowMagnifier(false);
   };
 
+  // ✅ UPDATED: Price options based on stock availability
   const priceOptions = [
-    ...(getPrimaryPrice(data) > 0
+    // Only include regular price if online stock > 0
+    ...(onlineStock > 0 && getPrimaryPrice(data) > 0
       ? [
           {
-            key: 'regular',
-            label: 'Regular Price',
+            key: "regular",
+            label: "Regular Price",
             price: getPrimaryPrice(data),
             icon: <FaShippingFast className="text-green-600" />,
-            color: 'text-green-600',
-            bgColor: 'bg-green-50',
-            borderColor: 'border-green-200',
-            description:
-              effectiveStock > 0
-                ? 'Standard delivery (2-3 business days)'
-                : 'Available for order - Admin will process',
-            delivery: 'Fast Delivery',
+            color: "text-green-600",
+            bgColor: "bg-green-50",
+            borderColor: "border-green-200",
+            description: `Standard delivery (2-3 business days) - ${onlineStock} units available`,
+            delivery: "Fast Delivery",
           },
         ]
       : []),
+    // Always include 3-week delivery if price exists
     ...(data.price3weeksDelivery > 0
       ? [
           {
-            key: '3weeks',
-            label: '3 Weeks Delivery',
+            key: "3weeks",
+            label: "3 Weeks Delivery",
             price: data.price3weeksDelivery,
             icon: <FaClock className="text-orange-600" />,
-            color: 'text-orange-600',
-            bgColor: 'bg-orange-50',
-            borderColor: 'border-orange-200',
-            description: 'Delivery in 3 weeks',
-            delivery: '3 Week Special Order',
+            color: "text-orange-600",
+            bgColor: "bg-orange-50",
+            borderColor: "border-orange-200",
+            description: "Special order - Delivery in 3 weeks",
+            delivery: "3 Week Special Order",
           },
         ]
       : []),
+    // Always include 5-week delivery if price exists
     ...(data.price5weeksDelivery > 0
       ? [
           {
-            key: '5weeks',
-            label: '5 Weeks Delivery',
+            key: "5weeks",
+            label: "5 Weeks Delivery",
             price: data.price5weeksDelivery,
             icon: <FaCalendarAlt className="text-red-600" />,
-            color: 'text-red-600',
-            bgColor: 'bg-red-50',
-            borderColor: 'border-red-200',
-            description: 'Special order delivery in 5 weeks',
-            delivery: '5 Week Special Order',
+            color: "text-red-600",
+            bgColor: "bg-red-50",
+            borderColor: "border-red-200",
+            description: "Special order - Delivery in 5 weeks",
+            delivery: "5 Week Special Order",
           },
         ]
       : []),
   ];
 
+  // ✅ Auto-select first available pricing option
   useEffect(() => {
     if (
       priceOptions.length > 0 &&
@@ -414,8 +422,7 @@ const ProductDisplayPage = () => {
       setSelectedPriceOption(priceOptions[0].key);
     }
   }, [
-    data.warehouseStock,
-    data.stock,
+    onlineStock,
     data.price,
     data.btcPrice,
     data.price3weeksDelivery,
@@ -443,7 +450,7 @@ const ProductDisplayPage = () => {
         {/* Breadcrumb */}
         <div className="flex items-center justify-between mb-6">
           <div className="text-sm text-gray-500">
-            Home / {data.productType?.toLowerCase() || 'Products'} / {data.name}
+            Home / {data.productType?.toLowerCase() || "Products"} / {data.name}
           </div>
 
           {isAdmin && (
@@ -476,16 +483,16 @@ const ProductDisplayPage = () => {
                 {showMagnifier && (
                   <div
                     style={{
-                      position: 'absolute',
-                      pointerEvents: 'none',
+                      position: "absolute",
+                      pointerEvents: "none",
                       height: `${magnifierHeight}px`,
                       width: `${magnifierWidth}px`,
                       top: `${magnifierPosition.y - magnifierHeight / 2}px`,
-                      left: `${magnifierPosition.x + 20}px`, // move slightly to the right of cursor like Amazon
-                      border: '2px solid rgba(0,0,0,0.1)',
-                      backgroundColor: 'white',
+                      left: `${magnifierPosition.x + 20}px`,
+                      border: "2px solid rgba(0,0,0,0.1)",
+                      backgroundColor: "white",
                       backgroundImage: `url('${data.image[image]}')`,
-                      backgroundRepeat: 'no-repeat',
+                      backgroundRepeat: "no-repeat",
                       backgroundSize: `${imgSize.width * zoomLevel}px ${
                         imgSize.height * zoomLevel
                       }px`,
@@ -495,10 +502,10 @@ const ProductDisplayPage = () => {
                       backgroundPositionY: `${
                         -magnifierPosition.y * zoomLevel + magnifierHeight / 2
                       }px`,
-                      borderRadius: '8px',
-                      boxShadow: '0 8px 16px rgba(0,0,0,0.25)',
+                      borderRadius: "8px",
+                      boxShadow: "0 8px 16px rgba(0,0,0,0.25)",
                       zIndex: 1000,
-                      transition: 'background-position 0.05s ease-out',
+                      transition: "background-position 0.05s ease-out",
                     }}
                   />
                 )}
@@ -511,7 +518,7 @@ const ProductDisplayPage = () => {
                   <div
                     key={`thumb-${index}`}
                     className={`cursor-pointer border-2 rounded p-1 min-w-20 h-20 ${
-                      index === image ? 'border-green-600' : 'border-gray-200'
+                      index === image ? "border-green-600" : "border-gray-200"
                     }`}
                     onClick={() => setImage(index)}
                   >
@@ -526,7 +533,7 @@ const ProductDisplayPage = () => {
             </div>
           </div>
 
-          {/* Right Column - Product Info */}
+          {/* Right Column - ProductInfo */}
           <div className="space-y-6">
             <div>
               {data.brand && data.brand[0] && (
@@ -544,7 +551,6 @@ const ProductDisplayPage = () => {
               <h1 className="text-3xl font-bold text-gray-800 capitalize">
                 {data.name}
               </h1>
-
               {data.sku && (
                 <p className="text-sm text-gray-500 mt-1">SKU: {data.sku}</p>
               )}
@@ -560,7 +566,7 @@ const ProductDisplayPage = () => {
                   {renderStars(data.averageRating)}
                 </div>
                 <span className="text-sm text-gray-500">
-                  {data.averageRating.toFixed(1)} ({data.ratings.length}{' '}
+                  {data.averageRating.toFixed(1)} ({data.ratings.length}{" "}
                   reviews)
                 </span>
               </div>
@@ -570,7 +576,7 @@ const ProductDisplayPage = () => {
               <p className="text-gray-600">{data.shortDescription}</p>
             )}
 
-            {/* Price Options */}
+            {/* ✅ UPDATED: Price Options based on stock */}
             {data.productAvailability && priceOptions.length > 0 ? (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800">
@@ -585,7 +591,7 @@ const ProductDisplayPage = () => {
                         className={`block p-4 rounded-lg border-2 transition-all ${
                           selectedPriceOption === option.key
                             ? `${option.borderColor} ${option.bgColor}`
-                            : 'border-gray-200 bg-white'
+                            : "border-gray-200 bg-white"
                         }`}
                       >
                         <label className="cursor-pointer">
@@ -680,21 +686,21 @@ const ProductDisplayPage = () => {
                 <div className="flex items-center text-sm">
                   <span
                     className={
-                      effectiveStock > 0 ? 'text-green-600' : 'text-orange-600'
+                      onlineStock > 0 ? "text-green-600" : "text-orange-600"
                     }
                   >
-                    {effectiveStock > 0 ? 'In Stock' : 'Available for Order'}
+                    {onlineStock > 0 ? "In Stock" : "Available for Pre-Order"}
                   </span>
-                  {effectiveStock > 0 && (
+                  {onlineStock > 0 && (
                     <span className="ml-2 text-gray-500">
-                      ({effectiveStock} units available)
+                      ({onlineStock} units available)
                     </span>
                   )}
                 </div>
 
                 {data.discount > 0 && (
                   <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium inline-block">
-                    {data.discount}% OFF - Save{' '}
+                    {data.discount}% OFF - Save{" "}
                     {formatPrice(
                       (getSelectedPrice(selectedPriceOption) * data.discount) /
                         100
@@ -706,11 +712,11 @@ const ProductDisplayPage = () => {
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                 <FaSadTear className="text-yellow-600 text-3xl mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Not in Production
+                  Not Available
                 </h3>
                 <p className="text-yellow-700 mb-4">
-                  This product is no longer being produced. You can request to
-                  be notified if it becomes available again in the future.
+                  This product is currently not available for purchase. You can
+                  request to be notified when it becomes available.
                 </p>
                 <button
                   onClick={() => setShowRequestModal(true)}
@@ -722,7 +728,7 @@ const ProductDisplayPage = () => {
             )}
 
             {/* Coffee attributes */}
-            {data.productType === 'COFFEE' && (
+            {data.productType === "COFFEE" && (
               <div className="bg-gray-50 p-4 rounded-lg grid md:grid-cols-2 gap-4">
                 {data.weight && (
                   <div className="flex flex-col">
@@ -815,33 +821,33 @@ const ProductDisplayPage = () => {
             <div className="flex flex-wrap -mb-px">
               <button
                 className={`inline-block p-4 font-medium text-sm border-b-2 ${
-                  activeTab === 'description'
-                    ? 'border-green-700 text-green-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  activeTab === "description"
+                    ? "border-green-700 text-green-700"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
-                onClick={() => setActiveTab('description')}
+                onClick={() => setActiveTab("description")}
               >
                 Description
               </button>
-              {data.additionalInfo && data.additionalInfo.trim() !== '' && (
+              {data.additionalInfo && data.additionalInfo.trim() !== "" && (
                 <button
                   className={`inline-block p-4 font-medium text-sm border-b-2 ${
-                    activeTab === 'additionalInfo'
-                      ? 'border-green-700 text-green-700'
-                      : 'border-transparent text-gray-500 hover:text-gray-700'
+                    activeTab === "additionalInfo"
+                      ? "border-green-700 text-green-700"
+                      : "border-transparent text-gray-500 hover:text-gray-700"
                   }`}
-                  onClick={() => setActiveTab('additionalInfo')}
+                  onClick={() => setActiveTab("additionalInfo")}
                 >
                   Additional Information
                 </button>
               )}
               <button
                 className={`inline-block p-4 font-medium text-sm border-b-2 ${
-                  activeTab === 'reviews'
-                    ? 'border-green-700 text-green-700'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  activeTab === "reviews"
+                    ? "border-green-700 text-green-700"
+                    : "border-transparent text-gray-500 hover:text-gray-700"
                 }`}
-                onClick={() => setActiveTab('reviews')}
+                onClick={() => setActiveTab("reviews")}
               >
                 Reviews ({data.ratings.length})
               </button>
@@ -849,7 +855,7 @@ const ProductDisplayPage = () => {
           </div>
 
           <div className="py-6">
-            {activeTab === 'description' && (
+            {activeTab === "description" && (
               <div className="prose max-w-none grid md:grid-cols-2 gap-6">
                 <div dangerouslySetInnerHTML={{ __html: data.description }} />
                 {data.more_details &&
@@ -874,7 +880,7 @@ const ProductDisplayPage = () => {
               </div>
             )}
 
-            {activeTab === 'additionalInfo' && (
+            {activeTab === "additionalInfo" && (
               <div className="grid md:grid-cols-2 gap-6">
                 {data.additionalInfo && (
                   <div>
@@ -887,7 +893,7 @@ const ProductDisplayPage = () => {
               </div>
             )}
 
-            {activeTab === 'reviews' && (
+            {activeTab === "reviews" && (
               <div>
                 <RatingReviewComponent
                   productId={productId}
@@ -929,5 +935,4 @@ const ProductDisplayPage = () => {
     </div>
   );
 };
-
 export default ProductDisplayPage;

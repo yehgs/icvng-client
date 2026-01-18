@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
-import { pricewithDiscount } from '../utils/PriceWithDiscount';
-import { valideURLConvert } from '../utils/valideURLConvert';
-import { updateWishlistCount } from '../utils/eventUtils';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
+import { pricewithDiscount } from "../utils/PriceWithDiscount";
+import { valideURLConvert } from "../utils/valideURLConvert";
+import { updateWishlistCount } from "../utils/eventUtils";
 import {
   FaHeart,
   FaRegHeart,
   FaShoppingCart,
   FaTrash,
   FaTimes,
-} from 'react-icons/fa';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import toast from 'react-hot-toast';
-import AxiosToastError from '../utils/AxiosToastError';
-import Loading from '../components/Loading';
+} from "react-icons/fa";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import toast from "react-hot-toast";
+import AxiosToastError from "../utils/AxiosToastError";
+import Loading from "../components/Loading";
 
 const WishlistPage = () => {
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -31,7 +31,7 @@ const WishlistPage = () => {
     } else {
       // Load from localStorage for non-logged-in users
       const localWishlist = JSON.parse(
-        localStorage.getItem('wishlist') || '[]'
+        localStorage.getItem("wishlist") || "[]"
       );
       setWishlistItems(localWishlist);
       setLoading(false);
@@ -56,23 +56,80 @@ const WishlistPage = () => {
     }
   };
 
-  // Add to cart handler
+  // ✅ FIXED: Add to cart handler with automatic removal from wishlist
   const handleAddToCart = async (product) => {
+    if (!product.productAvailability) {
+      toast.error("This product is not available");
+      return;
+    }
+
     try {
       setAddingToCart((prev) => ({ ...prev, [product._id]: true }));
 
-      const response = await Axios({
-        ...SummaryApi.addTocart,
-        data: {
-          productId: product._id,
-          quantity: 1,
-        },
-      });
+      if (isLoggedIn) {
+        // For logged-in users, use API
+        const response = await Axios({
+          ...SummaryApi.addTocart,
+          data: {
+            productId: product._id,
+            quantity: 1,
+          },
+        });
 
-      const { data: responseData } = response;
+        const { data: responseData } = response;
 
-      if (responseData.success) {
-        toast.success(responseData.message);
+        if (responseData.success) {
+          toast.success(responseData.message || "Product added to cart");
+
+          // ✅ CRITICAL: Trigger multiple events to update cart everywhere
+          window.dispatchEvent(new CustomEvent("cart-updated"));
+          window.dispatchEvent(new Event("storage")); // For cross-tab updates
+
+          // ✅ Small delay to ensure backend updates before removing from wishlist
+          setTimeout(async () => {
+            await removeFromWishlist(product._id);
+          }, 100);
+        }
+      } else {
+        // For guest users, add to localStorage cart
+        const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
+
+        // Check if product already in cart
+        const existingItemIndex = guestCart.findIndex(
+          (item) => item.productId === product._id
+        );
+
+        if (existingItemIndex !== -1) {
+          // Update quantity
+          guestCart[existingItemIndex].quantity += 1;
+          toast.success("Product quantity updated in cart");
+        } else {
+          // Add new item with proper structure
+          guestCart.push({
+            productId: product._id,
+            quantity: 1,
+            name: product.name,
+            image: product.image,
+            btcPrice: product.btcPrice || product.price || 0,
+            price3weeksDelivery: product.price3weeksDelivery || 0,
+            price5weeksDelivery: product.price5weeksDelivery || 0,
+            discount: product.discount || 0,
+            productAvailability: product.productAvailability,
+            sku: product.sku,
+            productType: product.productType,
+            weight: product.weight,
+            priceOption: "regular", // Default price option
+          });
+          toast.success("Product added to cart");
+        }
+
+        localStorage.setItem("guestCart", JSON.stringify(guestCart));
+
+        // Trigger cart update event
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+
+        // ✅ Remove from wishlist after successful add to cart
+        await removeFromWishlist(product._id);
       }
     } catch (error) {
       AxiosToastError(error);
@@ -93,31 +150,75 @@ const WishlistPage = () => {
       );
 
       if (availableItems.length === 0) {
-        toast.error('No available items to add to cart');
+        toast.error("No available items to add to cart");
+        setLoading(false);
         return;
       }
 
-      // Add all available items to cart one by one
-      for (const item of availableItems) {
-        try {
-          await Axios({
-            ...SummaryApi.addTocart,
-            data: {
+      if (isLoggedIn) {
+        // Add all available items to cart one by one via API
+        let successCount = 0;
+        for (const item of availableItems) {
+          try {
+            await Axios({
+              ...SummaryApi.addTocart,
+              data: {
+                productId: item._id,
+                quantity: 1,
+              },
+            });
+            successCount++;
+          } catch (error) {
+            console.error(`Failed to add ${item.name} to cart:`, error);
+          }
+        }
+
+        toast.success(`Added ${successCount} items to cart`);
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+
+        // ✅ Clear wishlist after adding all to cart
+        await handleClearWishlist(true); // Pass true to skip confirmation
+      } else {
+        // For guest users, add all to localStorage
+        const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
+        let addedCount = 0;
+
+        availableItems.forEach((item) => {
+          const existingItemIndex = guestCart.findIndex(
+            (cartItem) => cartItem.productId === item._id
+          );
+
+          if (existingItemIndex !== -1) {
+            guestCart[existingItemIndex].quantity += 1;
+          } else {
+            guestCart.push({
               productId: item._id,
               quantity: 1,
-            },
-          });
-        } catch (error) {
-          console.error(`Failed to add ${item.name} to cart:`, error);
-        }
+              name: item.name,
+              image: item.image,
+              btcPrice: item.btcPrice || item.price || 0,
+              price3weeksDelivery: item.price3weeksDelivery || 0,
+              price5weeksDelivery: item.price5weeksDelivery || 0,
+              discount: item.discount || 0,
+              productAvailability: item.productAvailability,
+              sku: item.sku,
+              productType: item.productType,
+              weight: item.weight,
+              priceOption: "regular",
+            });
+            addedCount++;
+          }
+        });
+
+        localStorage.setItem("guestCart", JSON.stringify(guestCart));
+        toast.success(`Added ${addedCount} items to cart`);
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+
+        // ✅ Clear wishlist after adding all to cart
+        await handleClearWishlist(true); // Pass true to skip confirmation
       }
-
-      toast.success(`Added ${availableItems.length} items to cart`);
-
-      // Update cart count in header
-      // Note: You may want to create updateCartCount() if needed
     } catch (error) {
-      toast.error('Failed to add all items to cart');
+      toast.error("Failed to add all items to cart");
     } finally {
       setLoading(false);
     }
@@ -137,7 +238,7 @@ const WishlistPage = () => {
           setWishlistItems((prev) =>
             prev.filter((item) => item._id !== productId)
           );
-          toast.success('Product removed from wishlist');
+          toast.success("Product removed from wishlist");
 
           // Update header count using event utils
           updateWishlistCount();
@@ -151,8 +252,8 @@ const WishlistPage = () => {
         (item) => item._id !== productId
       );
       setWishlistItems(updatedList);
-      localStorage.setItem('wishlist', JSON.stringify(updatedList));
-      toast.success('Product removed from wishlist');
+      localStorage.setItem("wishlist", JSON.stringify(updatedList));
+      toast.success("Product removed from wishlist");
 
       // Update header count using event utils
       updateWishlistCount();
@@ -160,33 +261,42 @@ const WishlistPage = () => {
   };
 
   // Clear wishlist with confirmation
-  const handleClearWishlist = async () => {
-    if (window.confirm('Are you sure you want to clear your wishlist?')) {
-      if (isLoggedIn) {
-        try {
-          const response = await Axios({
-            ...SummaryApi.clearWishlist,
-          });
+  const handleClearWishlist = async (skipConfirmation = false) => {
+    if (
+      !skipConfirmation &&
+      !window.confirm("Are you sure you want to clear your wishlist?")
+    ) {
+      return;
+    }
 
-          const { data: responseData } = response;
-          if (responseData.success) {
-            setWishlistItems([]);
-            toast.success('Wishlist cleared');
+    if (isLoggedIn) {
+      try {
+        const response = await Axios({
+          ...SummaryApi.clearWishlist,
+        });
 
-            // Update header count using event utils
-            updateWishlistCount();
+        const { data: responseData } = response;
+        if (responseData.success) {
+          setWishlistItems([]);
+          if (!skipConfirmation) {
+            toast.success("Wishlist cleared");
           }
-        } catch (error) {
-          AxiosToastError(error);
-        }
-      } else {
-        setWishlistItems([]);
-        localStorage.setItem('wishlist', JSON.stringify([]));
-        toast.success('Wishlist cleared');
 
-        // Update header count using event utils
-        updateWishlistCount();
+          // Update header count using event utils
+          updateWishlistCount();
+        }
+      } catch (error) {
+        AxiosToastError(error);
       }
+    } else {
+      setWishlistItems([]);
+      localStorage.setItem("wishlist", JSON.stringify([]));
+      if (!skipConfirmation) {
+        toast.success("Wishlist cleared");
+      }
+
+      // Update header count using event utils
+      updateWishlistCount();
     }
   };
 
@@ -279,8 +389,8 @@ const WishlistPage = () => {
                       item.name
                     )}-${item._id}`;
                     const price = pricewithDiscount(
-                      item.btcPrice,
-                      item.discount
+                      item.btcPrice || item.price || 0,
+                      item.discount || 0
                     );
                     const isAvailable = item.productAvailability;
 
@@ -294,7 +404,7 @@ const WishlistPage = () => {
                                 src={
                                   item.image && item.image.length > 0
                                     ? item.image[0]
-                                    : '/api/placeholder/100/100'
+                                    : "/api/placeholder/100/100"
                                 }
                                 alt={item.name}
                               />
@@ -314,7 +424,7 @@ const WishlistPage = () => {
                               {item.productType && (
                                 <p className="text-xs text-gray-500 mt-1">
                                   {item.productType
-                                    .replace('_', ' ')
+                                    .replace("_", " ")
                                     .toLowerCase()
                                     .replace(/\b\w/g, (l) => l.toUpperCase())}
                                 </p>
@@ -328,7 +438,9 @@ const WishlistPage = () => {
                           </div>
                           {Boolean(item.discount) && (
                             <div className="text-xs text-gray-500 line-through">
-                              {DisplayPriceInNaira(item.price)}
+                              {DisplayPriceInNaira(
+                                item.btcPrice || item.price || 0
+                              )}
                             </div>
                           )}
                         </td>
@@ -336,11 +448,11 @@ const WishlistPage = () => {
                           <span
                             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               isAvailable
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-red-100 text-red-800'
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {isAvailable ? 'Available' : 'Discontinued'}
+                            {isAvailable ? "Available" : "Discontinued"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -351,8 +463,8 @@ const WishlistPage = () => {
                               className={`inline-flex items-center px-3 py-1.5 text-xs font-medium rounded-md 
                                 ${
                                   isAvailable
-                                    ? 'bg-green-700 text-white hover:bg-green-800'
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                    ? "bg-green-700 text-white hover:bg-green-800"
+                                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
                                 } transition`}
                             >
                               {addingToCart[item._id] ? (
@@ -386,11 +498,7 @@ const WishlistPage = () => {
               You may also like
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* <div className="bg-gray-50 rounded-lg p-6 text-center h-48 flex items-center justify-center">
-                <p className="text-gray-500">
-                  Recommended products would appear here
-                </p>
-              </div> */}
+              {/* Recommended products would appear here */}
             </div>
           </div>
         </div>

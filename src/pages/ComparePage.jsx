@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
-import { pricewithDiscount } from '../utils/PriceWithDiscount';
-import { valideURLConvert } from '../utils/valideURLConvert';
-import { updateCompareCount } from '../utils/eventUtils';
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
+import { pricewithDiscount } from "../utils/PriceWithDiscount";
+import { valideURLConvert } from "../utils/valideURLConvert";
+import { updateCompareCount } from "../utils/eventUtils";
 import {
   FaTimes,
   FaShoppingCart,
@@ -12,14 +12,14 @@ import {
   FaStar,
   FaCheck,
   FaInfoCircle,
-} from 'react-icons/fa';
-import { useSelector } from 'react-redux';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import toast from 'react-hot-toast';
-import AxiosToastError from '../utils/AxiosToastError';
-import Loading from '../components/Loading';
-import WishlistButton from '../components/WishlistButton';
+} from "react-icons/fa";
+import { useSelector } from "react-redux";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import toast from "react-hot-toast";
+import AxiosToastError from "../utils/AxiosToastError";
+import Loading from "../components/Loading";
+import WishlistButton from "../components/WishlistButton";
 
 const ComparePage = () => {
   const [compareItems, setCompareItems] = useState([]);
@@ -34,7 +34,7 @@ const ComparePage = () => {
     } else {
       // Load from localStorage for non-logged-in users
       const localCompareList = JSON.parse(
-        localStorage.getItem('compareList') || '[]'
+        localStorage.getItem("compareList") || "[]"
       );
       setCompareItems(localCompareList);
       setLoading(false);
@@ -59,25 +59,80 @@ const ComparePage = () => {
     }
   };
 
-  // Add to cart handler
+  // ✅ FIXED: Add to cart handler with automatic removal from compare list
   const handleAddToCart = async (product) => {
-    if (!product.productAvailability) return;
+    if (!product.productAvailability) {
+      toast.error("This product is not available");
+      return;
+    }
 
     try {
       setAddingToCart((prev) => ({ ...prev, [product._id]: true }));
 
-      const response = await Axios({
-        ...SummaryApi.addTocart,
-        data: {
-          productId: product._id,
-          quantity: 1,
-        },
-      });
+      if (isLoggedIn) {
+        // For logged-in users, use API
+        const response = await Axios({
+          ...SummaryApi.addTocart,
+          data: {
+            productId: product._id,
+            quantity: 1,
+          },
+        });
 
-      const { data: responseData } = response;
+        const { data: responseData } = response;
 
-      if (responseData.success) {
-        toast.success(responseData.message);
+        if (responseData.success) {
+          toast.success(responseData.message || "Product added to cart");
+
+          // ✅ CRITICAL: Trigger multiple events to update cart everywhere
+          window.dispatchEvent(new CustomEvent("cart-updated"));
+          window.dispatchEvent(new Event("storage")); // For cross-tab updates
+
+          // ✅ Small delay to ensure backend updates before removing from compare
+          setTimeout(async () => {
+            await removeFromCompare(product._id);
+          }, 100);
+        }
+      } else {
+        // For guest users, add to localStorage cart
+        const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
+
+        // Check if product already in cart
+        const existingItemIndex = guestCart.findIndex(
+          (item) => item.productId === product._id
+        );
+
+        if (existingItemIndex !== -1) {
+          // Update quantity
+          guestCart[existingItemIndex].quantity += 1;
+          toast.success("Product quantity updated in cart");
+        } else {
+          // Add new item with proper structure
+          guestCart.push({
+            productId: product._id,
+            quantity: 1,
+            name: product.name,
+            image: product.image,
+            btcPrice: product.btcPrice || product.price || 0,
+            price3weeksDelivery: product.price3weeksDelivery || 0,
+            price5weeksDelivery: product.price5weeksDelivery || 0,
+            discount: product.discount || 0,
+            productAvailability: product.productAvailability,
+            sku: product.sku,
+            productType: product.productType,
+            weight: product.weight,
+            priceOption: "regular", // Default price option
+          });
+          toast.success("Product added to cart");
+        }
+
+        localStorage.setItem("guestCart", JSON.stringify(guestCart));
+
+        // Trigger cart update event
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+
+        // ✅ Remove from compare after successful add to cart
+        await removeFromCompare(product._id);
       }
     } catch (error) {
       AxiosToastError(error);
@@ -99,7 +154,7 @@ const ComparePage = () => {
           setCompareItems((prev) =>
             prev.filter((item) => item._id !== productId)
           );
-          toast.success('Product removed from compare list');
+          toast.success("Product removed from compare list");
 
           // Update header count using event utils
           updateCompareCount();
@@ -111,8 +166,8 @@ const ComparePage = () => {
       // Handle localStorage for non-logged-in users
       const updatedList = compareItems.filter((item) => item._id !== productId);
       setCompareItems(updatedList);
-      localStorage.setItem('compareList', JSON.stringify(updatedList));
-      toast.success('Product removed from compare list');
+      localStorage.setItem("compareList", JSON.stringify(updatedList));
+      toast.success("Product removed from compare list");
 
       // Update header count using event utils
       updateCompareCount();
@@ -120,7 +175,7 @@ const ComparePage = () => {
   };
 
   const clearCompareList = async () => {
-    if (window.confirm('Are you sure you want to clear your compare list?')) {
+    if (window.confirm("Are you sure you want to clear your compare list?")) {
       if (isLoggedIn) {
         try {
           const response = await Axios({
@@ -130,7 +185,7 @@ const ComparePage = () => {
           const { data: responseData } = response;
           if (responseData.success) {
             setCompareItems([]);
-            toast.success('Compare list cleared');
+            toast.success("Compare list cleared");
 
             // Update header count using event utils
             updateCompareCount();
@@ -140,8 +195,8 @@ const ComparePage = () => {
         }
       } else {
         setCompareItems([]);
-        localStorage.setItem('compareList', JSON.stringify([]));
-        toast.success('Compare list cleared');
+        localStorage.setItem("compareList", JSON.stringify([]));
+        toast.success("Compare list cleared");
 
         // Update header count using event utils
         updateCompareCount();
@@ -154,39 +209,49 @@ const ComparePage = () => {
     if (compareItems.length === 0) return [];
 
     const attributes = [
-      { key: 'price', label: 'Regular Price', type: 'price' },
-      { key: 'price3weeksDelivery', label: '3 Weeks Price', type: 'price' },
-      { key: 'price5weeksDelivery', label: '5 Weeks Price', type: 'price' },
-      { key: 'discount', label: 'Discount', type: 'percentage' },
-      { key: 'weight', label: 'Weight', type: 'text' },
-      { key: 'packaging', label: 'Packaging', type: 'text' },
-      { key: 'productType', label: 'Product Type', type: 'text' },
-      { key: 'roastLevel', label: 'Roast Level', type: 'text' },
-      { key: 'intensity', label: 'Intensity', type: 'text' },
-      { key: 'blend', label: 'Blend', type: 'text' },
-      { key: 'coffeeOrigin', label: 'Coffee Origin', type: 'text' },
-      { key: 'aromaticProfile', label: 'Aromatic Profile', type: 'text' },
-      { key: 'averageRating', label: 'Rating', type: 'rating' },
       {
-        key: 'productAvailability',
-        label: 'Availability',
-        type: 'availability',
+        key: "price",
+        label: "Regular Price",
+        type: "price",
+        priceKey: "btcPrice",
+      },
+      { key: "price3weeksDelivery", label: "3 Weeks Price", type: "price" },
+      { key: "price5weeksDelivery", label: "5 Weeks Price", type: "price" },
+      { key: "discount", label: "Discount", type: "percentage" },
+      { key: "weight", label: "Weight", type: "text" },
+      { key: "packaging", label: "Packaging", type: "text" },
+      { key: "productType", label: "Product Type", type: "text" },
+      { key: "roastLevel", label: "Roast Level", type: "text" },
+      { key: "intensity", label: "Intensity", type: "text" },
+      { key: "blend", label: "Blend", type: "text" },
+      { key: "coffeeOrigin", label: "Coffee Origin", type: "text" },
+      { key: "aromaticProfile", label: "Aromatic Profile", type: "text" },
+      { key: "averageRating", label: "Rating", type: "rating" },
+      {
+        key: "productAvailability",
+        label: "Availability",
+        type: "availability",
       },
     ];
 
     // Filter attributes that have values in at least one product
     return attributes.filter((attr) =>
-      compareItems.some((item) => item[attr.key] && item[attr.key] !== '')
+      compareItems.some((item) => {
+        const value = attr.priceKey ? item[attr.priceKey] : item[attr.key];
+        return value && value !== "";
+      })
     );
   };
 
   const renderAttributeValue = (item, attribute) => {
-    const value = item[attribute.key];
+    const value = attribute.priceKey
+      ? item[attribute.priceKey]
+      : item[attribute.key];
 
     if (!value && value !== 0) return <span className="text-gray-400">-</span>;
 
     switch (attribute.type) {
-      case 'price':
+      case "price":
         return (
           <div>
             <div className="font-semibold text-green-600">
@@ -201,26 +266,26 @@ const ComparePage = () => {
             )}
           </div>
         );
-      case 'percentage':
-        return value > 0 ? `${value}%` : '-';
-      case 'rating':
+      case "percentage":
+        return value > 0 ? `${value}%` : "-";
+      case "rating":
         return (
           <div className="flex items-center">
             <FaStar className="text-yellow-400 mr-1" />
             <span>{value.toFixed(1)}</span>
           </div>
         );
-      case 'availability':
+      case "availability":
         return (
           <span
             className={`px-2 py-1 text-xs rounded-full ${
-              value ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
             }`}
           >
-            {value ? 'Available' : 'Discontinued'}
+            {value ? "Available" : "Discontinued"}
           </span>
         );
-      case 'number':
+      case "number":
         return value;
       default:
         return value;
@@ -331,8 +396,8 @@ const ComparePage = () => {
                             }
                             className={`${
                               item.productAvailability
-                                ? 'bg-green-700 hover:bg-green-800 text-white'
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                ? "bg-green-700 hover:bg-green-800 text-white"
+                                : "bg-gray-300 text-gray-500 cursor-not-allowed"
                             } px-3 py-1 rounded text-xs flex items-center justify-center transition`}
                           >
                             {addingToCart[item._id] ? (
@@ -341,8 +406,8 @@ const ComparePage = () => {
                               <>
                                 <FaShoppingCart className="mr-1" />
                                 {item.productAvailability
-                                  ? 'Add to Cart'
-                                  : 'Discontinued'}
+                                  ? "Add to Cart"
+                                  : "Discontinued"}
                               </>
                             )}
                           </button>
@@ -401,7 +466,7 @@ const ComparePage = () => {
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <p className="text-gray-600 mb-4">
               You can add {4 - compareItems.length} more product
-              {4 - compareItems.length > 1 ? 's' : ''} to your comparison.
+              {4 - compareItems.length > 1 ? "s" : ""} to your comparison.
             </p>
             <Link
               to="/shop"
