@@ -1,19 +1,19 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Search, X } from 'lucide-react';
-import { IoSearch } from 'react-icons/io5';
-import { FaArrowLeft } from 'react-icons/fa';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { TypeAnimation } from 'react-type-animation';
-import useMobile from '../hooks/useMobile';
-import Axios from '../utils/Axios';
-import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
+import React, { useEffect, useState, useRef } from "react";
+import { Search, X } from "lucide-react";
+import { IoSearch } from "react-icons/io5";
+import { FaArrowLeft } from "react-icons/fa";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { TypeAnimation } from "react-type-animation";
+import useMobile from "../hooks/useMobile";
+import Axios from "../utils/Axios";
+import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
 
 const valideURLConvert = (name) => {
   const url = name
     ?.toString()
-    .replaceAll(' ', '-')
-    .replaceAll(',', '-')
-    .replaceAll('&', '-');
+    .replaceAll(" ", "-")
+    .replaceAll(",", "-")
+    .replaceAll("&", "-");
   return url;
 };
 
@@ -23,7 +23,7 @@ const SearchInput = () => {
   const [isSearchPage, setIsSearchPage] = useState(false);
   const [isMobile] = useMobile();
   const params = new URLSearchParams(location.search);
-  const searchText = params.get('q') || '';
+  const searchText = params.get("q") || "";
   const [searchQuery, setSearchQuery] = useState(searchText);
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -32,8 +32,9 @@ const SearchInput = () => {
   const debounceTimerRef = useRef(null);
 
   useEffect(() => {
-    const isSearch = location.pathname === '/search';
-    setIsSearchPage(isSearch);
+    // Check if we're on the shop page instead of search page
+    const isShop = location.pathname === "/shop";
+    setIsSearchPage(isShop);
   }, [location]);
 
   useEffect(() => {
@@ -44,9 +45,9 @@ const SearchInput = () => {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -55,7 +56,7 @@ const SearchInput = () => {
   }, [searchText]);
 
   const redirectToSearchPage = () => {
-    navigate('/search');
+    navigate("/shop");
   };
 
   const handleSearchChange = (e) => {
@@ -84,7 +85,7 @@ const SearchInput = () => {
     setLoading(true);
     try {
       const response = await Axios({
-        method: 'GET',
+        method: "GET",
         url: `/api/product/search?q=${query}&limit=5`,
       });
 
@@ -92,7 +93,7 @@ const SearchInput = () => {
         setSearchResults(response.data.data);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error("Search error:", error);
     } finally {
       setLoading(false);
     }
@@ -103,17 +104,18 @@ const SearchInput = () => {
     setShowResults(false);
   };
 
+  // Navigate to shop page with search query
   const handleSubmitSearch = (e) => {
     if (e) e.preventDefault();
     if (searchQuery.trim()) {
-      const url = `/search?q=${searchQuery}`;
+      const url = `/shop?q=${searchQuery}`;
       navigate(url);
       setShowResults(false);
     }
   };
 
   const clearSearch = () => {
-    setSearchQuery('');
+    setSearchQuery("");
     setSearchResults([]);
   };
 
@@ -126,7 +128,7 @@ const SearchInput = () => {
         <div>
           {isMobile && isSearchPage ? (
             <Link
-              to={'/'}
+              to={"/"}
               className="flex justify-center items-center h-full p-2 m-1 group-focus-within:text-primary-200 bg-white rounded-full shadow-md"
             >
               <FaArrowLeft size={20} />
@@ -155,23 +157,23 @@ const SearchInput = () => {
                 <div className="absolute left-12 top-1/2 transform -translate-y-1/2 pointer-events-none opacity-70">
                   <TypeAnimation
                     sequence={[
-                      'Search Nespresso',
+                      "Search Nespresso",
                       1000,
-                      'Search Caffitaly',
+                      "Search Caffitaly",
                       1000,
-                      'Search Dolce Gusto',
+                      "Search Dolce Gusto",
                       1000,
-                      'Search Carimalli',
+                      "Search Carimalli",
                       1000,
-                      'Search Lavazza',
+                      "Search Lavazza",
                       1000,
-                      'Search Coffee Machine',
+                      "Search Coffee Machine",
                       1000,
-                      'Search Barattini',
+                      "Search Barattini",
                       1000,
-                      'Search Ground Coffee',
+                      "Search Ground Coffee",
                       1000,
-                      'Search Instant Coffee',
+                      "Search Instant Coffee",
                     ]}
                     wrapper="span"
                     speed={50}
@@ -235,7 +237,7 @@ const SearchInput = () => {
                       className="h-full w-full object-contain"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = '/placeholder-image.png';
+                        e.target.src = "/placeholder-image.png";
                       }}
                     />
                   </div>
@@ -246,7 +248,7 @@ const SearchInput = () => {
                     <div className="flex items-center text-sm text-gray-600 mt-1">
                       {product.productType && (
                         <span className="mr-3">
-                          {product.productType.replace('_', ' ')}
+                          {product.productType.replace("_", " ")}
                         </span>
                       )}
                       {product.brand && product.brand[0] && (
@@ -261,7 +263,7 @@ const SearchInput = () => {
                   </div>
                   <div className="text-primary-600 font-bold">
                     {DisplayPriceInNaira(
-                      product.btcPrice > 0 ? product.btcPrice : product.price
+                      product.btcPrice > 0 ? product.btcPrice : product.price,
                     )}
                   </div>
                 </div>

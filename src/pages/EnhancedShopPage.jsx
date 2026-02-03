@@ -1,16 +1,17 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import CardLoading from '../components/CardLoading';
-import SummaryApi from '../common/SummaryApi';
-import Axios from '../utils/Axios';
-import AxiosToastError from '../utils/AxiosToastError';
-import CardProduct from '../components/CardProduct';
-import InfiniteScroll from 'react-infinite-scroll-component';
-import noDataImage from '../assets/nothing here yet.webp';
-import ShopFilter from '../components/EnhancedShopFilter';
-import { FaSearch, FaChevronRight } from 'react-icons/fa';
-import { useFilterState } from '../hooks/useFilterState.js';
-import { useUrlFilters } from '../hooks/useUrlFilters.js';
+// icvng-client/src/pages/EnhancedShopPage.jsx
+import React, { useEffect, useState, useRef } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import CardLoading from "../components/CardLoading";
+import SummaryApi from "../common/SummaryApi";
+import Axios from "../utils/Axios";
+import AxiosToastError from "../utils/AxiosToastError";
+import CardProduct from "../components/CardProduct";
+import InfiniteScroll from "react-infinite-scroll-component";
+import noDataImage from "../assets/nothing here yet.webp";
+import ShopFilter from "../components/EnhancedShopFilter";
+import { FaSearch, FaChevronRight } from "react-icons/fa";
+import { useFilterState } from "../hooks/useFilterState.js";
+import { useUrlFilters } from "../hooks/useUrlFilters.js";
 
 const EnhancedShopPage = () => {
   // Products data state
@@ -23,7 +24,7 @@ const EnhancedShopPage = () => {
   // Local UI state
   const loadingArrayCard = new Array(10).fill(null);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [searchInput, setSearchInput] = useState('');
+  const [searchInput, setSearchInput] = useState("");
   const firstLoadRef = useRef(true);
   const fetchTimeoutRef = useRef(null);
 
@@ -43,7 +44,7 @@ const EnhancedShopPage = () => {
 
   // Initialize search input from URL on mount
   useEffect(() => {
-    const searchText = searchParams.get('q') || '';
+    const searchText = searchParams.get("q") || "";
     setSearchInput(searchText);
     updateSearchTerm(searchText);
   }, [searchParams]);
@@ -54,7 +55,7 @@ const EnhancedShopPage = () => {
       if (firstLoadRef.current) {
         // Short delay to ensure all filter states are initialized
         setTimeout(() => {
-          console.log('Initial product fetch with filters:', activeFilters);
+          console.log("Initial product fetch with filters:", activeFilters);
           fetchProducts(true);
           firstLoadRef.current = false;
         }, 200);
@@ -79,11 +80,11 @@ const EnhancedShopPage = () => {
 
     // Don't fetch when URL is still processing
     if (urlState.isLoading || isProcessingUrl) {
-      console.log('Skipping fetch during URL processing');
+      console.log("Skipping fetch during URL processing");
       return;
     }
 
-    console.log('Filter changed, scheduling product fetch');
+    console.log("Filter changed, scheduling product fetch");
 
     // Clear any existing timeout
     if (fetchTimeoutRef.current) {
@@ -92,7 +93,7 @@ const EnhancedShopPage = () => {
 
     // Set a debounce timeout for filter changes
     fetchTimeoutRef.current = setTimeout(() => {
-      console.log('Executing debounced product fetch');
+      console.log("Executing debounced product fetch");
       fetchProducts(true);
     }, 300);
 
@@ -136,12 +137,12 @@ const EnhancedShopPage = () => {
 
       // Convert the sort values to API values
       let sortValue = activeFilters.sort;
-      if (sortValue === 'newest') {
+      if (sortValue === "newest") {
         // The API uses createdAt: -1 by default
-        sortValue = '';
+        sortValue = "";
       }
 
-      console.log('Fetching products with filters:', {
+      console.log("Fetching products with filters:", {
         search: activeFilters.search,
         category: activeFilters.category,
         subCategory: activeFilters.subCategory,
@@ -183,7 +184,7 @@ const EnhancedShopPage = () => {
 
       if (responseData.success) {
         console.log(
-          `Received ${responseData.data.length} products (page ${currentPage}/${responseData.totalPage})`
+          `Received ${responseData.data.length} products (page ${currentPage}/${responseData.totalPage})`,
         );
 
         if (currentPage === 1) {
@@ -196,7 +197,7 @@ const EnhancedShopPage = () => {
         setTotalCount(responseData.totalCount);
       }
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.error("Error fetching products:", error);
       AxiosToastError(error);
     } finally {
       setLoading(false);
@@ -205,7 +206,7 @@ const EnhancedShopPage = () => {
 
   // Handle filter changes from the ShopFilter component
   const handleApplyFilters = (filters) => {
-    console.log('Applying new filters from ShopFilter:', filters);
+    console.log("Applying new filters from ShopFilter:", filters);
     applyFilters(filters);
   };
 
