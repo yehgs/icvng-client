@@ -30,7 +30,8 @@ export default [
       ...reactHooks.configs.recommended.rules,
       "react/jsx-no-target-blank": "off",
       "react/prop-types": "off",
-      "no-unused-vars": "warn", // ← Changed from 'error' to 'warn'
+      "no-unused-vars": "warn",
+      "eslintreact/no-unescaped-entities": "warn",
       "react-refresh/only-export-components": [
         "warn",
         { allowConstantExport: true },

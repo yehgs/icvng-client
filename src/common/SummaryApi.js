@@ -600,7 +600,7 @@ const SummaryApi = {
     method: "get",
   },
   sendContactForm: {
-    url: "/api/send-mail",
+    url: "/api/send-email",
     method: "post",
   },
 };
