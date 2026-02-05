@@ -361,9 +361,9 @@ const ProductDisplayPage = () => {
     setShowMagnifier(false);
   };
 
-  // ✅ UPDATED: Price options based on stock availability
+  // ✅ FIXED: Price options - Regular price hidden when onlineStock === 0
   const priceOptions = [
-    // Only include regular price if online stock > 0
+    // ✅ Only show regular price if onlineStock > 0
     ...(onlineStock > 0 && getPrimaryPrice(data) > 0
       ? [
           {
@@ -379,7 +379,7 @@ const ProductDisplayPage = () => {
           },
         ]
       : []),
-    // Always include 3-week delivery if price exists
+    // ✅ Always show 3-week delivery if price exists (regardless of stock)
     ...(data.price3weeksDelivery > 0
       ? [
           {
@@ -390,12 +390,12 @@ const ProductDisplayPage = () => {
             color: "text-orange-600",
             bgColor: "bg-orange-50",
             borderColor: "border-orange-200",
-            description: "Special order - Delivery in 3 weeks",
+            description: "Special order - Delivery in 3 weeks (Dropshipping)",
             delivery: "3 Week Special Order",
           },
         ]
       : []),
-    // Always include 5-week delivery if price exists
+    // ✅ Always show 5-week delivery if price exists (regardless of stock)
     ...(data.price5weeksDelivery > 0
       ? [
           {
@@ -406,7 +406,7 @@ const ProductDisplayPage = () => {
             color: "text-red-600",
             bgColor: "bg-red-50",
             borderColor: "border-red-200",
-            description: "Special order - Delivery in 5 weeks",
+            description: "Special order - Delivery in 5 weeks (Dropshipping)",
             delivery: "5 Week Special Order",
           },
         ]
@@ -576,8 +576,25 @@ const ProductDisplayPage = () => {
               <p className="text-gray-600">{data.shortDescription}</p>
             )}
 
-            {/* ✅ UPDATED: Price Options based on stock */}
-            {data.productAvailability && priceOptions.length > 0 ? (
+            {/* ✅ FIXED: Only show "Not Available" if productAvailability === false */}
+            {!data.productAvailability ? (
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
+                <FaSadTear className="text-yellow-600 text-3xl mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
+                  Not Available
+                </h3>
+                <p className="text-yellow-700 mb-4">
+                  This product is currently not available for purchase. You can
+                  request to be notified when it becomes available.
+                </p>
+                <button
+                  onClick={() => setShowRequestModal(true)}
+                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition"
+                >
+                  Request Notification
+                </button>
+              </div>
+            ) : priceOptions.length > 0 ? (
               <div className="space-y-4">
                 <h3 className="text-lg font-semibold text-gray-800">
                   Choose Delivery Option
@@ -619,7 +636,10 @@ const ProductDisplayPage = () => {
                                 className={`text-xl font-bold ${option.color}`}
                               >
                                 {formatPrice(
-                                  pricewithDiscount(option.price, data.discount)
+                                  pricewithDiscount(
+                                    option.price,
+                                    data.discount,
+                                  ),
                                 )}
                               </div>
                               {data.discount > 0 && (
@@ -683,18 +703,17 @@ const ProductDisplayPage = () => {
                   </button>
                 )}
 
+                {/* ✅ FIXED: Stock status message */}
                 <div className="flex items-center text-sm">
-                  <span
-                    className={
-                      onlineStock > 0 ? "text-green-600" : "text-orange-600"
-                    }
-                  >
-                    {onlineStock > 0 ? "In Stock" : "Available for Pre-Order"}
-                  </span>
-                  {onlineStock > 0 && (
-                    <span className="ml-2 text-gray-500">
-                      ({onlineStock} units available)
-                    </span>
+                  {onlineStock > 0 ? (
+                    <>
+                      <span className="text-green-600">In Stock</span>
+                      <span className="ml-2 text-gray-500">
+                        ({onlineStock} units available)
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-orange-600">Available</span>
                   )}
                 </div>
 
@@ -703,26 +722,27 @@ const ProductDisplayPage = () => {
                     {data.discount}% OFF - Save{" "}
                     {formatPrice(
                       (getSelectedPrice(selectedPriceOption) * data.discount) /
-                        100
+                        100,
                     )}
                   </div>
                 )}
               </div>
             ) : (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-                <FaSadTear className="text-yellow-600 text-3xl mx-auto mb-3" />
-                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Not Available
+              // ✅ This fallback shows if no pricing options exist at all
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
+                <FaSadTear className="text-gray-400 text-3xl mx-auto mb-3" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  Pricing Unavailable
                 </h3>
-                <p className="text-yellow-700 mb-4">
-                  This product is currently not available for purchase. You can
-                  request to be notified when it becomes available.
+                <p className="text-gray-600 mb-4">
+                  Pricing information for this product is currently unavailable.
+                  Please contact us for more details.
                 </p>
                 <button
                   onClick={() => setShowRequestModal(true)}
-                  className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition"
+                  className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md transition"
                 >
-                  Request Notification
+                  Request Information
                 </button>
               </div>
             )}
