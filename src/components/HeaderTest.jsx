@@ -1,8 +1,8 @@
 // client/src/components/Header.jsx
-import React, { useState, useRef, useEffect } from 'react';
-import logo from '../assets/web-logo.svg';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import React, { useState, useRef, useEffect } from "react";
+import logo from "../assets/web-logo.svg";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import {
   User,
   ShoppingCart,
@@ -14,16 +14,16 @@ import {
   ChevronDown,
   ChevronRight,
   X,
-} from 'lucide-react';
-import { VscGitCompare } from 'react-icons/vsc';
-import SearchInput from './Search';
-import useMobile from '../hooks/useMobile';
-import { useWishlistCompare } from '../hooks/useWishlistCompare';
-import UserMenu from './UserMenu';
-import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
-import DisplayCartItem from './DisplayCartItem';
-import HeaderNavigation from '../components/HeaderNavigation';
-import CurrencySelector from '../components/CurrencySelector';
+} from "lucide-react";
+import { VscGitCompare } from "react-icons/vsc";
+import SearchInput from "./Search";
+import useMobile from "../hooks/useMobile";
+import { useWishlistCompare } from "../hooks/useWishlistCompare";
+import UserMenu from "./UserMenu";
+import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
+import DisplayCartItem from "./DisplayCartItem";
+import HeaderNavigation from "../components/HeaderNavigation";
+import CurrencySelector from "../components/CurrencySelector";
 
 export default function Header() {
   const [isMobile] = useMobile();
@@ -51,19 +51,19 @@ export default function Header() {
     if (!isLoggedIn) {
       // For guest users, get from localStorage
       const localWishlist = JSON.parse(
-        localStorage.getItem('wishlist') || '[]'
+        localStorage.getItem("wishlist") || "[]",
       );
       const localCompareList = JSON.parse(
-        localStorage.getItem('compareList') || '[]'
+        localStorage.getItem("compareList") || "[]",
       );
       const localGuestCart = JSON.parse(
-        localStorage.getItem('guestCart') || '[]'
+        localStorage.getItem("guestCart") || "[]",
       );
 
       setLocalWishlistCount(localWishlist.length);
       setLocalCompareCount(localCompareList.length);
       setLocalCartCount(
-        localGuestCart.reduce((total, item) => total + (item.quantity || 0), 0)
+        localGuestCart.reduce((total, item) => total + (item.quantity || 0), 0),
       );
     } else {
       // For logged-in users, use the hook values and cart from Redux
@@ -85,30 +85,30 @@ export default function Header() {
     };
 
     // Listen for custom events and storage changes
-    window.addEventListener('wishlist-updated', handleUpdate);
-    window.addEventListener('compare-updated', handleUpdate);
-    window.addEventListener('cart-updated', handleUpdate);
-    window.addEventListener('storage', handleUpdate);
+    window.addEventListener("wishlist-updated", handleUpdate);
+    window.addEventListener("compare-updated", handleUpdate);
+    window.addEventListener("cart-updated", handleUpdate);
+    window.addEventListener("storage", handleUpdate);
 
     return () => {
-      window.removeEventListener('wishlist-updated', handleUpdate);
-      window.removeEventListener('compare-updated', handleUpdate);
-      window.removeEventListener('cart-updated', handleUpdate);
-      window.removeEventListener('storage', handleUpdate);
+      window.removeEventListener("wishlist-updated", handleUpdate);
+      window.removeEventListener("compare-updated", handleUpdate);
+      window.removeEventListener("cart-updated", handleUpdate);
+      window.removeEventListener("storage", handleUpdate);
     };
   }, [isLoggedIn, wishlistCount, compareCount, totalQty]);
 
   // Navigate to wishlist page //
   const navigateToWishlistPage = () => {
-    navigate('/wishlist');
+    navigate("/wishlist");
   };
 
   const navigateToComparisonPage = () => {
-    navigate('/compare');
+    navigate("/compare");
   };
 
   const redirectToLoginPage = () => {
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleCloseUserMenu = () => {
@@ -117,10 +117,10 @@ export default function Header() {
 
   const handleMobileUser = () => {
     if (!user._id) {
-      navigate('/login');
+      navigate("/login");
       return;
     }
-    navigate('/user');
+    navigate("/user");
   };
 
   return (
@@ -141,7 +141,7 @@ export default function Header() {
               to="/partner-with-us"
               className="text-xs md:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-2 md:px-3 py-1 rounded transition-all duration-200 whitespace-nowrap font-medium"
             >
-              List Your Product
+              Partner with us
             </Link>
             <div className="hidden md:flex space-x-4">
               <a
@@ -188,7 +188,7 @@ export default function Header() {
           <div className="flex items-center justify-center md:w-fit w-[100%]">
             <div className="text-2xl font-bold text-brown-600">
               <Link
-                to={'/'}
+                to={"/"}
                 className="flex justify-center md:justify-start items-center"
               >
                 <img
@@ -266,7 +266,7 @@ export default function Header() {
               <Heart size={24} className="cursor-pointer text-gray-700" />
               {localWishlistCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                  {localWishlistCount > 99 ? '99+' : localWishlistCount}
+                  {localWishlistCount > 99 ? "99+" : localWishlistCount}
                 </span>
               )}
             </button>
@@ -283,7 +283,7 @@ export default function Header() {
               />
               {localCompareCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-purple-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                  {localCompareCount > 99 ? '99+' : localCompareCount}
+                  {localCompareCount > 99 ? "99+" : localCompareCount}
                 </span>
               )}
             </button>
@@ -300,7 +300,7 @@ export default function Header() {
               />
               {localCartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
-                  {localCartCount > 99 ? '99+' : localCartCount}
+                  {localCartCount > 99 ? "99+" : localCartCount}
                 </span>
               )}
             </button>
@@ -308,7 +308,7 @@ export default function Header() {
             {/* Shop Now Button - Desktop */}
             <button
               className="hidden md:flex items-center gap-2 bg-secondary-200 hover:bg-secondary-100 px-3 py-2 rounded text-white transition-colors"
-              onClick={() => navigate('/shop')}
+              onClick={() => navigate("/shop")}
             >
               <span className="font-semibold text-sm">Shop Now</span>
             </button>
