@@ -390,7 +390,7 @@ const ProductDisplayPage = () => {
             color: "text-orange-600",
             bgColor: "bg-orange-50",
             borderColor: "border-orange-200",
-            description: "Special order - Delivery in 3 weeks (Dropshipping)",
+            description: "Special order - Delivery in 3 weeks",
             delivery: "3 Week Special Order",
           },
         ]
@@ -406,7 +406,7 @@ const ProductDisplayPage = () => {
             color: "text-red-600",
             bgColor: "bg-red-50",
             borderColor: "border-red-200",
-            description: "Special order - Delivery in 5 weeks (Dropshipping)",
+            description: "Special order - Delivery in 5 weeks",
             delivery: "5 Week Special Order",
           },
         ]
