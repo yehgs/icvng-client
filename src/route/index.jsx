@@ -1,257 +1,258 @@
 //client/src/route/index.jsx
-import { createBrowserRouter } from 'react-router-dom';
-import App from '../App';
-import Home from '../pages/Home';
-import SearchPage from '../pages/SearchPage';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import ForgotPassword from '../pages/ForgotPassword';
-import OtpVerification from '../pages/OtpVerification';
-import ResetPassword from '../pages/ResetPassword';
-import UserMenuMobile from '../pages/UserMenuMobile';
-import Dashboard from '../layouts/Dashboard';
-import Profile from '../pages/Profile';
-import MyOrders from '../pages/MyOrders';
-import Address from '../pages/Address';
-import CategoryPage from '../pages/CategoryPage';
-import BrandPage from '../pages/BrandPage';
-import SliderPage from '../pages/SliderPage';
-import CoffeeRoastAreas from '../components/CoffeeRoastAreas';
-import SubCategoryPage from '../pages/SubCategoryPage';
-import UploadProduct from '../pages/UploadProduct';
-import ProductAdmin from '../pages/ProductAdmin';
-import AdminPermision from '../layouts/AdminPermision';
-import ProductDisplayPage from '../pages/ProductDisplayPage';
-import CartMobile from '../pages/CartMobile';
-import CheckoutPage from '../pages/CheckoutPage';
-import Success from '../pages/Success';
-import Cancel from '../pages/Cancel';
-import Attributes from '../components/Attributes';
-import Tags from '../components/Tags';
-import WishlistPage from '../pages/WishListPage';
-import ShopPage from '../pages/EnhancedShopPage';
-import CategoryDetailPage from '../components/CategoryDetailPage';
-import NotFoundPage from '../components/NotFoundPage';
-import ProductRequestPage from '../pages/ProductRequestPage';
-import UserProductRequests from '../pages/UserProductRequests.jsx';
-import AdminRatingsPage from '../pages/AdminRatingsPage.jsx';
-import BannerAdmin from '../pages/BannerAdmin.jsx';
-import WishListPage from '../pages/WishListPage.jsx';
-import ComparePage from '../pages/ComparePage.jsx';
-import BankTransferInstructionsPage from '../pages/BankTransferInstructionPage.jsx';
-import TrackingPage from '../pages/TrackingPage';
-import BlogPage from '../pages/BlogPage.jsx';
-import SingleBlogPost from '../pages/SingleBlogPost.jsx';
-import PaymentSuccessPage from '../pages/PaymentSuccessPage';
-import PaymentCancelPage from '../pages/PaymentCancelPage';
-import PaystackCallbackPage from '../pages/PaystackCallbackPage';
+import { createBrowserRouter } from "react-router-dom";
+import App from "../App";
+import Home from "../pages/Home";
+import SearchPage from "../pages/SearchPage";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import ForgotPassword from "../pages/ForgotPassword";
+import OtpVerification from "../pages/OtpVerification";
+import ResetPassword from "../pages/ResetPassword";
+import UserMenuMobile from "../pages/UserMenuMobile";
+import Dashboard from "../layouts/Dashboard";
+import Profile from "../pages/Profile";
+import MyOrders from "../pages/MyOrders";
+import Address from "../pages/Address";
+import CategoryPage from "../pages/CategoryPage";
+import BrandPage from "../pages/BrandPage";
+import SliderPage from "../pages/SliderPage";
+import CoffeeRoastAreas from "../components/CoffeeRoastAreas";
+import SubCategoryPage from "../pages/SubCategoryPage";
+import UploadProduct from "../pages/UploadProduct";
+import ProductAdmin from "../pages/ProductAdmin";
+import AdminPermision from "../layouts/AdminPermision";
+import ProductDisplayPage from "../pages/ProductDisplayPage";
+import CartMobile from "../pages/CartMobile";
+import CheckoutPage from "../pages/CheckoutPage";
+import Success from "../pages/Success";
+import Cancel from "../pages/Cancel";
+import Attributes from "../components/Attributes";
+import Tags from "../components/Tags";
+import WishlistPage from "../pages/WishListPage";
+import ShopPage from "../pages/EnhancedShopPage";
+import CategoryDetailPage from "../components/CategoryDetailPage";
+import NotFoundPage from "../components/NotFoundPage";
+import ProductRequestPage from "../pages/ProductRequestPage";
+import UserProductRequests from "../pages/UserProductRequests.jsx";
+import AdminRatingsPage from "../pages/AdminRatingsPage.jsx";
+import BannerAdmin from "../pages/BannerAdmin.jsx";
+import WishListPage from "../pages/WishListPage.jsx";
+import ComparePage from "../pages/ComparePage.jsx";
+import BankTransferInstructionsPage from "../pages/BankTransferInstructionPage.jsx";
+import TrackingPage from "../pages/TrackingPage";
+import BlogPage from "../pages/BlogPage.jsx";
+import SingleBlogPost from "../pages/SingleBlogPost.jsx";
+import PaymentSuccessPage from "../pages/PaymentSuccessPage";
+import PaymentCancelPage from "../pages/PaymentCancelPage";
+import PaystackCallbackPage from "../pages/PaystackCallbackPage";
 
 // New Pages
-import PartnerWithUs from '../pages/PartnerWithUs';
-import AboutUs from '../pages/AboutUs.jsx';
-import OurStory from '../pages/Ourstory.jsx';
-import ReturnPolicy from '../pages/ReturnPolicy';
-import ContactUs from '../pages/Contactus.jsx';
-import FAQ from '../pages/Faq.jsx';
-import ShippingPolicy from '../pages/ShippingPolicy';
-import TermsConditions from '../pages/TermsConditions';
-import PrivacyPolicy from '../pages/Privacypolicy.jsx';
+import PartnerWithUs from "../pages/PartnerWithUs";
+import AboutUs from "../pages/AboutUs.jsx";
+import OurStory from "../pages/Ourstory.jsx";
+import ReturnPolicy from "../pages/ReturnPolicy";
+import ContactUs from "../pages/Contactus.jsx";
+import FAQ from "../pages/Faq.jsx";
+import ShippingPolicy from "../pages/ShippingPolicy";
+import TermsConditions from "../pages/TermsConditions";
+import PrivacyPolicy from "../pages/Privacypolicy.jsx";
+import AdminBlogManagement from "../pages/admin/AdminBlogManagement";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <App />,
     children: [
       {
-        path: '',
+        path: "",
         element: <Home />,
       },
       {
-        path: 'wishlist',
+        path: "wishlist",
         element: <WishlistPage />,
       },
       {
-        path: 'search',
+        path: "search",
         element: <SearchPage />,
       },
       {
-        path: 'login',
+        path: "login",
         element: <Login />,
       },
       {
-        path: 'register',
+        path: "register",
         element: <Register />,
       },
       {
-        path: 'forgot-password',
+        path: "forgot-password",
         element: <ForgotPassword />,
       },
       {
-        path: 'verification-otp',
+        path: "verification-otp",
         element: <OtpVerification />,
       },
       {
-        path: '/bank-transfer-instructions',
+        path: "/bank-transfer-instructions",
         element: <BankTransferInstructionsPage />,
       },
       {
-        path: 'reset-password',
+        path: "reset-password",
         element: <ResetPassword />,
       },
       {
-        path: 'user',
+        path: "user",
         element: <UserMenuMobile />,
       },
       {
-        path: 'shop',
+        path: "shop",
         element: <ShopPage />,
       },
       // Company & Information Pages
       {
-        path: 'partner-with-us',
+        path: "partner-with-us",
         element: <PartnerWithUs />,
       },
       {
-        path: 'about-us',
+        path: "about-us",
         element: <AboutUs />,
       },
       {
-        path: 'our-story',
+        path: "our-story",
         element: <OurStory />,
       },
       {
-        path: 'contact-us',
+        path: "contact-us",
         element: <ContactUs />,
       },
       {
-        path: 'faq',
+        path: "faq",
         element: <FAQ />,
       },
       // Policy Pages
       {
-        path: 'return-policy',
+        path: "return-policy",
         element: <ReturnPolicy />,
       },
       {
-        path: 'shipping-policy',
+        path: "shipping-policy",
         element: <ShippingPolicy />,
       },
       {
-        path: 'terms-conditions',
+        path: "terms-conditions",
         element: <TermsConditions />,
       },
       {
-        path: 'privacy-policy',
+        path: "privacy-policy",
         element: <PrivacyPolicy />,
       },
       // Category & Product Routes
-      { path: '/category/:categorySlug', element: <CategoryDetailPage /> },
+      { path: "/category/:categorySlug", element: <CategoryDetailPage /> },
       {
-        path: '/category/:categorySlug/subcategory/:subcategorySlug',
+        path: "/category/:categorySlug/subcategory/:subcategorySlug",
         element: <CategoryDetailPage />,
       },
       {
-        path: '/category/:categorySlug/brand/:brandSlug',
+        path: "/category/:categorySlug/brand/:brandSlug",
         element: <CategoryDetailPage />,
       },
       {
-        path: '/category/:categorySlug/subcategory/:subcategorySlug/brand/:brandSlug',
+        path: "/category/:categorySlug/subcategory/:subcategorySlug/brand/:brandSlug",
         element: <CategoryDetailPage />,
       },
-      { path: '/brand/:brandSlug', element: <CategoryDetailPage /> },
+      { path: "/brand/:brandSlug", element: <CategoryDetailPage /> },
       {
-        path: 'product/:product',
+        path: "product/:product",
         element: <ProductDisplayPage />,
       },
       {
-        path: 'blogs',
+        path: "blogs",
         element: <BlogPage />,
       },
       {
-        path: 'blog/:slug',
+        path: "blog/:slug",
         element: <SingleBlogPost />,
       },
       // Cart & Checkout
       {
-        path: 'cart',
+        path: "cart",
         element: <CartMobile />,
       },
       {
-        path: 'checkout',
+        path: "checkout",
         element: <CheckoutPage />,
       },
       {
-        path: 'success',
+        path: "success",
         element: <Success />,
       },
       {
-        path: 'cancel',
+        path: "cancel",
         element: <Cancel />,
       },
       {
-        path: 'wishlist',
+        path: "wishlist",
         element: <WishListPage />,
       },
       {
-        path: 'compare',
+        path: "compare",
         element: <ComparePage />,
       },
       {
-        path: '*',
+        path: "*",
         element: <NotFoundPage />,
       },
       // Payment Routes
       {
-        path: '/success',
+        path: "/success",
         element: <PaymentSuccessPage />,
       },
       {
-        path: '/cancel',
+        path: "/cancel",
         element: <PaymentCancelPage />,
       },
       {
-        path: '/order-success',
+        path: "/order-success",
         element: <PaymentSuccessPage />,
       },
       {
-        path: '/payment/paystack/callback',
+        path: "/payment/paystack/callback",
         element: <PaystackCallbackPage />,
       },
       // Dashboard Routes
       {
-        path: 'dashboard',
+        path: "dashboard",
         element: <Dashboard />,
         children: [
           {
-            path: 'profile',
+            path: "profile",
             element: <Profile />,
           },
           {
-            path: 'myorders',
+            path: "myorders",
             element: <MyOrders />,
           },
           {
-            path: 'address',
+            path: "address",
             element: <Address />,
           },
           {
-            path: 'track',
+            path: "track",
             element: <TrackingPage />,
           },
           {
-            path: 'track/:trackingNumber',
+            path: "track/:trackingNumber",
             element: <TrackingPage />,
           },
           {
-            path: 'banners',
+            path: "banners",
             element: <BannerAdmin />,
           },
           {
-            path: 'user-request',
+            path: "user-request",
             element: <UserProductRequests />,
           },
           {
-            path: 'category',
+            path: "category",
             element: (
               <AdminPermision>
                 <CategoryPage />
@@ -259,7 +260,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'ratings',
+            path: "ratings",
             element: (
               <AdminPermision>
                 <AdminRatingsPage />
@@ -267,7 +268,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'product-request',
+            path: "product-request",
             element: (
               <AdminPermision>
                 <ProductRequestPage />
@@ -275,7 +276,15 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'tags',
+            path: "blog-management",
+            element: (
+              <AdminPermision>
+                <AdminBlogManagement />
+              </AdminPermision>
+            ),
+          },
+          {
+            path: "tags",
             element: (
               <AdminPermision>
                 <Tags />
@@ -283,7 +292,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'roast-areas',
+            path: "roast-areas",
             element: (
               <AdminPermision>
                 <CoffeeRoastAreas />
@@ -291,7 +300,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'attributes',
+            path: "attributes",
             element: (
               <AdminPermision>
                 <Attributes />
@@ -299,7 +308,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'brand',
+            path: "brand",
             element: (
               <AdminPermision>
                 <BrandPage />
@@ -307,7 +316,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'slider',
+            path: "slider",
             element: (
               <AdminPermision>
                 <SliderPage />
@@ -315,7 +324,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'subcategory',
+            path: "subcategory",
             element: (
               <AdminPermision>
                 <SubCategoryPage />
@@ -323,7 +332,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'upload-product',
+            path: "upload-product",
             element: (
               <AdminPermision>
                 <UploadProduct />
@@ -331,7 +340,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: 'product',
+            path: "product",
             element: (
               <AdminPermision>
                 <ProductAdmin />

@@ -1,11 +1,11 @@
-import { Outlet, useLocation } from 'react-router-dom';
-import './App.css';
-import HeaderTest from './components/HeaderTest';
-import Footer from './components/Footer';
-import toast, { Toaster } from 'react-hot-toast';
-import { useEffect } from 'react';
-import fetchUserDetails from './utils/fetchUserDetails';
-import { setUserDetails } from './store/userSlice';
+import { Outlet, useLocation } from "react-router-dom";
+import "./App.css";
+import HeaderTest from "./components/HeaderTest";
+import Footer from "./components/Footer";
+import toast, { Toaster } from "react-hot-toast";
+import { useEffect } from "react";
+import fetchUserDetails from "./utils/fetchUserDetails";
+import { setUserDetails } from "./store/userSlice";
 import {
   setAllCategory,
   setAllSubCategory,
@@ -16,14 +16,14 @@ import {
   setCategoryStructure,
   setLoadingCategoryStructure,
   setCoffeeRoastAreas,
-} from './store/productSlice';
-import { useDispatch } from 'react-redux';
-import Axios from './utils/Axios';
-import SummaryApi from './common/SummaryApi';
-import { handleAddItemCart } from './store/cartProduct';
-import GlobalProvider from './provider/GlobalProvider';
-import { FaCartShopping } from 'react-icons/fa6';
-import CartMobileLink from './components/CartMobile';
+} from "./store/productSlice";
+import { useDispatch } from "react-redux";
+import Axios from "./utils/Axios";
+import SummaryApi from "./common/SummaryApi";
+import { handleAddItemCart } from "./store/cartProduct";
+import GlobalProvider from "./provider/GlobalProvider";
+import { FaCartShopping } from "react-icons/fa6";
+import CartMobileLink from "./components/CartMobile";
 
 function App() {
   const dispatch = useDispatch();
@@ -36,7 +36,7 @@ function App() {
         dispatch(setUserDetails(userData.data));
       }
     } catch (error) {
-      console.log('User not authenticated or session expired');
+      console.log("User not authenticated or session expired");
       // Don't show error toast for unauthenticated users
       // This is normal for guest users
     }
@@ -53,12 +53,12 @@ function App() {
       if (responseData.success) {
         dispatch(
           setAllCategory(
-            responseData.data.sort((a, b) => a.name.localeCompare(b.name))
-          )
+            responseData.data.sort((a, b) => a.name.localeCompare(b.name)),
+          ),
         );
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error("Error fetching categories:", error);
     } finally {
       dispatch(setLoadingCategory(false));
     }
@@ -74,12 +74,12 @@ function App() {
       if (responseData.success) {
         dispatch(
           setAllSubCategory(
-            responseData.data.sort((a, b) => a.name.localeCompare(b.name))
-          )
+            responseData.data.sort((a, b) => a.name.localeCompare(b.name)),
+          ),
         );
       }
     } catch (error) {
-      console.error('Error fetching subcategories:', error);
+      console.error("Error fetching subcategories:", error);
     }
   };
 
@@ -93,12 +93,12 @@ function App() {
       if (responseData.success) {
         dispatch(
           setAllBrands(
-            responseData.data.sort((a, b) => a.name.localeCompare(b.name))
-          )
+            responseData.data.sort((a, b) => a.name.localeCompare(b.name)),
+          ),
         );
       }
     } catch (error) {
-      console.error('Error fetching brands:', error);
+      console.error("Error fetching brands:", error);
     }
   };
 
@@ -112,12 +112,12 @@ function App() {
       if (responseData.success) {
         dispatch(
           setAllTags(
-            responseData.data.sort((a, b) => a.name.localeCompare(b.name))
-          )
+            responseData.data.sort((a, b) => a.name.localeCompare(b.name)),
+          ),
         );
       }
     } catch (error) {
-      console.error('Error fetching tags:', error);
+      console.error("Error fetching tags:", error);
     }
   };
 
@@ -131,12 +131,12 @@ function App() {
       if (responseData.success) {
         dispatch(
           setAllAttributes(
-            responseData.data.sort((a, b) => a.name.localeCompare(b.name))
-          )
+            responseData.data.sort((a, b) => a.name.localeCompare(b.name)),
+          ),
         );
       }
     } catch (error) {
-      console.error('Error fetching attributes:', error);
+      console.error("Error fetching attributes:", error);
     }
   };
 
@@ -152,7 +152,7 @@ function App() {
         dispatch(setCategoryStructure(responseData.data));
       }
     } catch (error) {
-      console.error('Error fetching category structure:', error);
+      console.error("Error fetching category structure:", error);
     } finally {
       dispatch(setLoadingCategoryStructure(false));
     }
@@ -169,7 +169,7 @@ function App() {
         dispatch(setCoffeeRoastAreas(responseData.data));
       }
     } catch (error) {
-      console.error('Error fetching coffee roast structure:', error);
+      console.error("Error fetching coffee roast structure:", error);
     }
   };
 
@@ -192,7 +192,7 @@ function App() {
       </main>
       <Footer />
       <Toaster />
-      {location.pathname !== '/checkout' && <CartMobileLink />}
+      {location.pathname !== "/checkout" && <CartMobileLink />}
     </GlobalProvider>
   );
 }

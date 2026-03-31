@@ -1,706 +1,400 @@
-import React, { useRef, useState, useEffect } from 'react';
+// components/RichTextEditor.jsx
+import React, { useEffect, useRef, useCallback } from "react";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
+import TextAlign from "@tiptap/extension-text-align";
+import Underline from "@tiptap/extension-underline";
+import Highlight from "@tiptap/extension-highlight";
+import Placeholder from "@tiptap/extension-placeholder";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { createLowlight } from "lowlight";
+import javascript from "highlight.js/lib/languages/javascript";
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  AlignJustify,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Minus,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  Undo,
+  Redo,
+  Highlighter,
+  Heading1,
+  Heading2,
+  Heading3,
+  Type,
+  RemoveFormatting,
+} from "lucide-react";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+
+const lowlight = createLowlight();
+lowlight.register("javascript", javascript);
+
+const ToolbarButton = ({ onClick, active, disabled, title, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    title={title}
+    className={`p-1.5 rounded transition-colors ${
+      active
+        ? "bg-amber-100 text-amber-800 font-semibold"
+        : "text-gray-600 hover:bg-gray-100"
+    } ${disabled ? "opacity-30 cursor-not-allowed" : "cursor-pointer"}`}
+  >
+    {children}
+  </button>
+);
+
+const ToolbarDivider = () => (
+  <div className="w-px h-5 bg-gray-300 mx-0.5 self-center" />
+);
 
 const RichTextEditor = ({
-  initialValue = '',
+  value,
   onChange,
-  headerBackground = '#f9fafb',
-  headerTextColor = '#374151',
+  placeholder = "Write your blog post content here...",
 }) => {
-  const editorRef = useRef(null);
-  const [isFocused, setIsFocused] = useState(false);
-  const [showTablePopover, setShowTablePopover] = useState(false);
-  const [tableDimensions, setTableDimensions] = useState({
-    rows: 2,
-    cols: 2,
+  const imageInputRef = useRef(null);
+
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        codeBlock: false,
+      }),
+      Underline,
+      Image.configure({
+        HTMLAttributes: {
+          class: "max-w-full rounded-lg my-4",
+        },
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-amber-700 underline hover:text-amber-900",
+        },
+      }),
+      TextAlign.configure({
+        types: ["heading", "paragraph"],
+      }),
+      Highlight.configure({
+        multicolor: true,
+      }),
+      Placeholder.configure({
+        placeholder,
+      }),
+      CodeBlockLowlight.configure({
+        lowlight,
+      }),
+    ],
+    content: value || "",
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+    editorProps: {
+      attributes: {
+        class:
+          "prose prose-amber max-w-none min-h-[320px] p-4 focus:outline-none text-gray-800",
+      },
+    },
   });
 
-  const execCommand = (command, value = null) => {
-    document.execCommand(command, false, value);
-    if (editorRef.current) {
-      const content = editorRef.current.innerHTML;
-      onChange(content);
-    }
-  };
-
-  const handleFontSize = (e) => {
-    execCommand('fontSize', e.target.value);
-  };
-
-  const handleColor = (e) => {
-    execCommand('foreColor', e.target.value);
-  };
-
-  // Simple icon components
-  const Icon = ({ children }) => (
-    <div
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '18px',
-        height: '18px',
-      }}
-    >
-      {children}
-    </div>
-  );
-
-  const BoldIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
-        <path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"></path>
-      </svg>
-    </Icon>
-  );
-
-  const ItalicIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="19" y1="4" x2="10" y2="4"></line>
-        <line x1="14" y1="20" x2="5" y2="20"></line>
-        <line x1="15" y1="4" x2="9" y2="20"></line>
-      </svg>
-    </Icon>
-  );
-
-  const ListIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="8" y1="6" x2="21" y2="6"></line>
-        <line x1="8" y1="12" x2="21" y2="12"></line>
-        <line x1="8" y1="18" x2="21" y2="18"></line>
-        <line x1="3" y1="6" x2="3.01" y2="6"></line>
-        <line x1="3" y1="12" x2="3.01" y2="12"></line>
-        <line x1="3" y1="18" x2="3.01" y2="18"></line>
-      </svg>
-    </Icon>
-  );
-
-  const AlignLeftIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="17" y1="10" x2="3" y2="10"></line>
-        <line x1="21" y1="6" x2="3" y2="6"></line>
-        <line x1="21" y1="14" x2="3" y2="14"></line>
-        <line x1="17" y1="18" x2="3" y2="18"></line>
-      </svg>
-    </Icon>
-  );
-
-  const AlignCenterIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="18" y1="10" x2="6" y2="10"></line>
-        <line x1="21" y1="6" x2="3" y2="6"></line>
-        <line x1="21" y1="14" x2="3" y2="14"></line>
-        <line x1="18" y1="18" x2="6" y2="18"></line>
-      </svg>
-    </Icon>
-  );
-
-  const AlignRightIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="21" y1="10" x2="7" y2="10"></line>
-        <line x1="21" y1="6" x2="3" y2="6"></line>
-        <line x1="21" y1="14" x2="3" y2="14"></line>
-        <line x1="21" y1="18" x2="7" y2="18"></line>
-      </svg>
-    </Icon>
-  );
-
-  const TableIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="18"
-        height="18"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-        <line x1="3" y1="9" x2="21" y2="9"></line>
-        <line x1="3" y1="15" x2="21" y2="15"></line>
-        <line x1="9" y1="3" x2="9" y2="21"></line>
-        <line x1="15" y1="3" x2="15" y2="21"></line>
-      </svg>
-    </Icon>
-  );
-
-  const PlusIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-      </svg>
-    </Icon>
-  );
-
-  const TrashIcon = () => (
-    <Icon>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="14"
-        height="14"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-        <line x1="10" y1="11" x2="10" y2="17"></line>
-        <line x1="14" y1="11" x2="14" y2="17"></line>
-      </svg>
-    </Icon>
-  );
-
-  const formatButton = (icon, command, title) => (
-    <button
-      type="button"
-      onClick={() => execCommand(command)}
-      style={{
-        padding: '0.5rem',
-        borderRadius: '0.375rem',
-        transition: 'background-color 0.2s',
-        color: headerTextColor,
-        background: 'transparent',
-        border: 'none',
-        cursor: 'pointer',
-      }}
-      onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e5e7eb')}
-      onMouseOut={(e) =>
-        (e.currentTarget.style.backgroundColor = 'transparent')
-      }
-      title={title}
-    >
-      {icon}
-    </button>
-  );
-
-  const createTable = () => {
-    const { rows, cols } = tableDimensions;
-    let tableHTML =
-      '<table style="border-collapse: collapse; width: 100%; margin: 1rem 0;">';
-
-    // Create header row
-    tableHTML += '<thead><tr>';
-    for (let j = 0; j < cols; j++) {
-      tableHTML +=
-        '<th style="border: 1px solid #d1d5db; padding: 0.5rem; background-color: #f9fafb;">Header ' +
-        (j + 1) +
-        '</th>';
-    }
-    tableHTML += '</tr></thead><tbody>';
-
-    // Create body rows
-    for (let i = 0; i < rows - 1; i++) {
-      tableHTML += '<tr>';
-      for (let j = 0; j < cols; j++) {
-        tableHTML +=
-          '<td style="border: 1px solid #d1d5db; padding: 0.5rem;">Cell ' +
-          (j + 1) +
-          '</td>';
-      }
-      tableHTML += '</tr>';
-    }
-    tableHTML += '</tbody></table>';
-
-    // Insert table at cursor position or at the end
-    const selection = window.getSelection();
-    if (selection && selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const tableElement = document.createElement('div');
-      tableElement.innerHTML = tableHTML;
-      range.insertNode(tableElement);
-    } else if (editorRef.current) {
-      editorRef.current.innerHTML += tableHTML;
-    }
-
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
-    setShowTablePopover(false);
-  };
-
-  const handleTableOperation = (operation) => {
-    const selection = window.getSelection();
-    if (!selection) return;
-
-    const cell = selection.anchorNode?.parentElement;
-    if (!cell) return;
-
-    const row = cell.closest('tr');
-    const table = cell.closest('table');
-
-    if (!row || !table) return;
-
-    switch (operation) {
-      case 'addRow':
-        const newRow = row.cloneNode(true);
-        Array.from(newRow.cells).forEach((cell) => (cell.textContent = ''));
-        row.after(newRow);
-        break;
-      case 'addColumn':
-        const columnIndex = Array.from(row.cells).indexOf(cell);
-        Array.from(table.rows).forEach((row) => {
-          const newCell = document.createElement(
-            row.parentElement?.tagName === 'THEAD' ? 'th' : 'td'
-          );
-          newCell.style.border = '1px solid #d1d5db';
-          newCell.style.padding = '0.5rem';
-          row.cells[columnIndex].after(newCell);
-        });
-        break;
-      case 'deleteRow':
-        if (table.rows.length > 2) {
-          row.remove();
-        }
-        break;
-      case 'deleteColumn':
-        if (row.cells.length > 1) {
-          const columnIndex = Array.from(row.cells).indexOf(cell);
-          Array.from(table.rows).forEach((row) =>
-            row.cells[columnIndex].remove()
-          );
-        }
-        break;
-    }
-
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
-  };
-
-  // Handle editor input events correctly
-  const handleInput = () => {
-    if (editorRef.current) {
-      onChange(editorRef.current.innerHTML);
-    }
-  };
-
-  // Custom button component
-  const Button = ({
-    children,
-    onClick,
-    variant = 'primary',
-    size = 'md',
-    className = '',
-    ...props
-  }) => {
-    const baseStyle = {
-      display: 'inline-flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontWeight: '500',
-      borderRadius: '0.375rem',
-      cursor: 'pointer',
-      transition: 'background-color 0.2s, border-color 0.2s',
-      border: 'none',
-    };
-
-    const variants = {
-      primary: {
-        backgroundColor: '#3b82f6',
-        color: 'white',
-        '&:hover': { backgroundColor: '#2563eb' },
-      },
-      outline: {
-        backgroundColor: 'transparent',
-        color: '#374151',
-        border: '1px solid #d1d5db',
-        '&:hover': { backgroundColor: '#f3f4f6' },
-      },
-      ghost: {
-        backgroundColor: 'transparent',
-        color: '#374151',
-        '&:hover': { backgroundColor: '#f3f4f6' },
-      },
-    };
-
-    const sizes = {
-      sm: { padding: '0.25rem 0.5rem', fontSize: '0.875rem' },
-      md: { padding: '0.5rem 1rem', fontSize: '0.875rem' },
-      lg: { padding: '0.75rem 1.5rem', fontSize: '1rem' },
-    };
-
-    const style = {
-      ...baseStyle,
-      ...variants[variant],
-      ...sizes[size],
-    };
-
-    return (
-      <button
-        style={style}
-        onClick={onClick}
-        onMouseOver={(e) => {
-          if (variant === 'primary')
-            e.currentTarget.style.backgroundColor = '#2563eb';
-          if (variant === 'outline' || variant === 'ghost')
-            e.currentTarget.style.backgroundColor = '#f3f4f6';
-        }}
-        onMouseOut={(e) => {
-          if (variant === 'primary')
-            e.currentTarget.style.backgroundColor = '#3b82f6';
-          if (variant === 'outline')
-            e.currentTarget.style.backgroundColor = 'transparent';
-          if (variant === 'ghost')
-            e.currentTarget.style.backgroundColor = 'transparent';
-        }}
-        {...props}
-      >
-        {children}
-      </button>
-    );
-  };
-
-  // Custom input component
-  const Input = ({ type = 'text', onChange, value, min, ...props }) => {
-    return (
-      <input
-        type={type}
-        value={value}
-        onChange={onChange}
-        min={min}
-        style={{
-          display: 'block',
-          width: '100%',
-          padding: '0.5rem',
-          borderRadius: '0.375rem',
-          border: '1px solid #d1d5db',
-          fontSize: '0.875rem',
-          lineHeight: '1.25rem',
-        }}
-        {...props}
-      />
-    );
-  };
-
-  // Custom popover component
-  const TablePopover = () => {
-    if (!showTablePopover) return null;
-
-    return (
-      <div
-        style={{
-          position: 'absolute',
-          zIndex: 50,
-          backgroundColor: 'white',
-          borderRadius: '0.375rem',
-          boxShadow:
-            '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
-          width: '20rem',
-          border: '1px solid #e5e7eb',
-          padding: '1rem',
-        }}
-      >
-        <div style={{ marginBottom: '1rem' }}>
-          <h4 style={{ fontWeight: '500', marginBottom: '0.5rem' }}>
-            Insert Table
-          </h4>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.875rem',
-                  marginBottom: '0.25rem',
-                }}
-              >
-                Rows
-              </label>
-              <Input
-                type="number"
-                min="2"
-                value={tableDimensions.rows}
-                onChange={(e) =>
-                  setTableDimensions((prev) => ({
-                    ...prev,
-                    rows: parseInt(e.target.value) || 2,
-                  }))
-                }
-              />
-            </div>
-            <div>
-              <label
-                style={{
-                  display: 'block',
-                  fontSize: '0.875rem',
-                  marginBottom: '0.25rem',
-                }}
-              >
-                Columns
-              </label>
-              <Input
-                type="number"
-                min="1"
-                value={tableDimensions.cols}
-                onChange={(e) =>
-                  setTableDimensions((prev) => ({
-                    ...prev,
-                    cols: parseInt(e.target.value) || 1,
-                  }))
-                }
-              />
-            </div>
-          </div>
-          <div style={{ marginTop: '0.5rem' }}>
-            <Button onClick={createTable} style={{ width: '100%' }}>
-              Insert Table
-            </Button>
-          </div>
-        </div>
-        <div>
-          <h4 style={{ fontWeight: '500', marginBottom: '0.5rem' }}>
-            Table Operations
-          </h4>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              gap: '0.5rem',
-            }}
-          >
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTableOperation('addRow')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-            >
-              <PlusIcon /> Add Row
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTableOperation('addColumn')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-            >
-              <PlusIcon /> Add Column
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTableOperation('deleteRow')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-            >
-              <TrashIcon /> Delete Row
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleTableOperation('deleteColumn')}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}
-            >
-              <TrashIcon /> Delete Column
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  // Click outside handler for popover
+  // Sync external value changes (e.g. when loading a post for editing)
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        showTablePopover &&
-        !event.target.closest('.table-popover-container')
-      ) {
-        setShowTablePopover(false);
+    if (!editor) return;
+    if (value !== editor.getHTML()) {
+      editor.commands.setContent(value || "");
+    }
+  }, [value]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const setLink = useCallback(() => {
+    const prev = editor.getAttributes("link").href;
+    const url = window.prompt("Enter URL", prev || "https://");
+    if (url === null) return;
+    if (url === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    } else {
+      editor
+        .chain()
+        .focus()
+        .extendMarkRange("link")
+        .setLink({ href: url })
+        .run();
+    }
+  }, [editor]);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !editor) return;
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const response = await Axios({
+        ...SummaryApi.uploadImage,
+        data: formData,
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (response.data.success) {
+        const url = response.data.data?.secure_url || response.data.data?.url;
+        editor.chain().focus().setImage({ src: url, alt: file.name }).run();
       }
-    };
+    } catch (err) {
+      console.error("Image upload failed:", err);
+      alert("Image upload failed. Please try again.");
+    } finally {
+      e.target.value = "";
+    }
+  };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showTablePopover]);
+  const handleImageUrl = () => {
+    const url = window.prompt("Paste image URL");
+    if (url && editor) {
+      editor.chain().focus().setImage({ src: url }).run();
+    }
+  };
 
-  const divider = (
-    <div
-      style={{
-        height: '1rem',
-        width: '1px',
-        backgroundColor: '#d1d5db',
-        margin: '0 0.5rem',
-      }}
-    />
-  );
+  if (!editor) return null;
 
   return (
-    <div
-      style={{
-        border: '1px solid #e5e7eb',
-        borderRadius: '0.375rem',
-        overflow: 'hidden',
-        boxShadow: isFocused ? '0 0 0 2px rgba(59, 130, 246, 0.5)' : 'none',
-      }}
-    >
-      <div
-        style={{
-          borderBottom: '1px solid #e5e7eb',
-          padding: '0.5rem',
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '0.5rem',
-          alignItems: 'center',
-          backgroundColor: headerBackground,
-          color: headerTextColor,
-        }}
-      >
-        <select
-          onChange={handleFontSize}
-          style={{
-            padding: '0.25rem',
-            border: '1px solid #d1d5db',
-            borderRadius: '0.25rem',
-            backgroundColor: 'white',
-          }}
-          title="Font Size"
+    <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-amber-500 focus-within:border-amber-500 bg-white">
+      {/* Toolbar */}
+      <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-gray-200 bg-gray-50">
+        {/* History */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().undo().run()}
+          disabled={!editor.can().undo()}
+          title="Undo"
         >
-          <option value="3">Normal</option>
-          <option value="1">Small</option>
-          <option value="4">Large</option>
-          <option value="5">Extra Large</option>
-        </select>
+          <Undo size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().redo().run()}
+          disabled={!editor.can().redo()}
+          title="Redo"
+        >
+          <Redo size={15} />
+        </ToolbarButton>
+        <ToolbarDivider />
 
+        {/* Headings */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setParagraph().run()}
+          active={editor.isActive("paragraph")}
+          title="Paragraph"
+        >
+          <Type size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
+          active={editor.isActive("heading", { level: 1 })}
+          title="Heading 1"
+        >
+          <Heading1 size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
+          active={editor.isActive("heading", { level: 2 })}
+          title="Heading 2"
+        >
+          <Heading2 size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+          active={editor.isActive("heading", { level: 3 })}
+          title="Heading 3"
+        >
+          <Heading3 size={15} />
+        </ToolbarButton>
+        <ToolbarDivider />
+
+        {/* Inline formatting */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          active={editor.isActive("bold")}
+          title="Bold"
+        >
+          <Bold size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          active={editor.isActive("italic")}
+          title="Italic"
+        >
+          <Italic size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          active={editor.isActive("underline")}
+          title="Underline"
+        >
+          <UnderlineIcon size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          active={editor.isActive("strike")}
+          title="Strikethrough"
+        >
+          <Strikethrough size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() =>
+            editor.chain().focus().toggleHighlight({ color: "#fef08a" }).run()
+          }
+          active={editor.isActive("highlight")}
+          title="Highlight"
+        >
+          <Highlighter size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() =>
+            editor.chain().focus().unsetAllMarks().clearNodes().run()
+          }
+          title="Clear Formatting"
+        >
+          <RemoveFormatting size={15} />
+        </ToolbarButton>
+        <ToolbarDivider />
+
+        {/* Alignment */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("left").run()}
+          active={editor.isActive({ textAlign: "left" })}
+          title="Align Left"
+        >
+          <AlignLeft size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("center").run()}
+          active={editor.isActive({ textAlign: "center" })}
+          title="Align Center"
+        >
+          <AlignCenter size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("right").run()}
+          active={editor.isActive({ textAlign: "right" })}
+          title="Align Right"
+        >
+          <AlignRight size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign("justify").run()}
+          active={editor.isActive({ textAlign: "justify" })}
+          title="Justify"
+        >
+          <AlignJustify size={15} />
+        </ToolbarButton>
+        <ToolbarDivider />
+
+        {/* Lists */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          active={editor.isActive("bulletList")}
+          title="Bullet List"
+        >
+          <List size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          active={editor.isActive("orderedList")}
+          title="Numbered List"
+        >
+          <ListOrdered size={15} />
+        </ToolbarButton>
+        <ToolbarDivider />
+
+        {/* Blocks */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          active={editor.isActive("blockquote")}
+          title="Blockquote"
+        >
+          <Quote size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          active={editor.isActive("code")}
+          title="Inline Code"
+        >
+          <Code size={15} />
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+          active={editor.isActive("codeBlock")}
+          title="Code Block"
+        >
+          <span className="text-xs font-mono font-bold px-0.5">{"</>"}</span>
+        </ToolbarButton>
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          title="Horizontal Rule"
+        >
+          <Minus size={15} />
+        </ToolbarButton>
+        <ToolbarDivider />
+
+        {/* Links & Images */}
+        <ToolbarButton
+          onClick={setLink}
+          active={editor.isActive("link")}
+          title="Insert Link"
+        >
+          <LinkIcon size={15} />
+        </ToolbarButton>
+
+        {/* Image upload */}
         <input
-          type="color"
-          onChange={handleColor}
-          style={{
-            width: '2rem',
-            height: '2rem',
-            padding: '0.25rem',
-            cursor: 'pointer',
-            border: '1px solid #d1d5db',
-            borderRadius: '0.25rem',
-          }}
-          title="Text Color"
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleImageUpload}
         />
-
-        {divider}
-
-        {formatButton(<BoldIcon />, 'bold', 'Bold')}
-        {formatButton(<ItalicIcon />, 'italic', 'Italic')}
-
-        {divider}
-
-        {formatButton(<AlignLeftIcon />, 'justifyLeft', 'Align Left')}
-        {formatButton(<AlignCenterIcon />, 'justifyCenter', 'Align Center')}
-        {formatButton(<AlignRightIcon />, 'justifyRight', 'Align Right')}
-
-        {divider}
-
-        {formatButton(<ListIcon />, 'insertUnorderedList', 'Bullet List')}
-
-        {divider}
-
-        <div
-          className="table-popover-container"
-          style={{ position: 'relative' }}
+        <ToolbarButton
+          onClick={() => imageInputRef.current?.click()}
+          title="Upload Image"
         >
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowTablePopover(!showTablePopover)}
-            style={{ padding: '0.5rem' }}
-          >
-            <TableIcon />
-          </Button>
-          {showTablePopover && <TablePopover />}
-        </div>
+          <ImageIcon size={15} />
+        </ToolbarButton>
+        <ToolbarButton onClick={handleImageUrl} title="Insert Image by URL">
+          <span className="text-xs font-bold">URL</span>
+        </ToolbarButton>
       </div>
 
-      <div
-        ref={editorRef}
-        contentEditable={true}
-        onInput={handleInput}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        style={{
-          padding: '1rem',
-          minHeight: '200px',
-          outline: 'none',
-        }}
-      />
+      {/* Editor area */}
+      <EditorContent editor={editor} />
+
+      {/* Word count footer */}
+      <div className="px-4 py-1.5 border-t border-gray-100 bg-gray-50 text-xs text-gray-400 flex justify-between">
+        <span>
+          {editor.storage?.characterCount?.words?.() ??
+            editor.getText().trim().split(/\s+/).filter(Boolean).length}{" "}
+          words
+        </span>
+        <span className="text-gray-300">
+          Tip: Drag &amp; drop images directly into the editor
+        </span>
+      </div>
     </div>
   );
 };

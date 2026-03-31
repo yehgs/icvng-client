@@ -1,6 +1,6 @@
 // client/src/pages/SingleBlogPost.jsx
-import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import {
   Calendar,
   User,
@@ -16,9 +16,9 @@ import {
   Coffee,
   Tag,
   ChevronRight,
-} from 'lucide-react';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
+} from "lucide-react";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
 
 const SingleBlogPost = () => {
   const { slug } = useParams();
@@ -57,13 +57,13 @@ const SingleBlogPost = () => {
         updatePageMetadata(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching post:', error);
+      console.error("Error fetching post:", error);
       // Fallback data for development
       setPost({
-        _id: '1',
-        title: 'The Ethiopian Coffee Story: Birthplace of Coffee',
+        _id: "1",
+        title: "The Ethiopian Coffee Story: Birthplace of Coffee",
         excerpt:
-          'Discover the legendary birthplace of coffee in the highlands of Ethiopia, where coffee culture began over a thousand years ago.',
+          "Discover the legendary birthplace of coffee in the highlands of Ethiopia, where coffee culture began over a thousand years ago.",
         content: `
           <h2>The Legend of Kaldi and the Dancing Goats</h2>
           <p>The story of coffee begins in the ancient highlands of Ethiopia, where legend tells of a goat herder named Kaldi who noticed his goats becoming unusually energetic after eating certain red berries. This discovery would eventually change the world forever.</p>
@@ -80,28 +80,28 @@ const SingleBlogPost = () => {
           <p>The Ethiopian coffee ceremony is a beautiful tradition that brings communities together. Green coffee beans are roasted over an open flame, ground by hand, and brewed in a clay pot called a jebena. This ritual can take hours and represents hospitality and friendship.</p>
         `,
         featuredImage:
-          'https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=600&fit=crop',
-        imageAlt: 'Ethiopian coffee ceremony with traditional jebena pot',
-        slug: 'ethiopian-coffee-story-birthplace-of-coffee',
-        category: { name: 'Coffee Origins', slug: 'coffee-origins' },
+          "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=600&fit=crop",
+        imageAlt: "Ethiopian coffee ceremony with traditional jebena pot",
+        slug: "ethiopian-coffee-story-birthplace-of-coffee",
+        category: { name: "Coffee Origins", slug: "coffee-origins" },
         tags: [
-          { name: 'Ethiopia', color: '#DC143C', slug: 'ethiopia' },
-          { name: 'Arabica', color: '#8B4513', slug: 'arabica' },
-          { name: 'Single Origin', color: '#228B22', slug: 'single-origin' },
+          { name: "Ethiopia", color: "#DC143C", slug: "ethiopia" },
+          { name: "Arabica", color: "#8B4513", slug: "arabica" },
+          { name: "Single Origin", color: "#228B22", slug: "single-origin" },
         ],
         author: {
-          name: 'Coffee Expert',
+          name: "Coffee Expert",
           avatar:
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
         },
         publishedAt: new Date().toISOString(),
         readTime: 5,
         views: 1250,
         likes: 42,
         seoTitle:
-          'Ethiopian Coffee Origins - The Birthplace of Coffee | I-Coffee.ng',
+          "Ethiopian Coffee Origins - The Birthplace of Coffee | I-Coffee.ng",
         seoDescription:
-          'Learn about Ethiopian coffee origins, from the legend of Kaldi to modern coffee regions like Yirgacheffe and Sidamo.',
+          "Learn about Ethiopian coffee origins, from the legend of Kaldi to modern coffee regions like Yirgacheffe and Sidamo.",
         relatedProducts: [],
       });
     } finally {
@@ -121,16 +121,16 @@ const SingleBlogPost = () => {
         setRelatedPosts(response.data.data);
       }
     } catch (error) {
-      console.error('Error fetching related posts:', error);
+      console.error("Error fetching related posts:", error);
       setRelatedPosts([
         {
-          _id: '2',
-          title: 'Colombian Coffee: The Perfect Climate for Perfect Beans',
+          _id: "2",
+          title: "Colombian Coffee: The Perfect Climate for Perfect Beans",
           excerpt:
             "Explore how Colombia's unique geography and climate create some of the world's most beloved coffee beans.",
           featuredImage:
-            'https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=400&h=300&fit=crop',
-          slug: 'colombian-coffee-perfect-climate-perfect-beans',
+            "https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=400&h=300&fit=crop",
+          slug: "colombian-coffee-perfect-climate-perfect-beans",
           readTime: 7,
         },
       ]);
@@ -146,61 +146,61 @@ const SingleBlogPost = () => {
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
       metaDescription.setAttribute(
-        'content',
-        postData.seoDescription || postData.excerpt
+        "content",
+        postData.seoDescription || postData.excerpt,
       );
     }
 
     // Update Open Graph tags
     const ogTitle = document.querySelector('meta[property="og:title"]');
     const ogDescription = document.querySelector(
-      'meta[property="og:description"]'
+      'meta[property="og:description"]',
     );
     const ogImage = document.querySelector('meta[property="og:image"]');
 
     if (ogTitle)
-      ogTitle.setAttribute('content', postData.socialTitle || postData.title);
+      ogTitle.setAttribute("content", postData.socialTitle || postData.title);
     if (ogDescription)
       ogDescription.setAttribute(
-        'content',
-        postData.socialDescription || postData.excerpt
+        "content",
+        postData.socialDescription || postData.excerpt,
       );
     if (ogImage)
       ogImage.setAttribute(
-        'content',
-        postData.socialImage || postData.featuredImage
+        "content",
+        postData.socialImage || postData.featuredImage,
       );
   };
 
   const addStructuredData = () => {
     const structuredData = {
-      '@context': 'https://schema.org',
-      '@type': 'BlogPosting',
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
       headline: post.title,
       description: post.excerpt,
       image: post.featuredImage,
       author: {
-        '@type': 'Person',
+        "@type": "Person",
         name: post.author.name,
       },
       publisher: {
-        '@type': 'Organization',
-        name: 'I-Coffee.ng',
+        "@type": "Organization",
+        name: "I-Coffee.ng",
         logo: {
-          '@type': 'ImageObject',
-          url: 'https://i-coffee.ng/logo.png',
+          "@type": "ImageObject",
+          url: "https://i-coffee.ng/logo.png",
         },
       },
       datePublished: post.publishedAt,
       dateModified: post.updatedAt || post.publishedAt,
       mainEntityOfPage: {
-        '@type': 'WebPage',
-        '@id': `https://i-coffee.ng/blog/${post.slug}`,
+        "@type": "WebPage",
+        "@id": `https://i-coffee.ng/blog/${post.slug}`,
       },
     };
 
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
     script.textContent = JSON.stringify(structuredData);
     document.head.appendChild(script);
 
@@ -210,10 +210,10 @@ const SingleBlogPost = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
     });
   };
 
@@ -221,31 +221,31 @@ const SingleBlogPost = () => {
     const url = window.location.href;
     const text = post.title;
 
-    let shareUrl = '';
+    let shareUrl = "";
     switch (platform) {
-      case 'facebook':
+      case "facebook":
         shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          url
+          url,
         )}`;
         break;
-      case 'twitter':
+      case "twitter":
         shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-          text
+          text,
         )}&url=${encodeURIComponent(url)}`;
         break;
-      case 'linkedin':
+      case "linkedin":
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-          url
+          url,
         )}`;
         break;
-      case 'copy':
+      case "copy":
         navigator.clipboard.writeText(url);
-        alert('Link copied to clipboard!');
+        alert("Link copied to clipboard!");
         return;
     }
 
     if (shareUrl) {
-      window.open(shareUrl, '_blank', 'width=600,height=400');
+      window.open(shareUrl, "_blank", "width=600,height=400");
     }
     setShareMenuOpen(false);
   };
@@ -402,12 +402,12 @@ const SingleBlogPost = () => {
                     onClick={handleLike}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
                       liked
-                        ? 'bg-red-100 text-red-600'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        ? "bg-red-100 text-red-600"
+                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                     }`}
                   >
                     <Heart
-                      className={`w-4 h-4 ${liked ? 'fill-current' : ''}`}
+                      className={`w-4 h-4 ${liked ? "fill-current" : ""}`}
                     />
                     <span>{post.likes + (liked ? 1 : 0)}</span>
                   </button>
@@ -425,28 +425,28 @@ const SingleBlogPost = () => {
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-10">
                         <div className="py-2">
                           <button
-                            onClick={() => handleShare('facebook')}
+                            onClick={() => handleShare("facebook")}
                             className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-gray-50"
                           >
                             <Facebook className="w-4 h-4 text-blue-600" />
                             <span>Facebook</span>
                           </button>
                           <button
-                            onClick={() => handleShare('twitter')}
+                            onClick={() => handleShare("twitter")}
                             className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-gray-50"
                           >
                             <Twitter className="w-4 h-4 text-blue-400" />
                             <span>Twitter</span>
                           </button>
                           <button
-                            onClick={() => handleShare('linkedin')}
+                            onClick={() => handleShare("linkedin")}
                             className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-gray-50"
                           >
                             <Linkedin className="w-4 h-4 text-blue-700" />
                             <span>LinkedIn</span>
                           </button>
                           <button
-                            onClick={() => handleShare('copy')}
+                            onClick={() => handleShare("copy")}
                             className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-gray-50"
                           >
                             <Share2 className="w-4 h-4 text-gray-600" />
@@ -463,7 +463,7 @@ const SingleBlogPost = () => {
             {/* Article Content */}
             <div className="p-6 md:p-8">
               <div
-                className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-amber-600 prose-strong:text-gray-800 prose-ul:text-gray-700 prose-ol:text-gray-700"
+                className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-amber-600 prose-strong:text-gray-800 prose-ul:text-gray-700 prose-ol:text-gray-700 blog-content"
                 dangerouslySetInnerHTML={{ __html: post.content }}
               />
             </div>
