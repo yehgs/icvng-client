@@ -128,7 +128,7 @@ const CardProduct = ({ data }) => {
     if (onlineStock > 0 && primaryPrice > 0) {
       options.push({
         price: primaryPrice,
-        label: "3 to 5 Days",
+        label: "1 to 3 Days",
         icon: <FaShippingFast className="w-3 h-3" />,
         color: "text-green-600",
         bgColor: "bg-green-50",
@@ -141,7 +141,7 @@ const CardProduct = ({ data }) => {
       if (data.price5weeksDelivery > 0) {
         options.push({
           price: data.price5weeksDelivery,
-          label: "5 Weeks Delivery",
+          label: "5 Wks Delivery",
           icon: <FaCalendarAlt className="w-3 h-3" />,
           color: "text-red-600",
           bgColor: "bg-red-50",
@@ -152,7 +152,7 @@ const CardProduct = ({ data }) => {
       if (data.price3weeksDelivery > 0) {
         options.push({
           price: data.price3weeksDelivery,
-          label: "3 Weeks Delivery",
+          label: "3 Wks Delivery",
           icon: <FaClock className="w-3 h-3" />,
           color: "text-orange-600",
           bgColor: "bg-orange-50",
