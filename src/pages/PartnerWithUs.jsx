@@ -1,5 +1,5 @@
 // client/src/pages/PartnerWithUs.jsx
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   FaHandshake,
   FaChartLine,
@@ -17,9 +17,9 @@ import {
   FaFileContract,
   FaLightbulb,
   FaArrowRight,
-} from 'react-icons/fa';
-import ContactForm from '../components/Contactform';
-import CustomerMarquee from '../components/CustomerMarquee';
+} from "react-icons/fa";
+import ContactForm from "../components/Contactform";
+import CustomerMarquee from "../components/CustomerMarquee";
 
 const PartnerWithUs = () => {
   const [showAgreement, setShowAgreement] = useState(false);
@@ -27,75 +27,75 @@ const PartnerWithUs = () => {
   const benefits = [
     {
       icon: <FaChartLine className="text-4xl text-amber-600" />,
-      title: 'Grow Your Business',
+      title: "Grow Your Business",
       description:
-        'Reach thousands of coffee enthusiasts across Nigeria and expand your market presence.',
+        "Reach thousands of coffee enthusiasts across Nigeria and expand your market presence.",
     },
     {
       icon: <FaShieldAlt className="text-4xl text-amber-600" />,
-      title: 'Secure Platform',
+      title: "Secure Platform",
       description:
-        'Our platform ensures secure transactions and timely payments within 24 hours.',
+        "Our platform ensures secure transactions and timely payments within 24 hours.",
     },
     {
       icon: <FaUsers className="text-4xl text-amber-600" />,
-      title: 'Wide Customer Base',
+      title: "Wide Customer Base",
       description:
-        'Connect with coffee shops, businesses, and individual coffee lovers nationwide.',
+        "Connect with coffee shops, businesses, and individual coffee lovers nationwide.",
     },
     {
       icon: <FaRocket className="text-4xl text-amber-600" />,
-      title: 'Easy Setup',
+      title: "Easy Setup",
       description:
-        'Get your products online in just 15 days with our streamlined onboarding process.',
+        "Get your products online in just 15 days with our streamlined onboarding process.",
     },
     {
       icon: <FaMoneyBillWave className="text-4xl text-amber-600" />,
-      title: 'Competitive Rates',
+      title: "Competitive Rates",
       description:
-        'Only 10% handling fee with transparent pricing and no hidden costs.',
+        "Only 10% handling fee with transparent pricing and no hidden costs.",
     },
     {
       icon: <FaTruck className="text-4xl text-amber-600" />,
-      title: 'Logistics Support',
+      title: "Logistics Support",
       description:
-        'Free delivery for orders above ₦100,000 within Lagos State.',
+        "Free delivery for orders above ₦100,000 within Lagos State.",
     },
   ];
 
   const keyFeatures = [
-    'Your products listed at your own online prices',
-    'Payment within 24 hours of customer payment receipt',
-    'Full control over your inventory and pricing',
-    'Marketing support through our platform and social media',
-    'No upfront costs or listing fees',
-    'Dedicated account manager for support',
+    "Your products listed at your own online prices",
+    "Payment within 24 hours of customer payment receipt",
+    "Full control over your inventory and pricing",
+    "Marketing support through our platform and social media",
+    "No upfront costs or listing fees",
+    "Dedicated account manager for support",
   ];
 
   const howItWorks = [
     {
-      step: '1',
-      title: 'Submit Application',
+      step: "1",
+      title: "Submit Application",
       description:
-        'Fill out the partnership form with your business details and product information.',
+        "Fill out the partnership form with your business details and product information.",
     },
     {
-      step: '2',
-      title: 'Review Process',
+      step: "2",
+      title: "Review Process",
       description:
-        'Our team reviews your products within 10 days and provides feedback.',
+        "Our team reviews your products within 10 days and provides feedback.",
     },
     {
-      step: '3',
-      title: 'Agreement & Setup',
+      step: "3",
+      title: "Agreement & Setup",
       description:
-        'Sign the supplier agreement and upload your product catalog with images.',
+        "Sign the supplier agreement and upload your product catalog with images.",
     },
     {
-      step: '4',
-      title: 'Go Live',
+      step: "4",
+      title: "Go Live",
       description:
-        'Your products go live within 15 days and start reaching customers immediately.',
+        "Your products go live within 15 days and start reaching customers immediately.",
     },
   ];
 
@@ -119,8 +119,8 @@ const PartnerWithUs = () => {
             <button
               onClick={() =>
                 document
-                  .getElementById('application-form')
-                  .scrollIntoView({ behavior: 'smooth' })
+                  .getElementById("application-form")
+                  .scrollIntoView({ behavior: "smooth" })
               }
               className="bg-white text-amber-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-amber-50 transition inline-flex items-center"
             >
@@ -128,9 +128,8 @@ const PartnerWithUs = () => {
             </button>
           </div>
         </div>
-        <CustomerMarquee/>
+        <CustomerMarquee />
       </div>
-    
 
       {/* Benefits Section */}
       <div className="container mx-auto px-4 py-16">
@@ -154,9 +153,7 @@ const PartnerWithUs = () => {
               <h3 className="text-xl font-semibold text-gray-800 mb-3 text-center">
                 {benefit.title}
               </h3>
-              <p className="text-gray-600 text-center">
-                {benefit.description}
-              </p>
+              <p className="text-gray-600 text-center">{benefit.description}</p>
             </div>
           ))}
         </div>
@@ -271,7 +268,7 @@ const PartnerWithUs = () => {
                 onClick={() => setShowAgreement(!showAgreement)}
                 className="text-amber-600 hover:text-amber-700 font-medium flex items-center"
               >
-                {showAgreement ? 'Hide' : 'View'} Full Agreement Details
+                {showAgreement ? "Hide" : "View"} Full Agreement Details
                 <FaArrowRight className="ml-2" />
               </button>
 
@@ -359,13 +356,23 @@ const PartnerWithUs = () => {
               <div className="flex flex-col items-center">
                 <FaPhone className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Call Us</h3>
-                <a href='tel:+2348039827194' className="text-gray-300 text-sm hover:text-amber-400 duration-300">+234 803 982 7194</a>
+                <a
+                  href="tel:+2348039827194"
+                  className="text-gray-300 text-sm hover:text-amber-400 duration-300"
+                >
+                  +234 805 242 3935
+                </a>
               </div>
 
               <div className="flex flex-col items-center">
                 <FaEnvelope className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Email Us</h3>
-                <a href='mailto:partners@i-coffee.ng' className="text-gray-300 text-sm hover:text-amber-400 duration-300">partners@i-coffee.ng</a>
+                <a
+                  href="mailto:partners@i-coffee.ng"
+                  className="text-gray-300 text-sm hover:text-amber-400 duration-300"
+                >
+                  partners@i-coffee.ng
+                </a>
               </div>
             </div>
           </div>

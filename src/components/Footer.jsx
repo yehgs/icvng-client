@@ -1,5 +1,5 @@
 // client/src/components/Footer.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   Facebook,
   Twitter,
@@ -10,27 +10,27 @@ import {
   Phone,
   MapPin,
   ArrowRight,
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
-import banner1 from '../assets/web-mix-small.png';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import toast from 'react-hot-toast';
-import payment from '../assets/payment.svg';
-import foodHygieneRating from '../assets/food-hygiene-rating.webp';
-import kosherFood from '../assets/kosher-food.webp';
-import ifsFood from '../assets/ifs-food.webp';
-import dnvglIso from '../assets/dnvgl-iso9001.webp';
+} from "lucide-react";
+import { Link } from "react-router-dom";
+import banner1 from "../assets/web-mix-small.png";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import toast from "react-hot-toast";
+import payment from "../assets/payment.svg";
+import foodHygieneRating from "../assets/food-hygiene-rating.webp";
+import kosherFood from "../assets/kosher-food.webp";
+import ifsFood from "../assets/ifs-food.webp";
+import dnvglIso from "../assets/dnvgl-iso9001.webp";
 
 const PreFooter = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [footerBanner, setFooterBanner] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     toast(`Thank you for subscribing with ${email}!`);
-    setEmail('');
+    setEmail("");
   };
 
   const fetchFooterBanner = async () => {
@@ -38,14 +38,14 @@ const PreFooter = () => {
       setLoading(true);
       const response = await Axios({
         ...SummaryApi.getActiveBanners,
-        params: { position: 'footer' },
+        params: { position: "footer" },
       });
 
       if (response.data.success && response.data.data.length > 0) {
         setFooterBanner(response.data.data[0]);
       }
     } catch (error) {
-      console.error('Error fetching footer banner:', error);
+      console.error("Error fetching footer banner:", error);
     } finally {
       setLoading(false);
     }
@@ -56,13 +56,13 @@ const PreFooter = () => {
   }, []);
 
   const certifications = [
-    { id: 1, src: foodHygieneRating, alt: 'Food Hygiene Rating 5 - Very Good' },
-    { id: 2, src: kosherFood, alt: 'Kosher Food Certified' },
-    { id: 3, src: ifsFood, alt: 'IFS Food Certified' },
+    { id: 1, src: foodHygieneRating, alt: "Food Hygiene Rating 5 - Very Good" },
+    { id: 2, src: kosherFood, alt: "Kosher Food Certified" },
+    { id: 3, src: ifsFood, alt: "IFS Food Certified" },
     {
       id: 4,
       src: dnvglIso,
-      alt: 'DNV-GL ISO 9001 Quality System Certification',
+      alt: "DNV-GL ISO 9001 Quality System Certification",
     },
   ];
 
@@ -171,14 +171,14 @@ const PreFooter = () => {
                 <a href={footerBanner.link} className="block">
                   <img
                     src={footerBanner.image}
-                    alt={footerBanner.title || 'Footer Banner'}
+                    alt={footerBanner.title || "Footer Banner"}
                     className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
                   />
                 </a>
               ) : (
                 <img
                   src={footerBanner.image}
-                  alt={footerBanner.title || 'Footer Banner'}
+                  alt={footerBanner.title || "Footer Banner"}
                   className="w-full h-auto rounded-lg"
                 />
               )
@@ -210,7 +210,7 @@ const FooterAccordionItem = ({ title, children }) => {
           {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
         </div>
       </div>
-      <div className={`mt-4 md:block ${isOpen ? 'block' : 'hidden'}`}>
+      <div className={`mt-4 md:block ${isOpen ? "block" : "hidden"}`}>
         {children}
       </div>
     </div>
@@ -380,10 +380,10 @@ const Footer = () => {
                   <li className="mb-3 flex items-center">
                     <Phone size={20} className="mr-2 flex-shrink-0" />
                     <a
-                      href="tel:+2348039827194"
+                      href="tel:+2348052423935"
                       className="hover:text-amber-300 transition"
                     >
-                      +234 803 982 7194
+                      +234 805 242 3935
                     </a>
                   </li>
                   <li className="flex items-center">

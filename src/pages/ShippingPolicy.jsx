@@ -1,5 +1,5 @@
 // client/src/pages/ShippingPolicy.jsx
-import React from 'react';
+import React from "react";
 import {
   FaTruck,
   FaShippingFast,
@@ -10,45 +10,45 @@ import {
   FaExclamationTriangle,
   FaPhone,
   FaEnvelope,
-} from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+} from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const ShippingPolicy = () => {
   const shippingMethods = [
     {
       icon: <FaShippingFast className="text-4xl text-amber-600" />,
-      name: 'Standard Shipping',
-      delivery: '3-7 business days (domestic)',
-      intDelivery: '7-14 business days (international)',
-      description: 'Reliable delivery at affordable rates',
+      name: "Standard Shipping",
+      delivery: "3-7 business days (domestic)",
+      intDelivery: "7-14 business days (international)",
+      description: "Reliable delivery at affordable rates",
     },
     {
       icon: <FaTruck className="text-4xl text-amber-600" />,
-      name: 'Express Shipping',
-      delivery: '1-3 business days (domestic)',
-      intDelivery: '3-5 business days (international)',
-      description: 'Faster delivery for urgent orders',
+      name: "Express Shipping",
+      delivery: "1-3 business days (domestic)",
+      intDelivery: "3-5 business days (international)",
+      description: "Faster delivery for urgent orders",
     },
   ];
 
   const deliveryZones = [
     {
-      zone: 'Lagos State',
-      time: '1-3 business days',
-      freeShipping: '₦100,000+',
-      color: 'amber',
+      zone: "Lagos State",
+      time: "1-3 business days",
+      freeShipping: "₦100,000+",
+      color: "amber",
     },
     {
-      zone: 'Other Nigerian States',
-      time: '3-7 business days',
-      freeShipping: 'N/A',
-      color: 'amber',
+      zone: "Other Nigerian States",
+      time: "3-7 business days",
+      freeShipping: "N/A",
+      color: "amber",
     },
     {
-      zone: 'West Africa (Benin, Togo, Cameroon)',
-      time: '7-14 business days',
-      freeShipping: 'N/A',
-      color: 'purple',
+      zone: "West Africa (Benin, Togo, Cameroon)",
+      time: "7-14 business days",
+      freeShipping: "N/A",
+      color: "purple",
     },
   ];
 
@@ -163,11 +163,11 @@ const ShippingPolicy = () => {
                 <div
                   key={index}
                   className={`rounded-xl p-6 border-2 ${
-                    zone.color === 'amber'
-                      ? 'border-amber-200 bg-amber-50'
-                      : zone.color === 'amber'
-                      ? 'border-amber-200 bg-amber-50'
-                      : 'border-purple-200 bg-purple-50'
+                    zone.color === "amber"
+                      ? "border-amber-200 bg-amber-50"
+                      : zone.color === "amber"
+                        ? "border-amber-200 bg-amber-50"
+                        : "border-purple-200 bg-purple-50"
                   }`}
                 >
                   <h3 className="text-xl font-bold text-gray-800 mb-3">
@@ -178,7 +178,7 @@ const ShippingPolicy = () => {
                       <FaClock className="text-gray-600 mr-2" />
                       <span className="text-gray-700">{zone.time}</span>
                     </div>
-                    {zone.freeShipping !== 'N/A' && (
+                    {zone.freeShipping !== "N/A" && (
                       <div className="flex items-center">
                         <FaCheckCircle className="text-amber-600 mr-2" />
                         <span className="text-gray-700">
@@ -442,7 +442,7 @@ const ShippingPolicy = () => {
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaPhone className="text-3xl mx-auto mb-4" />
                 <h3 className="font-semibold mb-2">Call Us</h3>
-                <p className="text-gray-300">+234 803 982 7194</p>
+                <p className="text-gray-300">+234 805 242 3935</p>
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">

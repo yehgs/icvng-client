@@ -1,5 +1,5 @@
 // client/src/pages/ContactUs.jsx
-import React from 'react';
+import React from "react";
 import {
   FaMapMarkerAlt,
   FaPhone,
@@ -8,35 +8,35 @@ import {
   FaFacebook,
   FaTwitter,
   FaInstagram,
-} from 'react-icons/fa';
-import ContactForm from '../components/Contactform';
+} from "react-icons/fa";
+import ContactForm from "../components/Contactform";
 
 const ContactUs = () => {
   const contactInfo = [
     {
       icon: <FaMapMarkerAlt className="text-3xl text-amber-600" />,
-      title: 'Visit Us',
-      details: ['3 Kaffi Street, Alausa', 'Ikeja, Lagos', 'Nigeria'],
+      title: "Visit Us",
+      details: ["3 Kaffi Street, Alausa", "Ikeja, Lagos", "Nigeria"],
     },
     {
       icon: <FaPhone className="text-3xl text-amber-600" />,
-      title: 'Call Us',
-      details: ['+234 803 982 7194'],
-      link: 'tel:+2348039827194',
+      title: "Call Us",
+      details: ["+234 805 242 3935"],
+      link: "tel:+2348052423935",
     },
     {
       icon: <FaEnvelope className="text-3xl text-amber-600" />,
-      title: 'Email Us',
-      details: ['customercare@i-coffee.ng',],
-      link: 'mailto:customercare@i-coffee.ng',
+      title: "Email Us",
+      details: ["customercare@i-coffee.ng"],
+      link: "mailto:customercare@i-coffee.ng",
     },
     {
       icon: <FaClock className="text-3xl text-amber-600" />,
-      title: 'Business Hours',
+      title: "Business Hours",
       details: [
-        'Monday - Friday: 8:00 AM - 6:00 PM',
-        'Saturday: 9:00 AM - 4:00 PM',
-        'Sunday: Closed',
+        "Monday - Friday: 8:00 AM - 6:00 PM",
+        "Saturday: 9:00 AM - 4:00 PM",
+        "Sunday: Closed",
       ],
     },
   ];
@@ -82,7 +82,7 @@ const ContactUs = () => {
                     <p key={idx} className="text-sm">
                       {detail}
                     </p>
-                  )
+                  ),
                 )}
               </div>
             </div>

@@ -292,17 +292,10 @@ const ProductDisplayPage = () => {
 
       if (!isLoggedIn) {
         addToGuestCart({
-          productId: data._id,
-          quantity: 1,
-          priceOption: priceOptionToUse,
-          price: getSelectedPrice(priceOptionToUse),
-          selectedPrice: getSelectedPrice(priceOptionToUse),
-          btcPrice: data.btcPrice,
-          discount: data.discount || 0,
-          name: data.name,
-          image: data.image,
-          price3weeksDelivery: data.price3weeksDelivery,
-          price5weeksDelivery: data.price5weeksDelivery,
+          productId: data._id, quantity: 1, priceOption: priceOptionToUse,
+          price: getSelectedPrice(priceOptionToUse), selectedPrice: getSelectedPrice(priceOptionToUse),
+          btcPrice: data.btcPrice, discount: data.discount || 0, name: data.name, image: data.image,
+          price3weeksDelivery: data.price3weeksDelivery, price5weeksDelivery: data.price5weeksDelivery,
         });
         toast.success("Added to cart");
         window.dispatchEvent(new CustomEvent("cart-updated"));
@@ -339,8 +332,7 @@ const ProductDisplayPage = () => {
 
       if (!isLoggedIn) {
         updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
-        window.dispatchEvent(new CustomEvent("cart-updated"));
-        return;
+        window.dispatchEvent(new CustomEvent("cart-updated")); return;
       } else {
         const response = await updateCartItem(cartId, currentQty + 1);
         if (response.success) {
@@ -365,8 +357,7 @@ const ProductDisplayPage = () => {
       if (!isLoggedIn) {
         if (currentQty === 1) removeFromGuestCart(data._id, currentPriceOption);
         else updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
-        window.dispatchEvent(new CustomEvent("cart-updated"));
-        return;
+        window.dispatchEvent(new CustomEvent("cart-updated")); return;
       } else {
         if (currentQty === 1) {
           await deleteCartItem(cartId);

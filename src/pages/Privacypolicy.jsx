@@ -1,5 +1,5 @@
 // client/src/pages/PrivacyPolicy.jsx
-import React from 'react';
+import React from "react";
 import {
   FaShieldAlt,
   FaLock,
@@ -8,79 +8,79 @@ import {
   FaCookie,
   FaEnvelope,
   FaCheckCircle,
-} from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+} from "react-icons/fa";
+import { Link } from "react-router-dom";
 
 const PrivacyPolicy = () => {
   const dataTypes = [
     {
       icon: <FaUserShield className="text-3xl text-amber-600" />,
-      title: 'Personal Information',
+      title: "Personal Information",
       items: [
-        'Name and contact details',
-        'Email address',
-        'Phone number',
-        'Delivery address',
-        'Company information (if applicable)',
+        "Name and contact details",
+        "Email address",
+        "Phone number",
+        "Delivery address",
+        "Company information (if applicable)",
       ],
     },
     {
       icon: <FaDatabase className="text-3xl text-amber-600" />,
-      title: 'Transaction Data',
+      title: "Transaction Data",
       items: [
-        'Order history',
-        'Payment information',
-        'Purchase preferences',
-        'Communication records',
-        'Account activity',
+        "Order history",
+        "Payment information",
+        "Purchase preferences",
+        "Communication records",
+        "Account activity",
       ],
     },
     {
       icon: <FaCookie className="text-3xl text-amber-600" />,
-      title: 'Technical Data',
+      title: "Technical Data",
       items: [
-        'IP address',
-        'Browser type and version',
-        'Device information',
-        'Cookies and usage data',
-        'Location data',
+        "IP address",
+        "Browser type and version",
+        "Device information",
+        "Cookies and usage data",
+        "Location data",
       ],
     },
   ];
 
   const securityMeasures = [
-    'SSL encryption for data transmission',
-    'Secure payment gateways',
-    'Regular security audits',
-    'Access controls and authentication',
-    'Data backup and recovery systems',
-    'Employee training on data protection',
+    "SSL encryption for data transmission",
+    "Secure payment gateways",
+    "Regular security audits",
+    "Access controls and authentication",
+    "Data backup and recovery systems",
+    "Employee training on data protection",
   ];
 
   const yourRights = [
     {
-      title: 'Access',
-      description: 'Request a copy of your personal data',
+      title: "Access",
+      description: "Request a copy of your personal data",
     },
     {
-      title: 'Correction',
-      description: 'Update or correct inaccurate information',
+      title: "Correction",
+      description: "Update or correct inaccurate information",
     },
     {
-      title: 'Deletion',
-      description: 'Request deletion of your personal data',
+      title: "Deletion",
+      description: "Request deletion of your personal data",
     },
     {
-      title: 'Portability',
-      description: 'Receive your data in a structured format',
+      title: "Portability",
+      description: "Receive your data in a structured format",
     },
     {
-      title: 'Object',
-      description: 'Object to processing of your data',
+      title: "Object",
+      description: "Object to processing of your data",
     },
     {
-      title: 'Withdraw Consent',
-      description: 'Withdraw consent for data processing',
+      title: "Withdraw Consent",
+      description: "Withdraw consent for data processing",
     },
   ];
 
@@ -116,13 +116,13 @@ const PrivacyPolicy = () => {
               <p>
                 At I-Coffee, we are committed to protecting your privacy and
                 ensuring the security of your personal information. This Privacy
-                Policy explains how we collect, use, disclose, and safeguard your
-                information when you use our platform.
+                Policy explains how we collect, use, disclose, and safeguard
+                your information when you use our platform.
               </p>
               <p>
-                By using I-Coffee, you consent to the data practices described in
-                this policy. If you do not agree with this policy, please do not
-                use our platform.
+                By using I-Coffee, you consent to the data practices described
+                in this policy. If you do not agree with this policy, please do
+                not use our platform.
               </p>
             </div>
           </div>
@@ -188,8 +188,8 @@ const PrivacyPolicy = () => {
                   Communication
                 </h3>
                 <p className="text-gray-700">
-                  Send order confirmations, shipping updates, and respond to your
-                  inquiries.
+                  Send order confirmations, shipping updates, and respond to
+                  your inquiries.
                 </p>
               </div>
 
@@ -228,7 +228,8 @@ const PrivacyPolicy = () => {
                   Legal Compliance
                 </h3>
                 <p className="text-gray-700">
-                  Comply with legal obligations and enforce our terms and policies.
+                  Comply with legal obligations and enforce our terms and
+                  policies.
                 </p>
               </div>
             </div>
@@ -281,8 +282,8 @@ const PrivacyPolicy = () => {
                     With Suppliers
                   </h3>
                   <p className="text-gray-700">
-                    We share necessary information with suppliers to fulfill your
-                    orders, including delivery address and contact details.
+                    We share necessary information with suppliers to fulfill
+                    your orders, including delivery address and contact details.
                   </p>
                 </div>
 
@@ -374,8 +375,8 @@ const PrivacyPolicy = () => {
             <div className="prose max-w-none text-gray-700 space-y-4">
               <p>
                 We use cookies and similar tracking technologies to enhance your
-                experience on our platform. Cookies are small files stored on your
-                device that help us:
+                experience on our platform. Cookies are small files stored on
+                your device that help us:
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">
                 <li>Remember your preferences and settings</li>
@@ -386,8 +387,8 @@ const PrivacyPolicy = () => {
               </ul>
               <p>
                 You can control cookies through your browser settings. However,
-                disabling cookies may affect your ability to use certain features
-                of our platform.
+                disabling cookies may affect your ability to use certain
+                features of our platform.
               </p>
             </div>
           </div>
@@ -428,10 +429,10 @@ const PrivacyPolicy = () => {
               Children's Privacy
             </h2>
             <p className="text-gray-700">
-              Our platform is not intended for children under 18 years of age. We
-              do not knowingly collect personal information from children. If you
-              believe we have collected information from a child, please contact
-              us immediately.
+              Our platform is not intended for children under 18 years of age.
+              We do not knowingly collect personal information from children. If
+              you believe we have collected information from a child, please
+              contact us immediately.
             </p>
           </div>
         </div>
@@ -466,11 +467,11 @@ const PrivacyPolicy = () => {
               Updates to This Policy
             </h2>
             <p className="text-gray-700">
-              We may update this Privacy Policy from time to time. Changes will be
-              posted on this page with an updated "Last Updated" date. We
-              encourage you to review this policy periodically. Your continued use
-              of our platform after changes constitutes acceptance of the updated
-              policy.
+              We may update this Privacy Policy from time to time. Changes will
+              be posted on this page with an updated "Last Updated" date. We
+              encourage you to review this policy periodically. Your continued
+              use of our platform after changes constitutes acceptance of the
+              updated policy.
             </p>
           </div>
         </div>
@@ -481,13 +482,15 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <FaEnvelope className="text-5xl mx-auto mb-6" />
-            <h2 className="text-3xl font-bold mb-4">Questions About Privacy?</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              Questions About Privacy?
+            </h2>
             <p className="text-xl text-green-100 mb-8">
               We're here to help with any privacy-related concerns
             </p>
             <div className="space-y-4">
               <p className="text-lg">
-                <strong>Email:</strong>{' '}
+                <strong>Email:</strong>{" "}
                 <a
                   href="mailto:customercare@i-coffee.ng"
                   className="text-white hover:text-green-200 underline"
@@ -496,12 +499,12 @@ const PrivacyPolicy = () => {
                 </a>
               </p>
               <p className="text-lg">
-                <strong>Phone:</strong>{' '}
+                <strong>Phone:</strong>{" "}
                 <a
-                  href="tel:+2348039827194"
+                  href="tel:+2348052423935"
                   className="text-white hover:text-green-200 underline"
                 >
-                  +234 803 982 7194
+                  +234 805 242 3935
                 </a>
               </p>
               <p className="text-lg">
@@ -533,7 +536,9 @@ const PrivacyPolicy = () => {
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
               <FaShieldAlt className="text-4xl text-amber-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-800">Terms & Conditions</h3>
+              <h3 className="font-semibold text-gray-800">
+                Terms & Conditions
+              </h3>
             </Link>
             <Link
               to="/faq"
