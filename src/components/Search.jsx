@@ -4,9 +4,11 @@ import { IoSearch } from "react-icons/io5";
 import { FaArrowLeft } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { TypeAnimation } from "react-type-animation";
+import { useDispatch } from "react-redux";
 import useMobile from "../hooks/useMobile";
 import Axios from "../utils/Axios";
 import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
+import { setSearchTerm } from "../store/filterSlice";
 
 const valideURLConvert = (name) => {
   const url = name
@@ -20,6 +22,7 @@ const valideURLConvert = (name) => {
 const SearchInput = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const [isSearchPage, setIsSearchPage] = useState(false);
   const [isMobile] = useMobile();
   const params = new URLSearchParams(location.search);
@@ -32,25 +35,21 @@ const SearchInput = () => {
   const debounceTimerRef = useRef(null);
 
   useEffect(() => {
-    // Check if we're on the shop page instead of search page
     const isShop = location.pathname === "/shop";
     setIsSearchPage(isShop);
   }, [location]);
 
   useEffect(() => {
-    // Handle clicks outside the search results
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setShowResults(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Keep input in sync with URL param when navigating back/forward
   useEffect(() => {
     setSearchQuery(searchText);
   }, [searchText]);
@@ -64,12 +63,8 @@ const SearchInput = () => {
     setSearchQuery(value);
     setShowResults(true);
 
-    // Clear previous timer
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
-    // Debounce search to prevent too many API calls
     debounceTimerRef.current = setTimeout(() => {
       if (value.length > 2) {
         fetchSearchResults(value);
@@ -81,14 +76,12 @@ const SearchInput = () => {
 
   const fetchSearchResults = async (query) => {
     if (!query) return;
-
     setLoading(true);
     try {
       const response = await Axios({
         method: "GET",
         url: `/api/product/search?q=${query}&limit=5`,
       });
-
       if (response.data.success) {
         setSearchResults(response.data.data);
       }
@@ -104,19 +97,26 @@ const SearchInput = () => {
     setShowResults(false);
   };
 
-  // Navigate to shop page with search query
+  // KEY FIX: dispatch to Redux FIRST, then navigate.
+  // This guarantees Redux has the search term before EnhancedShopPage
+  // mounts and its useEffect fires.
   const handleSubmitSearch = (e) => {
     if (e) e.preventDefault();
-    if (searchQuery.trim()) {
-      const url = `/shop?q=${searchQuery}`;
-      navigate(url);
-      setShowResults(false);
-    }
+    const trimmed = searchQuery.trim();
+    if (!trimmed) return;
+
+    // 1. Write to Redux synchronously before navigation
+    dispatch(setSearchTerm(trimmed));
+
+    // 2. Navigate — EnhancedShopPage will now see the correct Redux state
+    navigate(`/shop?q=${encodeURIComponent(trimmed)}`);
+    setShowResults(false);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
     setSearchResults([]);
+    dispatch(setSearchTerm(""));
   };
 
   return (
@@ -157,22 +157,14 @@ const SearchInput = () => {
                 <div className="absolute left-12 top-1/2 transform -translate-y-1/2 pointer-events-none opacity-70">
                   <TypeAnimation
                     sequence={[
-                      "Search Nespresso",
-                      1000,
-                      "Search Caffitaly",
-                      1000,
-                      "Search Dolce Gusto",
-                      1000,
-                      "Search Carimalli",
-                      1000,
-                      "Search Lavazza",
-                      1000,
-                      "Search Coffee Machine",
-                      1000,
-                      "Search Barattini",
-                      1000,
-                      "Search Ground Coffee",
-                      1000,
+                      "Search Nespresso", 1000,
+                      "Search Caffitaly", 1000,
+                      "Search Dolce Gusto", 1000,
+                      "Search Carimalli", 1000,
+                      "Search Lavazza", 1000,
+                      "Search Coffee Machine", 1000,
+                      "Search Barattini", 1000,
+                      "Search Ground Coffee", 1000,
                       "Search Instant Coffee",
                     ]}
                     wrapper="span"
@@ -242,31 +234,21 @@ const SearchInput = () => {
                     />
                   </div>
                   <div className="flex-grow">
-                    <h4 className="font-medium text-gray-800">
-                      {product.name}
-                    </h4>
+                    <h4 className="font-medium text-gray-800">{product.name}</h4>
                     <div className="flex items-center text-sm text-gray-600 mt-1">
                       {product.productType && (
-                        <span className="mr-3">
-                          {product.productType.replace("_", " ")}
-                        </span>
+                        <span className="mr-3">{product.productType.replace("_", " ")}</span>
                       )}
                       {product.brand && product.brand[0] && (
                         <span className="mr-3">{product.brand[0].name}</span>
                       )}
                       {product.roastLevel && (
-                        <span className="mr-3">
-                          Roast: {product.roastLevel}
-                        </span>
+                        <span className="mr-3">Roast: {product.roastLevel}</span>
                       )}
                     </div>
                   </div>
                   <div className="text-primary-600 font-bold">
-                    {DisplayPriceInNaira(
-                      product.btcPrice > 0
-                        ? product.btcPrice
-                        : product.btcPrice,
-                    )}
+                    {DisplayPriceInNaira(product.btcPrice > 0 ? product.btcPrice : product.btcPrice)}
                   </div>
                 </div>
               ))}
@@ -275,14 +257,12 @@ const SearchInput = () => {
                   onClick={handleSubmitSearch}
                   className="text-primary-600 hover:underline font-medium"
                 >
-                  See all results
+                  See all results for "{searchQuery}"
                 </button>
               </div>
             </>
           ) : searchQuery.length > 2 ? (
-            <div className="p-4 text-center text-gray-500">
-              No products found
-            </div>
+            <div className="p-4 text-center text-gray-500">No products found</div>
           ) : (
             <div className="p-4 text-center text-gray-500">
               Type at least 3 characters to search

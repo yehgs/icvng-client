@@ -6,7 +6,7 @@ import AxiosToastError from "../utils/AxiosToastError";
 
 /**
  * Section component for displaying popular/best-selling products
- * Layout: 2 rows (6+6 on desktop, 4+4 on tablet, 2+2 on mobile)
+ * Layout: 2 rows (5+5 on desktop, 3+3 on tablet, 2+2 on mobile)
  * Products sorted by: 1) Average rating, 2) Review count, 3) Featured status
  */
 const PopularProductsSection = () => {
@@ -27,7 +27,7 @@ const PopularProductsSection = () => {
         ...SummaryApi.getPopularProducts,
         data: {
           page: 1,
-          limit: 24, // Fetch 24 products (12 per slide × 2 slides for 2-row layout)
+          limit: 20, // Fetch 20 products (10 per slide × 2 slides for 2-row layout)
         },
       });
 
@@ -35,7 +35,7 @@ const PopularProductsSection = () => {
 
       if (responseData.success && responseData.data) {
         console.log(
-          `PopularProductsSection: Loaded ${responseData.data.length} popular products`
+          `PopularProductsSection: Loaded ${responseData.data.length} popular products`,
         );
         setProducts(responseData.data);
       }
@@ -55,7 +55,7 @@ const PopularProductsSection = () => {
         subtitle="Loved by our customers"
         autoplay={true}
         autoplaySpeed={7000}
-        itemsPerSlide={6}
+        itemsPerSlide={5}
       />
     </section>
   );

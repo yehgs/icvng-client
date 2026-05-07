@@ -6,7 +6,7 @@ import AxiosToastError from "../utils/AxiosToastError";
 
 /**
  * Section component for displaying new arrival products
- * Layout: 2 rows (6+6 on desktop, 4+4 on tablet, 2+2 on mobile)
+ * Layout: 2 rows (5+5 on desktop, 3+3 on tablet, 2+2 on mobile)
  */
 const NewArrivalsSection = () => {
   const [products, setProducts] = useState([]);
@@ -25,7 +25,7 @@ const NewArrivalsSection = () => {
         ...SummaryApi.searchProduct,
         data: {
           page: 1,
-          limit: 24, // Fetch 24 products (12 per slide × 2 slides for 2-row layout)
+          limit: 20, // Fetch 20 products (10 per slide × 2 slides for 2-row layout)
           sort: "newest", // Sort by newest first
         },
       });
@@ -50,7 +50,7 @@ const NewArrivalsSection = () => {
         subtitle="Check out our latest products"
         autoplay={true}
         autoplaySpeed={6000}
-        itemsPerSlide={6}
+        itemsPerSlide={5}
       />
     </section>
   );

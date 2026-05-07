@@ -113,10 +113,6 @@ const ProductDisplayPage = () => {
     updateCartItem,
     deleteCartItem,
     isLoggedIn,
-    guestCart,
-    addToGuestCart,
-    updateGuestCartItem,
-    removeFromGuestCart,
   } = useGlobalContext();
 
   const effectiveStock = getEffectiveStock(data);
@@ -146,7 +142,8 @@ const ProductDisplayPage = () => {
           cartIds[option] = item._id;
         }
       });
-    } else {
+    }
+    if (!isLoggedIn) {
       guestCart.forEach((item) => {
         if (item.productId === data._id) {
           const option = item.priceOption || "regular";
@@ -223,7 +220,7 @@ const ProductDisplayPage = () => {
             color: "text-green-600",
             bgColor: "bg-green-50",
             borderColor: "border-green-200",
-            description: `Standard delivery (3–5 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`,
+            description: `Standard delivery (1-3 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`,
             delivery: "Fast Delivery",
           },
         ]
@@ -288,24 +285,14 @@ const ProductDisplayPage = () => {
     try {
       setCartLoading(true);
       const priceOptionToUse = selectedPriceOption || "regular";
-      const selectedPrice = getSelectedPrice(priceOptionToUse);
 
       if (!isLoggedIn) {
-        const cartData = {
-          productId: data._id,
-          quantity: 1,
-          priceOption: priceOptionToUse,
-          price: selectedPrice,
-          discount: data.discount || 0,
-          name: data.name,
-          image: data.image,
-          stock: effectiveStock,
-          productAvailability: data.productAvailability,
-          price3weeksDelivery: data.price3weeksDelivery,
-          price5weeksDelivery: data.price5weeksDelivery,
-          btcPrice: data.btcPrice,
-        };
-        addToGuestCart(cartData);
+        addToGuestCart({
+          productId: data._id, quantity: 1, priceOption: priceOptionToUse,
+          price: getSelectedPrice(priceOptionToUse), selectedPrice: getSelectedPrice(priceOptionToUse),
+          btcPrice: data.btcPrice, discount: data.discount || 0, name: data.name, image: data.image,
+          price3weeksDelivery: data.price3weeksDelivery, price5weeksDelivery: data.price5weeksDelivery,
+        });
         toast.success("Added to cart");
         window.dispatchEvent(new CustomEvent("cart-updated"));
         return;
@@ -341,8 +328,7 @@ const ProductDisplayPage = () => {
 
       if (!isLoggedIn) {
         updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
-        toast.success("Quantity updated");
-        window.dispatchEvent(new CustomEvent("cart-updated"));
+        window.dispatchEvent(new CustomEvent("cart-updated")); return;
       } else {
         const response = await updateCartItem(cartId, currentQty + 1);
         if (response.success) {
@@ -365,14 +351,9 @@ const ProductDisplayPage = () => {
       const cartId = priceOptionCartIds[currentPriceOption];
 
       if (!isLoggedIn) {
-        if (currentQty === 1) {
-          removeFromGuestCart(data._id, currentPriceOption);
-          toast.success("Removed from cart");
-        } else {
-          updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
-          toast.success("Quantity updated");
-        }
-        window.dispatchEvent(new CustomEvent("cart-updated"));
+        if (currentQty === 1) removeFromGuestCart(data._id, currentPriceOption);
+        else updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
+        window.dispatchEvent(new CustomEvent("cart-updated")); return;
       } else {
         if (currentQty === 1) {
           await deleteCartItem(cartId);

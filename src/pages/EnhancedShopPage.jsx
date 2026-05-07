@@ -42,7 +42,8 @@ const EnhancedShopPage = () => {
   // Monitor URL parameters with enhanced useUrlFilters hook
   const { isProcessingUrl } = useUrlFilters();
 
-  // Initialize search input from URL on mount
+  // Initialize search input from URL on mount AND whenever ?q= changes
+  // This handles: direct navigation, "See all results" click, browser back/forward
   useEffect(() => {
     const searchText = searchParams.get("q") || "";
     setSearchInput(searchText);
@@ -53,30 +54,43 @@ const EnhancedShopPage = () => {
   useEffect(() => {
     const initialLoad = async () => {
       if (firstLoadRef.current) {
-        // Short delay to ensure all filter states are initialized
+        // Read search term directly from URL — don't wait for Redux to sync
+        const urlSearch = searchParams.get("q") || "";
         setTimeout(() => {
-          console.log("Initial product fetch with filters:", activeFilters);
-          fetchProducts(true);
+          fetchProducts(true, urlSearch);
           firstLoadRef.current = false;
-        }, 200);
+        }, 100);
       }
     };
-
     initialLoad();
-
     return () => {
-      if (fetchTimeoutRef.current) {
-        clearTimeout(fetchTimeoutRef.current);
-      }
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
     };
   }, []);
 
-  // Debounced effect for filter changes
+  // Re-fetch immediately whenever the ?q= param changes on the same /shop route.
+  // This is what fires when "See all results" is clicked (same pathname, new ?q=).
+  const prevQRef = useRef(searchParams.get("q") || "");
+  useEffect(() => {
+    const currentQ = searchParams.get("q") || "";
+    // Only act after the initial mount fetch is done, and only if q actually changed
+    if (!firstLoadRef.current && currentQ !== prevQRef.current) {
+      prevQRef.current = currentQ;
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
+      fetchTimeoutRef.current = setTimeout(() => {
+        fetchProducts(true, currentQ);
+      }, 50);
+    } else {
+      // Update ref even on first render so subsequent changes are detected
+      prevQRef.current = currentQ;
+    }
+  }, [searchParams]);
+
+  // Debounced effect for non-search filter changes (category, brand, sort etc.)
+  // The search term change from URL is handled by the searchParams effect above.
   useEffect(() => {
     // Don't trigger on initial render
-    if (firstLoadRef.current) {
-      return;
-    }
+    if (firstLoadRef.current) return;
 
     // Don't fetch when URL is still processing
     if (urlState.isLoading || isProcessingUrl) {
@@ -84,23 +98,22 @@ const EnhancedShopPage = () => {
       return;
     }
 
-    console.log("Filter changed, scheduling product fetch");
-
-    // Clear any existing timeout
-    if (fetchTimeoutRef.current) {
-      clearTimeout(fetchTimeoutRef.current);
+    // If the search term change matches the current URL q param,
+    // it was already handled by the searchParams effect — skip
+    const urlQ = searchParams.get("q") || "";
+    if (activeFilters.search === urlQ && activeFilters.search === prevQRef.current) {
+      // This change was triggered by our URL sync — don't double-fetch
+      return;
     }
 
-    // Set a debounce timeout for filter changes
+    if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
+
     fetchTimeoutRef.current = setTimeout(() => {
-      console.log("Executing debounced product fetch");
       fetchProducts(true);
     }, 300);
 
     return () => {
-      if (fetchTimeoutRef.current) {
-        clearTimeout(fetchTimeoutRef.current);
-      }
+      if (fetchTimeoutRef.current) clearTimeout(fetchTimeoutRef.current);
     };
   }, [
     activeFilters.category,
@@ -126,7 +139,8 @@ const EnhancedShopPage = () => {
   }, [page]);
 
   // Fetch products with current filters
-  const fetchProducts = async (resetPage = false) => {
+  // urlSearchOverride: pass directly from URL on mount to bypass Redux timing lag
+  const fetchProducts = async (resetPage = false, urlSearchOverride = null) => {
     try {
       setLoading(true);
       const currentPage = resetPage ? 1 : page;
@@ -142,8 +156,11 @@ const EnhancedShopPage = () => {
         sortValue = "";
       }
 
+      // Use URL override on initial load to avoid Redux race condition
+      const searchTerm = urlSearchOverride !== null ? urlSearchOverride : activeFilters.search;
+
       console.log("Fetching products with filters:", {
-        search: activeFilters.search,
+        search: searchTerm,
         category: activeFilters.category,
         subCategory: activeFilters.subCategory,
         brand: activeFilters.brand,
@@ -154,7 +171,7 @@ const EnhancedShopPage = () => {
       const response = await Axios({
         ...SummaryApi.searchProduct,
         data: {
-          search: activeFilters.search,
+          search: searchTerm,
           page: currentPage,
           productType:
             activeFilters.productType.length > 0

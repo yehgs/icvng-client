@@ -1,5 +1,5 @@
 <!-- ✅ HTML -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -65,6 +65,9 @@
     <script type="text/javascript">
       var Tawk_API = Tawk_API || {},
         Tawk_LoadStart = new Date();
+      // Cart drawer z-index is set to 2,000,000,001 in App.css
+      // which is above tawk's default of 2,000,000,000 per official docs.
+      // No z-index manipulation needed here.
       (function () {
         var s1 = document.createElement("script"),
           s0 = document.getElementsByTagName("script")[0];
@@ -74,6 +77,8 @@
         s1.setAttribute("crossorigin", "*");
         s0.parentNode.insertBefore(s1, s0);
       })();
+    </script>
+    <!--End of Tawk.to Script-->
     </script>
     <!--End of Tawk.to Script-->
   </body>

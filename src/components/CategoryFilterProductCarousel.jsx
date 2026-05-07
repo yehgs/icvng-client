@@ -6,7 +6,7 @@ const CategoryFilterProductCarousel = ({
   products = [],
   categories = [],
   title = "Products by Category",
-  itemsPerSlide = 12, // Default 12 for desktop (6x2)
+  itemsPerSlide = 10,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -21,9 +21,9 @@ const CategoryFilterProductCarousel = ({
       if (window.innerWidth < 640) {
         setResponsiveItemsPerSlide(4); // Mobile: 2x2 = 4 items
       } else if (window.innerWidth < 1024) {
-        setResponsiveItemsPerSlide(8); // Tablet: 4x2 = 8 items
+        setResponsiveItemsPerSlide(6); // Tablet: 3x2 = 6 items
       } else {
-        setResponsiveItemsPerSlide(12); // Desktop: 6x2 = 12 items
+        setResponsiveItemsPerSlide(10); // Desktop: 5x2 = 10 items
       }
     };
 
@@ -54,7 +54,7 @@ const CategoryFilterProductCarousel = ({
 
       console.log(
         `Filtered ${filtered.length} products for category:`,
-        selectedCategory
+        selectedCategory,
       );
       setFilteredProducts(filtered);
     }
@@ -67,7 +67,7 @@ const CategoryFilterProductCarousel = ({
   // Calculate the number of slides needed
   const slidesCount = Math.max(
     Math.ceil(filteredProducts.length / responsiveItemsPerSlide) - 1,
-    0
+    0,
   );
 
   // Navigation functions
@@ -99,7 +99,7 @@ const CategoryFilterProductCarousel = ({
       return {
         cols: 6, // 6 columns on desktop
         rows: 2, // 2 rows
-        gridClass: "grid-cols-6", // 6 products per row
+        gridClass: "grid-cols-5", // 6 products per row
       };
     }
   };
@@ -159,7 +159,7 @@ const CategoryFilterProductCarousel = ({
                     <div className="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
                     <div className="h-8 bg-gray-200 rounded w-full"></div>
                   </div>
-                )
+                ),
               )}
             </div>
           ) : filteredProducts.length > 0 ? (
@@ -172,7 +172,7 @@ const CategoryFilterProductCarousel = ({
               {Array.from({
                 length: Math.max(
                   Math.ceil(filteredProducts.length / responsiveItemsPerSlide),
-                  1
+                  1,
                 ),
               }).map((_, slideIndex) => (
                 <div
@@ -185,7 +185,7 @@ const CategoryFilterProductCarousel = ({
                       .slice(
                         slideIndex * responsiveItemsPerSlide,
                         slideIndex * responsiveItemsPerSlide +
-                          responsiveItemsPerSlide
+                          responsiveItemsPerSlide,
                       )
                       .map((product) => (
                         <CardProduct key={product._id} data={product} />

@@ -1,15 +1,100 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { Menu, ChevronDown, ChevronRight, X } from 'lucide-react';
+// client/src/components/HeaderNavigation.jsx
+import React, { useState, useRef, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { ChevronDown, ChevronRight, X, ShoppingBag, BookOpen, Handshake, Phone } from "lucide-react";
 
-/**
- * A completely simplified HeaderNavigation component that uses direct URL navigation
- * No Redux filtering, no state management - just pure URL navigation
- */
-const HeaderNavigation = () => {
+// Dropdown rendered via portal-like approach:
+// We track the hovered category and its button's bounding rect,
+// then render the dropdown as position:fixed using that rect.
+// This COMPLETELY escapes any overflow/stacking context of the sticky header.
+function MegaMenu({ category, rect, onClose, onSubcategoryClick, onBrandClick }) {
+  if (!category || !rect) return null;
+  const top = rect.bottom;
+
+  return (
+    <div
+      style={{
+        position: "fixed",
+        top: top,
+        left: 0,
+        right: 0,
+        width: "100vw",
+        zIndex: 2147483647,
+        background: "white",
+        boxShadow: "0 12px 48px rgba(0,0,0,0.18)",
+        borderTop: "3px solid var(--color-secondary-200, #7B3F1C)",
+        padding: "32px 48px",
+      }}
+      onMouseLeave={onClose}
+    >
+      {/* Category heading */}
+      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", color: "#9ca3af", textTransform: "uppercase", marginBottom: 20 }}>
+        {category.name}
+      </p>
+      {category.subcategories?.length > 0 ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 0 }}>
+          {category.subcategories.map((sub) => (
+            <div key={sub._id} style={{ width: "16.66%", minWidth: 160, padding: "0 16px 24px 0" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                <img
+                  src={sub.image || ""}
+                  alt={sub.name}
+                  loading="lazy"
+                  style={{ width: 40, height: 40, borderRadius: 6, objectFit: "cover", flexShrink: 0 }}
+                  onError={(e) => { e.target.style.display = "none"; }}
+                />
+                <div>
+                  <button
+                    onClick={(e) => { onSubcategoryClick(sub, category.slug, e); onClose(); }}
+                    style={{ fontWeight: 700, fontSize: 14, cursor: "pointer", textAlign: "left", marginBottom: 8, lineHeight: 1.3, display: "block" }}
+                    className="hover:text-secondary-200"
+                  >
+                    {sub.name}
+                  </button>
+                  <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+                    {sub.brands?.slice(0, 6).map((brand) => (
+                      <li key={brand._id}
+                        onClick={(e) => { onBrandClick(brand, category.slug, sub.slug, e); onClose(); }}
+                        style={{ fontSize: 13, color: "#6b7280", cursor: "pointer" }}
+                        className="hover:text-secondary-200"
+                      >
+                        {brand.name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : category.brands?.length > 0 ? (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 0 }}>
+          {category.brands.map((brand) => (
+            <div key={brand._id}
+              onClick={(e) => { onBrandClick(brand, category.slug, null, e); onClose(); }}
+              style={{ width: "10%", minWidth: 100, padding: "0 16px 16px 0", cursor: "pointer", textAlign: "center" }}
+              className="hover:text-secondary-200"
+            >
+              <img src={brand.image || ""} alt={brand.name} loading="lazy"
+                style={{ width: 64, height: 32, objectFit: "contain", margin: "0 auto 6px" }}
+                onError={(e) => { e.target.style.display = "none"; }}
+              />
+              <span style={{ fontSize: 13, fontWeight: 500 }}>{brand.name}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p style={{ color: "#9ca3af", fontSize: 14 }}>No items available</p>
+      )}
+    </div>
+  );
+}
+
+const HeaderNavigation = ({ mobileMenuOnly = false }) => {
   const navigate = useNavigate();
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [hoveredCategory, setHoveredCategory] = useState(null);
+  const [hoveredRect, setHoveredRect] = useState(null);
   const [verticalMenuActive, setVerticalMenuActive] = useState(false);
   const [verticalCategory, setVerticalCategory] = useState(null);
   const [verticalSubcategory, setVerticalSubcategory] = useState(null);
@@ -17,583 +102,257 @@ const HeaderNavigation = () => {
   const [expandedSubcategories, setExpandedSubcategories] = useState({});
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef(null);
+  const hideTimer = useRef(null);
 
-  // Get category structure from Redux store
-  const categoryStructure = useSelector(
-    (state) => state.product.categoryStructure
-  );
-  const loadingCategoryStructure = useSelector(
-    (state) => state.product.loadingCategoryStructure
-  );
+  const categoryStructure = useSelector((state) => state.product.categoryStructure);
+  const loadingCategoryStructure = useSelector((state) => state.product.loadingCategoryStructure);
 
-  // Check if we're on mobile
   useEffect(() => {
-    const checkIfMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-
-    checkIfMobile();
-    window.addEventListener('resize', checkIfMobile);
-
-    return () => {
-      window.removeEventListener('resize', checkIfMobile);
-    };
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
-  // Close menu when clicked outside
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setVerticalMenuActive(false);
-      }
-    };
+    const open = () => setVerticalMenuActive(true);
+    window.addEventListener("open-mobile-menu", open);
+    return () => window.removeEventListener("open-mobile-menu", open);
+  }, []);
 
-    if (verticalMenuActive) {
-      document.addEventListener('mousedown', handleClickOutside);
-    } else {
-      document.removeEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) setVerticalMenuActive(false);
     };
+    if (verticalMenuActive) document.addEventListener("mousedown", handleClickOutside);
+    else document.removeEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [verticalMenuActive]);
 
-  const toggleCategoryExpansion = (categoryId) => {
-    setExpandedCategories({
-      ...expandedCategories,
-      [categoryId]: !expandedCategories[categoryId],
-    });
+  // Close dropdown on scroll (since it's fixed-positioned)
+  useEffect(() => {
+    const onScroll = () => { setHoveredCategory(null); setHoveredRect(null); };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    // Reset subcategory expansions when closing a category
-    if (expandedCategories[categoryId]) {
-      const newExpandedSubcategories = { ...expandedSubcategories };
-
-      // Find the category and clear its subcategories
-      const category = categoryStructure.find((cat) => cat._id === categoryId);
-      if (category && category.subcategories) {
-        category.subcategories.forEach((sub) => {
-          delete newExpandedSubcategories[sub._id];
-        });
-      }
-
-      setExpandedSubcategories(newExpandedSubcategories);
-    }
+  const go = (path) => { navigate(path); setVerticalMenuActive(false); };
+  const handleCategoryClick = (cat, e) => { e?.preventDefault(); e?.stopPropagation(); go(`/category/${cat.slug}`); };
+  const handleSubcategoryClick = (sub, catSlug, e) => { e?.preventDefault(); e?.stopPropagation(); go(`/category/${catSlug}/subcategory/${sub.slug}`); };
+  const handleBrandClick = (brand, catSlug, subSlug, e) => {
+    e?.preventDefault(); e?.stopPropagation();
+    if (subSlug) go(`/category/${catSlug}/subcategory/${subSlug}/brand/${brand.slug}`);
+    else if (catSlug) go(`/category/${catSlug}/brand/${brand.slug}`);
+    else go(`/brand/${brand.slug}`);
   };
 
-  const toggleSubcategoryExpansion = (subcategoryId) => {
-    setExpandedSubcategories({
-      ...expandedSubcategories,
-      [subcategoryId]: !expandedSubcategories[subcategoryId],
-    });
+  const handleButtonMouseEnter = (e, category) => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    const rect = e.currentTarget.getBoundingClientRect();
+    setHoveredCategory(category);
+    setHoveredRect(rect);
   };
 
-  // Simple direct navigation methods - no Redux state involved
-  const handleCategoryClick = (category, event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    console.log(`Navigating to category: ${category.name} (${category.slug})`);
-    navigate(`/category/${category.slug}`);
-    setVerticalMenuActive(false);
+  const handleButtonMouseLeave = () => {
+    // Small delay so mouse can move from button into the dropdown
+    hideTimer.current = setTimeout(() => {
+      setHoveredCategory(null);
+      setHoveredRect(null);
+    }, 100);
   };
 
-  const handleSubcategoryClick = (subcategory, categorySlug, event) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    console.log(
-      `Navigating to subcategory: ${subcategory.name} (${subcategory.slug})`
-    );
-    navigate(`/category/${categorySlug}/subcategory/${subcategory.slug}`);
-    setVerticalMenuActive(false);
+  const handleMenuMouseEnter = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
   };
 
-  const handleBrandClick = (
-    brand,
-    categorySlug,
-    subcategorySlug = null,
-    event
-  ) => {
-    if (event) {
-      event.preventDefault();
-      event.stopPropagation();
-    }
-
-    if (subcategorySlug) {
-      console.log(`Navigating to brand: ${brand.name} in subcategory route`);
-      navigate(
-        `/category/${categorySlug}/subcategory/${subcategorySlug}/brand/${brand.slug}`
-      );
-    } else if (categorySlug) {
-      console.log(`Navigating to brand: ${brand.name} in category route`);
-      navigate(`/category/${categorySlug}/brand/${brand.slug}`);
-    } else {
-      console.log(`Navigating to brand: ${brand.name} directly`);
-      navigate(`/brand/${brand.slug}`);
-    }
-
-    setVerticalMenuActive(false);
+  const handleMenuClose = () => {
+    if (hideTimer.current) clearTimeout(hideTimer.current);
+    setHoveredCategory(null);
+    setHoveredRect(null);
   };
+
+  const toggleCategoryExpansion = (id) => setExpandedCategories((p) => ({ ...p, [id]: !p[id] }));
+  const toggleSubcategoryExpansion = (id) => setExpandedSubcategories((p) => ({ ...p, [id]: !p[id] }));
 
   return (
-    <div className="bg-gray-100 border-b border-gray-200 relative z-20">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center">
-          {/* Hamburger Menu for Vertical Menu */}
-          <div
-            className="mr-6 cursor-pointer"
-            onClick={() => setVerticalMenuActive(true)}
-          >
-            <Menu size={24} className="text-gray-700" />
-          </div>
+    <>
+      {/* ── Desktop category bar ── */}
+      {!mobileMenuOnly && (
+        <div className="bg-gray-100 border-b border-gray-200">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center w-full">
+              {/* Hamburger */}
+              <button
+                className="flex-shrink-0 flex items-center gap-2 mr-3 py-3 text-sm font-medium text-gray-700 hover:text-secondary-200 transition-colors whitespace-nowrap"
+                onClick={() => setVerticalMenuActive(true)}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+                </svg>
+                <span className="hidden lg:inline text-sm">All</span>
+              </button>
 
-          {/* Horizontal Categories */}
-          <div className="flex overflow-x-auto hide-scrollbar space-x-4">
-            {loadingCategoryStructure ? (
-              <div className="whitespace-nowrap">Loading categories...</div>
-            ) : (
-              categoryStructure.map((category) => (
-                <div
-                  key={category._id}
-                  className="whitespace-nowrap cursor-pointer font-medium py-3"
-                  onMouseEnter={() => setActiveCategory(category)}
-                  onMouseLeave={() => setActiveCategory(null)}
-                >
-                  <div
-                    onClick={(e) => handleCategoryClick(category, e)}
-                    className="flex flex-col items-center justify-center min-w-[70px] text-center hover:text-secondary-200 transition-colors cursor-pointer"
-                  >
-                    <span className="text-sm truncate">{category.name}</span>
-                  </div>
-
-                  {/* Mega Menu on Hover */}
-                  {activeCategory && activeCategory._id === category._id && (
-                    <div className="absolute left-0 right-0 bg-white shadow-lg z-20 mt-3 p-6">
-                      {category.subcategories &&
-                      category.subcategories.length > 0 ? (
-                        // Type A: With Subcategories
-                        <div className="flex flex-wrap">
-                          {category.subcategories.map((subcategory) => (
-                            <div
-                              key={subcategory._id}
-                              className="w-full md:w-1/3 lg:w-1/4 p-4"
-                            >
-                              <div className="flex items-start">
-                                <img
-                                  src={
-                                    subcategory.image ||
-                                    `/api/placeholder/120/120`
-                                  }
-                                  alt={subcategory.name}
-                                  className="w-16 h-16 object-cover rounded mr-4"
-                                />
-                                <div>
-                                  <div
-                                    onClick={(e) =>
-                                      handleSubcategoryClick(
-                                        subcategory,
-                                        category.slug,
-                                        e
-                                      )
-                                    }
-                                    className="font-bold hover:text-secondary-200 cursor-pointer"
-                                  >
-                                    {subcategory.name}
-                                  </div>
-                                  <ul className="mt-2">
-                                    {subcategory.brands &&
-                                    subcategory.brands.length > 0 ? (
-                                      subcategory.brands
-                                        .slice(0, 5)
-                                        .map((brand) => (
-                                          <li
-                                            key={brand._id}
-                                            className="text-gray-600 hover:text-gray-900 py-1 cursor-pointer text-sm"
-                                            onClick={(e) =>
-                                              handleBrandClick(
-                                                brand,
-                                                category.slug,
-                                                subcategory.slug,
-                                                e
-                                              )
-                                            }
-                                          >
-                                            {brand.name}
-                                          </li>
-                                        ))
-                                    ) : (
-                                      <li className="text-gray-500 py-1">
-                                        No brands available
-                                      </li>
-                                    )}
-                                  </ul>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : category.brands && category.brands.length > 0 ? (
-                        // Type B: No Subcategories, but has brands
-                        <div className="flex flex-wrap">
-                          {category.brands.map((brand) => (
-                            <div
-                              key={brand._id}
-                              className="w-full md:w-1/4 lg:w-1/5 p-4"
-                            >
-                              <div
-                                onClick={(e) =>
-                                  handleBrandClick(
-                                    brand,
-                                    category.slug,
-                                    null,
-                                    e
-                                  )
-                                }
-                                className="flex items-center text-center cursor-pointer hover:text-secondary-200"
-                              >
-                                <img
-                                  src={
-                                    brand.image || `/api/placeholder/120/120`
-                                  }
-                                  alt={brand.name}
-                                  className="w-20 h-10 object-cover rounded-full mr-2"
-                                />
-                                <span className="font-medium text-xs">
-                                  {brand.name}
-                                </span>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        // No subcategories or brands
-                        <div className="p-4 text-center text-gray-500">
-                          No subcategories or brands available
-                        </div>
-                      )}
-                    </div>
+              {/* Scrollable nav strip — overflow-x:auto, overflow-y:visible */}
+              <div className="flex-1" style={{ overflowX: "auto", overflowY: "visible", scrollbarWidth: "none" }}>
+                <div className="flex items-center" style={{ minWidth: "max-content" }}>
+                  {loadingCategoryStructure ? (
+                    <div className="py-3 px-4 text-sm text-gray-400">Loading...</div>
+                  ) : (
+                    categoryStructure.map((category) => {
+                      const hasDrop = category.subcategories?.length > 0 || category.brands?.length > 0;
+                      return (
+                        <button
+                          key={category._id}
+                          onClick={(e) => handleCategoryClick(category, e)}
+                          onMouseEnter={hasDrop ? (e) => handleButtonMouseEnter(e, category) : undefined}
+                          onMouseLeave={hasDrop ? handleButtonMouseLeave : undefined}
+                          className="py-3 px-3 text-sm font-medium text-gray-700 hover:text-secondary-200 whitespace-nowrap transition-colors flex-shrink-0"
+                        >
+                          {category.name}
+                        </button>
+                      );
+                    })
                   )}
                 </div>
-              ))
-            )}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      {/* Vertical Menu - Desktop & Mobile */}
+      {/* Fixed-position mega menu — rendered at document level, escapes all stacking contexts */}
+      {hoveredCategory && hoveredRect && (
+        <div onMouseEnter={handleMenuMouseEnter} onMouseLeave={handleMenuClose}>
+          <MegaMenu
+            category={hoveredCategory}
+            rect={hoveredRect}
+            onClose={handleMenuClose}
+            onSubcategoryClick={handleSubcategoryClick}
+            onBrandClick={handleBrandClick}
+          />
+        </div>
+      )}
+
+      {/* ── Slide-in vertical menu ── */}
       {verticalMenuActive && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 flex">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex" style={{ zIndex: 9999 }}>
           {!isMobile ? (
-            // Desktop Version - Multi-column layout
-            <div ref={menuRef} className="flex h-full">
-              {/* First Layer - Categories */}
+            <div ref={menuRef} className="flex h-full shadow-2xl">
               <div className="w-64 bg-white h-full overflow-y-auto">
                 <div className="p-4 font-bold border-b flex justify-between items-center">
                   <span>All Categories</span>
-                  <X
-                    size={20}
-                    className="cursor-pointer text-gray-600 hover:text-gray-900"
-                    onClick={() => setVerticalMenuActive(false)}
-                  />
+                  <X size={20} className="cursor-pointer text-gray-500 hover:text-gray-900" onClick={() => setVerticalMenuActive(false)} />
                 </div>
-                {loadingCategoryStructure ? (
-                  <div className="p-4">Loading categories...</div>
-                ) : (
-                  categoryStructure.map((category) => (
-                    <div
-                      key={category._id}
-                      className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
-                      onMouseEnter={() => setVerticalCategory(category)}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <div
-                        className="flex items-center"
-                        onClick={(e) => handleCategoryClick(category, e)}
-                      >
-                        <img
-                          src={category.image || '/api/placeholder/40/40'}
-                          alt={category.name}
-                          className="w-8 h-8 mr-2"
-                        />
-                        <span>{category.name}</span>
-                      </div>
-                      {category.subcategories &&
-                        category.subcategories.length > 0 && (
-                          <ChevronRight size={20} />
-                        )}
+                {categoryStructure.map((cat) => (
+                  <div key={cat._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
+                    onMouseEnter={() => { setVerticalCategory(cat); setVerticalSubcategory(null); }}
+                    onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center" onClick={(e) => handleCategoryClick(cat, e)}>
+                      <img src={cat.image || ""} alt={cat.name} loading="lazy" className="w-8 h-8 mr-2 rounded object-cover" onError={(e) => { e.target.style.display="none"; }} />
+                      <span className="text-sm">{cat.name}</span>
                     </div>
-                  ))
-                )}
-              </div>
-
-              {/* Second Layer - Subcategories or Brands */}
-              {verticalCategory && (
-                <div className="w-64 bg-gray-50 h-full overflow-y-auto">
-                  <div className="p-4 font-bold border-b">
-                    {verticalCategory.name}
+                    {cat.subcategories?.length > 0 && <ChevronRight size={18} className="text-gray-400" />}
                   </div>
-                  {verticalCategory.subcategories &&
-                  verticalCategory.subcategories.length > 0 ? (
-                    // Display subcategories
-                    verticalCategory.subcategories.map((subcategory) => (
-                      <div
-                        key={subcategory._id}
-                        className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
-                        onMouseEnter={() => setVerticalSubcategory(subcategory)}
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <div
-                          className="flex items-center"
-                          onClick={(e) =>
-                            handleSubcategoryClick(
-                              subcategory,
-                              verticalCategory.slug,
-                              e
-                            )
-                          }
-                        >
-                          <img
-                            src={subcategory.image || '/api/placeholder/40/40'}
-                            alt={subcategory.name}
-                            className="w-8 h-8 mr-2"
-                          />
-                          <span>{subcategory.name}</span>
+                ))}
+              </div>
+              {verticalCategory && (
+                <div className="w-64 bg-gray-50 h-full overflow-y-auto border-l">
+                  <div className="p-4 font-bold border-b text-sm">{verticalCategory.name}</div>
+                  {verticalCategory.subcategories?.length > 0 ? (
+                    verticalCategory.subcategories.map((sub) => (
+                      <div key={sub._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
+                        onMouseEnter={() => setVerticalSubcategory(sub)} onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center" onClick={(e) => handleSubcategoryClick(sub, verticalCategory.slug, e)}>
+                          <img src={sub.image || ""} alt={sub.name} loading="lazy" className="w-8 h-8 mr-2 rounded object-cover" onError={(e) => { e.target.style.display="none"; }} />
+                          <span className="text-sm">{sub.name}</span>
                         </div>
-                        {subcategory.brands &&
-                          subcategory.brands.length > 0 && (
-                            <ChevronRight size={20} />
-                          )}
+                        {sub.brands?.length > 0 && <ChevronRight size={18} className="text-gray-400" />}
                       </div>
                     ))
-                  ) : verticalCategory.brands &&
-                    verticalCategory.brands.length > 0 ? (
-                    // Display brands directly if no subcategories
+                  ) : verticalCategory.brands?.length > 0 ? (
                     verticalCategory.brands.map((brand) => (
-                      <div
-                        key={brand._id}
-                        className="p-4 hover:bg-gray-100 border-b cursor-pointer"
-                        onClick={(e) =>
-                          handleBrandClick(
-                            brand,
-                            verticalCategory.slug,
-                            null,
-                            e
-                          )
-                        }
-                      >
+                      <div key={brand._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer" onClick={(e) => handleBrandClick(brand, verticalCategory.slug, null, e)}>
                         <div className="flex items-center">
-                          <img
-                            src={brand.image || '/api/placeholder/60/40'}
-                            alt={brand.name}
-                            className="w-16 h-8 mr-2"
-                          />
-                          <span>{brand.name}</span>
+                          <img src={brand.image || ""} alt={brand.name} loading="lazy" className="w-12 h-6 mr-2 object-contain" onError={(e) => { e.target.style.display="none"; }} />
+                          <span className="text-sm">{brand.name}</span>
                         </div>
                       </div>
                     ))
-                  ) : (
-                    <div className="p-4 text-gray-500">
-                      No subcategories or brands available
-                    </div>
-                  )}
+                  ) : <div className="p-4 text-gray-500 text-sm">No items</div>}
                 </div>
               )}
-
-              {/* Third Layer - Brands */}
               {verticalSubcategory && (
-                <div className="w-64 bg-white h-full overflow-y-auto">
-                  <div className="p-4 font-bold border-b">
-                    {verticalSubcategory.name} Brands
-                  </div>
-                  {verticalSubcategory.brands &&
-                  verticalSubcategory.brands.length > 0 ? (
+                <div className="w-64 bg-white h-full overflow-y-auto border-l">
+                  <div className="p-4 font-bold border-b text-sm">{verticalSubcategory.name} — Brands</div>
+                  {verticalSubcategory.brands?.length > 0 ? (
                     verticalSubcategory.brands.map((brand) => (
-                      <div
-                        key={brand._id}
-                        className="p-4 hover:bg-gray-100 border-b cursor-pointer"
-                        onClick={(e) =>
-                          handleBrandClick(
-                            brand,
-                            verticalCategory.slug,
-                            verticalSubcategory.slug,
-                            e
-                          )
-                        }
-                      >
+                      <div key={brand._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer" onClick={(e) => handleBrandClick(brand, verticalCategory.slug, verticalSubcategory.slug, e)}>
                         <div className="flex items-center">
-                          <img
-                            src={brand.image || '/api/placeholder/40/40'}
-                            alt={brand.name}
-                            className="w-8 h-8 mr-2"
-                          />
-                          <span>{brand.name}</span>
+                          <img src={brand.image || ""} alt={brand.name} loading="lazy" className="w-8 h-8 mr-2 rounded object-cover" onError={(e) => { e.target.style.display="none"; }} />
+                          <span className="text-sm">{brand.name}</span>
                         </div>
                       </div>
                     ))
-                  ) : (
-                    <div className="p-4 text-gray-500">No brands available</div>
-                  )}
+                  ) : <div className="p-4 text-gray-500 text-sm">No brands available</div>}
                 </div>
               )}
             </div>
           ) : (
-            // Mobile Version - Single column with expandable sections
-            <div
-              ref={menuRef}
-              className="w-4/5 bg-white h-full overflow-y-auto ml-auto"
-            >
-              <div className="p-4 font-bold border-b flex justify-between items-center">
-                <span>Menu</span>
-                <X
-                  size={20}
-                  className="cursor-pointer text-gray-600 hover:text-gray-900"
-                  onClick={() => setVerticalMenuActive(false)}
-                />
+            <div ref={menuRef} className="w-4/5 max-w-sm bg-white h-full overflow-y-auto ml-auto shadow-2xl flex flex-col">
+              <div className="p-4 font-bold flex justify-between items-center bg-secondary-200 text-white flex-shrink-0">
+                <span>Browse</span>
+                <X size={22} className="cursor-pointer" onClick={() => setVerticalMenuActive(false)} />
               </div>
-
-              {loadingCategoryStructure ? (
-                <div className="p-4">Loading categories...</div>
-              ) : (
-                // Categories with expandable sections
-                categoryStructure.map((category) => (
-                  <div key={category._id}>
-                    <div
-                      className="p-4 border-b cursor-pointer flex justify-between items-center"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        toggleCategoryExpansion(category._id);
-                      }}
-                    >
-                      <span
-                        className="font-medium"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleCategoryClick(category, e);
-                        }}
-                      >
-                        {category.name}
-                      </span>
-                      {(category.subcategories &&
-                        category.subcategories.length > 0) ||
-                      (category.brands && category.brands.length > 0) ? (
-                        expandedCategories[category._id] ? (
-                          <ChevronDown size={20} />
-                        ) : (
-                          <ChevronRight size={20} />
-                        )
-                      ) : null}
+              <Link to="/shop" className="flex items-center gap-3 p-4 font-semibold text-secondary-200 border-b hover:bg-gray-50" onClick={() => setVerticalMenuActive(false)}>
+                <ShoppingBag size={18} className="flex-shrink-0" />Shop All Products
+              </Link>
+              <div className="flex-1 overflow-y-auto">
+                {categoryStructure.map((cat) => (
+                  <div key={cat._id}>
+                    <div className="p-4 border-b cursor-pointer flex justify-between items-center hover:bg-gray-50"
+                      onClick={(e) => { e.stopPropagation(); toggleCategoryExpansion(cat._id); }}>
+                      <span className="font-medium text-sm"
+                        onClick={(e) => { e.stopPropagation(); handleCategoryClick(cat, e); }}>{cat.name}</span>
+                      {(cat.subcategories?.length > 0 || cat.brands?.length > 0)
+                        ? (expandedCategories[cat._id] ? <ChevronDown size={18}/> : <ChevronRight size={18}/>) : null}
                     </div>
-
-                    {/* Expanded category content */}
-                    {expandedCategories[category._id] && (
+                    {expandedCategories[cat._id] && (
                       <div className="bg-gray-50">
-                        {category.subcategories &&
-                        category.subcategories.length > 0 ? (
-                          // Show subcategories
-                          category.subcategories.map((subcategory) => (
-                            <div key={subcategory._id}>
-                              <div
-                                className="p-4 pl-8 border-b cursor-pointer flex justify-between items-center"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleSubcategoryExpansion(subcategory._id);
-                                }}
-                              >
-                                <span
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleSubcategoryClick(
-                                      subcategory,
-                                      category.slug,
-                                      e
-                                    );
-                                  }}
-                                >
-                                  {subcategory.name}
-                                </span>
-                                {subcategory.brands &&
-                                  subcategory.brands.length > 0 &&
-                                  (expandedSubcategories[subcategory._id] ? (
-                                    <ChevronDown size={18} />
-                                  ) : (
-                                    <ChevronRight size={18} />
-                                  ))}
+                        {cat.subcategories?.length > 0 ? cat.subcategories.map((sub) => (
+                          <div key={sub._id}>
+                            <div className="p-4 pl-8 border-b cursor-pointer flex justify-between items-center hover:bg-gray-100"
+                              onClick={(e) => { e.stopPropagation(); toggleSubcategoryExpansion(sub._id); }}>
+                              <span className="text-sm" onClick={(e) => { e.stopPropagation(); handleSubcategoryClick(sub, cat.slug, e); }}>{sub.name}</span>
+                              {sub.brands?.length > 0 ? (expandedSubcategories[sub._id] ? <ChevronDown size={16}/> : <ChevronRight size={16}/>) : null}
+                            </div>
+                            {expandedSubcategories[sub._id] && sub.brands && (
+                              <div className="bg-white">
+                                {sub.brands.map((brand) => (
+                                  <div key={brand._id} className="p-3 pl-12 border-b cursor-pointer text-xs text-gray-600 hover:bg-gray-50"
+                                    onClick={(e) => handleBrandClick(brand, cat.slug, sub.slug, e)}>{brand.name}</div>
+                                ))}
                               </div>
-
-                              {/* Brands for this subcategory */}
-                              {expandedSubcategories[subcategory._id] &&
-                                subcategory.brands && (
-                                  <div className="bg-white">
-                                    {subcategory.brands.length > 0 ? (
-                                      subcategory.brands.map((brand) => (
-                                        <div
-                                          key={brand._id}
-                                          className="p-3 pl-12 border-b cursor-pointer text-sm"
-                                          onClick={(e) =>
-                                            handleBrandClick(
-                                              brand,
-                                              category.slug,
-                                              subcategory.slug,
-                                              e
-                                            )
-                                          }
-                                        >
-                                          {brand.name}
-                                        </div>
-                                      ))
-                                    ) : (
-                                      <div className="p-3 pl-12 border-b text-sm text-gray-500">
-                                        No brands available
-                                      </div>
-                                    )}
-                                  </div>
-                                )}
-                            </div>
-                          ))
-                        ) : category.brands && category.brands.length > 0 ? (
-                          // Show brands directly
-                          category.brands.map((brand) => (
-                            <div
-                              key={brand._id}
-                              className="p-4 pl-8 border-b cursor-pointer"
-                              onClick={(e) =>
-                                handleBrandClick(brand, category.slug, null, e)
-                              }
-                            >
-                              {brand.name}
-                            </div>
-                          ))
-                        ) : (
-                          <div className="p-4 pl-8 border-b text-gray-500">
-                            No subcategories or brands available
+                            )}
                           </div>
-                        )}
+                        )) : cat.brands?.length > 0 ? cat.brands.map((brand) => (
+                          <div key={brand._id} className="p-4 pl-8 border-b cursor-pointer text-sm hover:bg-gray-100"
+                            onClick={(e) => handleBrandClick(brand, cat.slug, null, e)}>{brand.name}</div>
+                        )) : <div className="p-4 pl-8 text-xs text-gray-400">No items</div>}
                       </div>
                     )}
                   </div>
-                ))
-              )}
+                ))}
+              </div>
+              <div className="border-t flex-shrink-0">
+                <Link to="/blogs" className="flex items-center gap-3 p-4 text-sm text-gray-700 hover:bg-gray-50 border-b" onClick={() => setVerticalMenuActive(false)}><BookOpen size={16} className="text-secondary-200 flex-shrink-0"/>Coffee Blog</Link>
+                <Link to="/partner-with-us" className="flex items-center gap-3 p-4 text-sm text-gray-700 hover:bg-gray-50 border-b" onClick={() => setVerticalMenuActive(false)}><Handshake size={16} className="text-secondary-200 flex-shrink-0"/>Partner With Us</Link>
+                <Link to="/contact-us" className="flex items-center gap-3 p-4 text-sm text-gray-700 hover:bg-gray-50" onClick={() => setVerticalMenuActive(false)}><Phone size={16} className="text-secondary-200 flex-shrink-0"/>Contact Us</Link>
+              </div>
             </div>
           )}
         </div>
       )}
-
-      {/* Custom styles */}
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
-    </div>
+    </>
   );
 };
 

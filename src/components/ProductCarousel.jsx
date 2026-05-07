@@ -17,7 +17,7 @@ const ProductCarousel = ({
   products = [],
   title = "Products",
   subtitle,
-  itemsPerSlide = 4,
+  itemsPerSlide = 5,
   autoplay = false,
   autoplaySpeed = 5000,
   twoRowLayout = false,
@@ -35,9 +35,9 @@ const ProductCarousel = ({
         if (window.innerWidth < 640) {
           setResponsiveItemsPerSlide(4); // Mobile: 2x2 = 4 items
         } else if (window.innerWidth < 1024) {
-          setResponsiveItemsPerSlide(8); // Tablet: 4x2 = 8 items
+          setResponsiveItemsPerSlide(6); // Tablet: 3x2 = 6 items
         } else {
-          setResponsiveItemsPerSlide(12); // Desktop: 6x2 = 12 items
+          setResponsiveItemsPerSlide(10); // Desktop: 5x2 = 10 items
         }
       } else {
         // Single row layout (responsive by columns)
@@ -62,7 +62,7 @@ const ProductCarousel = ({
   // Calculate the number of slides needed
   const slidesCount = Math.max(
     Math.ceil(products.length / responsiveItemsPerSlide) - 1,
-    0
+    0,
   );
 
   // Autoplay functionality
@@ -102,10 +102,10 @@ const ProductCarousel = ({
         <div
           className={`grid gap-4 ${
             twoRowLayout
-              ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-6"
+              ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-5"
               : itemsPerSlide === 6
-              ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
-              : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
+                ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5"
+                : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"
           }`}
         >
           {[1, 2, 3, 4].map((item) => (
@@ -126,10 +126,10 @@ const ProductCarousel = ({
 
   // Determine grid classes based on layout type
   const gridClasses = twoRowLayout
-    ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-6" // 2-row layout: 2 (mobile), 4 (tablet), 6 (desktop)
+    ? "grid-cols-2 sm:grid-cols-4 lg:grid-cols-5" // 2-row layout: 2 (mobile), 4 (tablet), 6 (desktop)
     : itemsPerSlide === 6
-    ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6" // Single row: 6 items (desktop)
-    : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"; // Single row: 4 items (desktop)
+      ? "grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5" // Single row: 6 items (desktop)
+      : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"; // Single row: 4 items (desktop)
 
   return (
     <div
@@ -169,7 +169,7 @@ const ProductCarousel = ({
             {Array.from({
               length: Math.max(
                 Math.ceil(products.length / responsiveItemsPerSlide),
-                1
+                1,
               ),
             }).map((_, slideIndex) => (
               <div key={`slide-${slideIndex}`} className="w-full flex-shrink-0">
@@ -178,7 +178,7 @@ const ProductCarousel = ({
                     .slice(
                       slideIndex * responsiveItemsPerSlide,
                       slideIndex * responsiveItemsPerSlide +
-                        responsiveItemsPerSlide
+                        responsiveItemsPerSlide,
                     )
                     .map((product) => (
                       <CardProduct key={product._id} data={product} />

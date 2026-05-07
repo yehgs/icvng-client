@@ -1,0 +1,12 @@
+/* =============================================
+   TAWK.TO Z-INDEX FIX
+   Per official tawk.to docs: widget defaults to z-index 2,000,000,000.
+   To appear above it, set z-index to 2,000,000,001 or higher.
+   Source: https://help.tawk.to/article/customizing-your-z-index-with-the-javascript-api
+   ============================================= */
+
+.cart-drawer-backdrop {
+  position: fixed !important;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 2000000001 !important;
+}

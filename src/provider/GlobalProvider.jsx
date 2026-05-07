@@ -6,67 +6,74 @@ import { useDispatch, useSelector } from 'react-redux';
 import { handleAddItemCart } from '../store/cartProduct';
 import AxiosToastError from '../utils/AxiosToastError';
 import toast from 'react-hot-toast';
-import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import { handleAddAddress } from '../store/addressSlice';
 import { setOrder } from '../store/orderSlice';
 
 export const GlobalContext = createContext(null);
 export const useGlobalContext = () => useContext(GlobalContext);
 
-// Wishlist context
 export const WishlistContext = createContext();
 export const useWishlist = () => {
-  const context = useContext(WishlistContext);
-  if (context === undefined) {
-    throw new Error('useWishlist must be used within GlobalProvider');
-  }
-  return context;
+  const ctx = useContext(WishlistContext);
+  if (!ctx) throw new Error('useWishlist must be used within GlobalProvider');
+  return ctx;
 };
 
-// Currency context
 export const CurrencyContext = createContext();
 export const useCurrency = () => {
-  const context = useContext(CurrencyContext);
-  if (context === undefined) {
-    throw new Error('useCurrency must be used within GlobalProvider');
-  }
-  return context;
+  const ctx = useContext(CurrencyContext);
+  if (!ctx) throw new Error('useCurrency must be used within GlobalProvider');
+  return ctx;
 };
 
+export const CompareContext = createContext();
+export const useCompare = () => {
+  const ctx = useContext(CompareContext);
+  if (!ctx) throw new Error('useCompare must be used within GlobalProvider');
+  return ctx;
+};
+
+// ─── localStorage helpers ─────────────────────────────────────────────────────
+const LS_GUEST_CART = 'icvng_guest_cart';
+
+const loadGuestCartFromStorage = () => {
+  try { return JSON.parse(localStorage.getItem(LS_GUEST_CART) || '[]'); }
+  catch { return []; }
+};
+
+const saveGuestCartToStorage = (cart) => {
+  try { localStorage.setItem(LS_GUEST_CART, JSON.stringify(cart)); }
+  catch {}
+};
+
+// ─── GlobalProvider ───────────────────────────────────────────────────────────
 const GlobalProvider = ({ children }) => {
   const dispatch = useDispatch();
   const user = useSelector((state) => state?.user);
   const cartItem = useSelector((state) => state.cartItem.cart);
 
-  // Core state
   const [totalPrice, setTotalPrice] = useState(0);
   const [notDiscountTotalPrice, setNotDiscountTotalPrice] = useState(0);
   const [totalQty, setTotalQty] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // Guest cart state with improved management
-  const [guestCart, setGuestCart] = useState([]);
-  const [migrationInProgress, setMigrationInProgress] = useState(false);
+  // Guest cart — stored in localStorage, visible even when not logged in
+  const [guestCart, setGuestCart] = useState(() => loadGuestCartFromStorage());
+  const [isMerging, setIsMerging] = useState(false); // true while guest cart is being merged on login
 
-  // Wishlist state
+  // Wishlist & Compare (localStorage — browsing without login)
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistLoading, setWishlistLoading] = useState(true);
-
-  // Compare state
   const [compareItems, setCompareItems] = useState([]);
   const [compareLoading, setCompareLoading] = useState(true);
 
-  // Currency state
+  // Currency
   const [selectedCurrency, setSelectedCurrency] = useState('NGN');
   const [exchangeRates, setExchangeRates] = useState({
-    NGN: 1,
-    USD: 0.00217,
-    EUR: 0.00185,
-    GBP: 0.00159,
+    NGN: 1, USD: 1 / 1550, EUR: 1 / 1650, GBP: 1 / 1950,
   });
   const [currencyLoading, setCurrencyLoading] = useState(false);
 
-  // Available currencies
   const availableCurrencies = [
     { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', isBase: true },
     { code: 'USD', name: 'US Dollar', symbol: '$', isBase: false },
@@ -74,767 +81,308 @@ const GlobalProvider = ({ children }) => {
     { code: 'GBP', name: 'British Pound', symbol: '£', isBase: false },
   ];
 
-  // Update login status when user changes
-  useEffect(() => {
-    const newLoginStatus = Boolean(user?._id);
-    if (newLoginStatus !== isLoggedIn) {
-      setIsLoggedIn(newLoginStatus);
+  // ─── Login status ───────────────────────────────────────────────────────────
+  useEffect(() => { setIsLoggedIn(Boolean(user?._id)); }, [user?._id]);
 
-      if (newLoginStatus && !migrationInProgress) {
-        // User just logged in, migrate guest data
-        migrateGuestDataToUser();
-      }
-    }
-  }, [user?._id, isLoggedIn, migrationInProgress]);
-
-  // Get effective stock for a product
+  // ─── Utilities ──────────────────────────────────────────────────────────────
   const getEffectiveStock = (product) => {
-    if (
-      product.warehouseStock?.enabled &&
-      product.warehouseStock.onlineStock !== undefined
-    ) {
+    if (product.warehouseStock?.enabled && product.warehouseStock.onlineStock !== undefined)
       return product.warehouseStock.onlineStock;
-    }
     return product.stock || 0;
   };
+  const triggerCartUpdate = () => window.dispatchEvent(new CustomEvent('cart-updated'));
+  const triggerWishlistUpdate = () => window.dispatchEvent(new CustomEvent('wishlist-updated'));
+  const triggerCompareUpdate = () => window.dispatchEvent(new CustomEvent('compare-updated'));
 
-  // ===== UTILITY FUNCTIONS =====
-  const triggerCartUpdate = () => {
-    window.dispatchEvent(new CustomEvent('cart-updated'));
-  };
-
-  const triggerWishlistUpdate = () => {
-    window.dispatchEvent(new CustomEvent('wishlist-updated'));
-  };
-
-  const triggerCompareUpdate = () => {
-    window.dispatchEvent(new CustomEvent('compare-updated'));
-  };
-
-  // ===== GUEST CART FUNCTIONS =====
-  const loadGuestCart = () => {
-    try {
-      const savedCart = localStorage.getItem('guestCart');
-      const initialCart = savedCart ? JSON.parse(savedCart) : [];
-      setGuestCart(initialCart);
-      return initialCart;
-    } catch (error) {
-      console.error('Error loading guest cart:', error);
-      setGuestCart([]);
-      return [];
-    }
-  };
-
-  const saveGuestCart = (cart) => {
-    try {
-      localStorage.setItem('guestCart', JSON.stringify(cart));
-      setGuestCart(cart);
-      triggerCartUpdate();
-    } catch (error) {
-      console.error('Error saving guest cart:', error);
-    }
+  // ─── GUEST CART ─────────────────────────────────────────────────────────────
+  // Persisted to localStorage so items survive page refresh / login redirect
+  const _setGuestCart = (cart) => {
+    setGuestCart(cart);
+    saveGuestCartToStorage(cart);
+    triggerCartUpdate();
   };
 
   const addToGuestCart = (productData) => {
-    const existingItemIndex = guestCart.findIndex(
-      (item) =>
-        item.productId === productData.productId &&
-        (item.priceOption || 'regular') ===
-          (productData.priceOption || 'regular')
+    const existing = guestCart.findIndex(
+      (i) => i.productId === productData.productId &&
+              (i.priceOption || 'regular') === (productData.priceOption || 'regular')
     );
-
-    let updatedCart;
-    if (existingItemIndex !== -1) {
-      // Item with this price option exists, update quantity
-      updatedCart = [...guestCart];
-      updatedCart[existingItemIndex].quantity += productData.quantity;
+    let updated;
+    if (existing !== -1) {
+      updated = guestCart.map((i, idx) =>
+        idx === existing ? { ...i, quantity: i.quantity + productData.quantity } : i
+      );
     } else {
-      // New item with this price option
-      const itemToAdd = {
-        ...productData,
-        priceOption: productData.priceOption || 'regular',
-      };
-      updatedCart = [...guestCart, itemToAdd];
+      updated = [...guestCart, { ...productData, priceOption: productData.priceOption || 'regular' }];
     }
-
-    saveGuestCart(updatedCart);
+    _setGuestCart(updated);
   };
 
-  const updateGuestCartItem = (
-    productId,
-    quantity,
-    priceOption = 'regular'
-  ) => {
-    if (quantity <= 0) {
-      removeFromGuestCart(productId, priceOption);
-      return;
-    }
-
-    const updatedCart = guestCart.map((item) => {
-      // Match by BOTH productId AND priceOption
-      const matches =
-        item.productId === productId &&
-        (item.priceOption || 'regular') === priceOption;
-
-      if (matches) {
-        return { ...item, quantity };
-      }
-      return item;
-    });
-
-    saveGuestCart(updatedCart);
+  const updateGuestCartItem = (productId, quantity, priceOption = 'regular') => {
+    if (quantity <= 0) { removeFromGuestCart(productId, priceOption); return; }
+    _setGuestCart(guestCart.map((i) =>
+      i.productId === productId && (i.priceOption || 'regular') === priceOption
+        ? { ...i, quantity } : i
+    ));
   };
 
   const removeFromGuestCart = (productId, priceOption = 'regular') => {
-    const updatedCart = guestCart.filter((item) => {
-      // Remove only items matching BOTH productId AND priceOption
-      return !(
-        item.productId === productId &&
-        (item.priceOption || 'regular') === priceOption
-      );
-    });
-
-    saveGuestCart(updatedCart);
+    _setGuestCart(guestCart.filter((i) =>
+      !(i.productId === productId && (i.priceOption || 'regular') === priceOption)
+    ));
   };
 
   const clearGuestCart = () => {
-    localStorage.removeItem('guestCart');
+    localStorage.removeItem(LS_GUEST_CART);
     setGuestCart([]);
     triggerCartUpdate();
   };
 
-  // ===== GUEST WISHLIST FUNCTIONS =====
-  const loadWishlist = () => {
+  // Merge guest cart into server after login
+  const mergeGuestCartToServer = async () => {
+    const cartToMigrate = loadGuestCartFromStorage(); // read fresh from storage
+    if (cartToMigrate.length === 0) return;
+
+    setIsMerging(true);
     try {
-      const savedWishlist = localStorage.getItem('wishlist');
-      const initialWishlist = savedWishlist ? JSON.parse(savedWishlist) : [];
-      setWishlistItems(initialWishlist);
-    } catch (error) {
-      console.error('Error loading wishlist:', error);
-      setWishlistItems([]);
-    } finally {
-      setWishlistLoading(false);
-    }
-  };
-
-  const saveWishlist = (wishlist) => {
-    try {
-      localStorage.setItem('wishlist', JSON.stringify(wishlist));
-      setWishlistItems(wishlist);
-      triggerWishlistUpdate();
-    } catch (error) {
-      console.error('Error saving wishlist:', error);
-    }
-  };
-
-  const isInWishlist = (productId) => {
-    return wishlistItems.some((item) => item._id === productId);
-  };
-
-  const addToWishlist = (product) => {
-    if (!isInWishlist(product._id)) {
-      const updatedWishlist = [...wishlistItems, product];
-      saveWishlist(updatedWishlist);
-      return true;
-    }
-    return false;
-  };
-
-  const removeFromWishlist = (productId) => {
-    const updatedWishlist = wishlistItems.filter(
-      (item) => item._id !== productId
-    );
-    saveWishlist(updatedWishlist);
-    return true;
-  };
-
-  const toggleWishlist = (product) => {
-    if (isInWishlist(product._id)) {
-      removeFromWishlist(product._id);
-      return false;
-    } else {
-      addToWishlist(product);
-      return true;
-    }
-  };
-
-  const clearWishlist = () => {
-    localStorage.removeItem('wishlist');
-    setWishlistItems([]);
-    triggerWishlistUpdate();
-  };
-
-  // ===== GUEST COMPARE FUNCTIONS =====
-  const loadCompare = () => {
-    try {
-      const savedCompare = localStorage.getItem('compareList');
-      const initialCompare = savedCompare ? JSON.parse(savedCompare) : [];
-      setCompareItems(initialCompare);
-    } catch (error) {
-      console.error('Error loading compare list:', error);
-      setCompareItems([]);
-    } finally {
-      setCompareLoading(false);
-    }
-  };
-
-  const saveCompare = (compareList) => {
-    try {
-      localStorage.setItem('compareList', JSON.stringify(compareList));
-      setCompareItems(compareList);
-      triggerCompareUpdate();
-    } catch (error) {
-      console.error('Error saving compare list:', error);
-    }
-  };
-
-  const isInCompare = (productId) => {
-    return compareItems.some((item) => item._id === productId);
-  };
-
-  const addToCompare = (product) => {
-    if (compareItems.length >= 4) {
-      toast.error('You can only compare up to 4 products');
-      return false;
-    }
-
-    if (!isInCompare(product._id)) {
-      const updatedCompare = [...compareItems, product];
-      saveCompare(updatedCompare);
-      return true;
-    }
-    return false;
-  };
-
-  const removeFromCompare = (productId) => {
-    const updatedCompare = compareItems.filter(
-      (item) => item._id !== productId
-    );
-    saveCompare(updatedCompare);
-    return true;
-  };
-
-  const toggleCompare = (product) => {
-    if (isInCompare(product._id)) {
-      removeFromCompare(product._id);
-      return false;
-    } else {
-      return addToCompare(product);
-    }
-  };
-
-  const clearCompare = () => {
-    localStorage.removeItem('compareList');
-    setCompareItems([]);
-    triggerCompareUpdate();
-  };
-
-  // ===== MIGRATION FUNCTIONS =====
-  const migrateGuestDataToUser = async () => {
-    if (!isLoggedIn || migrationInProgress) return;
-
-    try {
-      setMigrationInProgress(true);
-      const promises = [];
-
-      // Migrate cart
-      if (guestCart.length > 0) {
-        promises.push(migrateGuestCart());
-      }
-
-      // Migrate wishlist
-      if (wishlistItems.length > 0) {
-        promises.push(migrateGuestWishlist());
-      }
-
-      // Migrate compare
-      if (compareItems.length > 0) {
-        promises.push(migrateGuestCompare());
-      }
-
-      // Execute all migrations
-      if (promises.length > 0) {
-        await Promise.allSettled(promises);
-
-        // Refresh data after migration
-        fetchCartItem();
-        fetchWishlist();
-        fetchCompare();
-      }
-    } catch (error) {
-      console.error('Migration error:', error);
-    } finally {
-      setMigrationInProgress(false);
-    }
-  };
-
-  const migrateGuestCart = async () => {
-    try {
-      const response = await Axios({
+      // Try the dedicated migrate endpoint first
+      await Axios({
         ...SummaryApi.migrateGuestCart,
-        data: { guestCartItems: guestCart },
+        data: { guestCartItems: cartToMigrate },
       });
-
-      if (response.data.success) {
-        clearGuestCart();
-        toast.success(
-          `${response.data.data.migratedCount} items migrated to your cart`
-        );
+      clearGuestCart();
+      await fetchCartItem();
+      toast.success(`${cartToMigrate.length} cart item${cartToMigrate.length > 1 ? 's' : ''} added to your account`);
+    } catch {
+      // Fallback: add each item individually
+      for (const item of cartToMigrate) {
+        try {
+          await Axios({
+            ...SummaryApi.addTocart,
+            data: { productId: item.productId, quantity: item.quantity, priceOption: item.priceOption || 'regular' },
+          });
+        } catch {}
       }
-    } catch (error) {
-      console.error('Cart migration error:', error);
+      clearGuestCart();
+      await fetchCartItem();
+    } finally {
+      setIsMerging(false);
     }
   };
 
-  const migrateGuestWishlist = async () => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.migrateGuestWishlist,
-        data: { guestWishlistItems: wishlistItems },
-      });
-
-      if (response.data.success) {
-        clearWishlist();
-        toast.success(
-          `${response.data.data.migratedCount} items migrated to your wishlist`
-        );
-      }
-    } catch (error) {
-      console.error('Wishlist migration error:', error);
-    }
+  // ─── WISHLIST ────────────────────────────────────────────────────────────────
+  const loadWishlist = () => {
+    try { setWishlistItems(JSON.parse(localStorage.getItem('wishlist') || '[]')); }
+    catch { setWishlistItems([]); }
+    finally { setWishlistLoading(false); }
   };
-
-  const migrateGuestCompare = async () => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.migrateGuestCompare,
-        data: { guestCompareItems: compareItems },
-      });
-
-      if (response.data.success) {
-        clearCompare();
-        toast.success(
-          `${response.data.data.migratedCount} items migrated to your compare list`
-        );
-      }
-    } catch (error) {
-      console.error('Compare migration error:', error);
-    }
+  const saveWishlist = (list) => {
+    try { localStorage.setItem('wishlist', JSON.stringify(list)); setWishlistItems(list); triggerWishlistUpdate(); }
+    catch {}
   };
-
-  // ===== CART FUNCTIONS =====
-  const fetchCartItem = async () => {
-    if (!isLoggedIn) {
-      dispatch(handleAddItemCart([]));
-      return;
-    }
-
-    try {
-      const response = await Axios({
-        ...SummaryApi.getCartItem,
-      });
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        dispatch(handleAddItemCart(responseData.data));
-      }
-    } catch (error) {
-      console.error('Error fetching cart items:', error);
-    }
-  };
-
+  const isInWishlist = (id) => wishlistItems.some((i) => i._id === id);
+  const addToWishlist = (p) => { if (!isInWishlist(p._id)) { saveWishlist([...wishlistItems, p]); return true; } return false; };
+  const removeFromWishlist = (id) => { saveWishlist(wishlistItems.filter((i) => i._id !== id)); return true; };
+  const toggleWishlist = (p) => { if (isInWishlist(p._id)) { removeFromWishlist(p._id); return false; } addToWishlist(p); return true; };
+  const clearWishlist = () => { localStorage.removeItem('wishlist'); setWishlistItems([]); triggerWishlistUpdate(); };
   const fetchWishlist = async () => {
     if (!isLoggedIn) return;
-
-    try {
-      const response = await Axios({
-        ...SummaryApi.getWishlist,
-      });
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        setWishlistItems(responseData.data);
-        triggerWishlistUpdate();
-      }
-    } catch (error) {
-      console.error('Error fetching wishlist:', error);
-    }
+    try { const r = await Axios({ ...SummaryApi.getWishlist }); if (r.data.success) { setWishlistItems(r.data.data); triggerWishlistUpdate(); } } catch {}
   };
 
+  // ─── COMPARE ─────────────────────────────────────────────────────────────────
+  const loadCompare = () => {
+    try { setCompareItems(JSON.parse(localStorage.getItem('compareList') || '[]')); }
+    catch { setCompareItems([]); }
+    finally { setCompareLoading(false); }
+  };
+  const saveCompare = (list) => {
+    try { localStorage.setItem('compareList', JSON.stringify(list)); setCompareItems(list); triggerCompareUpdate(); }
+    catch {}
+  };
+  const isInCompare = (id) => compareItems.some((i) => i._id === id);
+  const addToCompare = (p) => { if (compareItems.length >= 4) { toast.error('You can only compare up to 4 products'); return false; } if (!isInCompare(p._id)) { saveCompare([...compareItems, p]); return true; } return false; };
+  const removeFromCompare = (id) => { saveCompare(compareItems.filter((i) => i._id !== id)); return true; };
+  const toggleCompare = (p) => { if (isInCompare(p._id)) { removeFromCompare(p._id); return false; } return addToCompare(p); };
+  const clearCompare = () => { localStorage.removeItem('compareList'); setCompareItems([]); triggerCompareUpdate(); };
   const fetchCompare = async () => {
     if (!isLoggedIn) return;
+    try { const r = await Axios({ ...SummaryApi.getCompareList }); if (r.data.success) { setCompareItems(r.data.data); triggerCompareUpdate(); } } catch {}
+  };
 
+  // ─── SERVER CART ─────────────────────────────────────────────────────────────
+  const fetchCartItem = async () => {
+    if (!isLoggedIn) { dispatch(handleAddItemCart([])); return; }
     try {
-      const response = await Axios({
-        ...SummaryApi.getCompareList,
-      });
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        setCompareItems(responseData.data);
-        triggerCompareUpdate();
-      }
-    } catch (error) {
-      console.error('Error fetching compare list:', error);
-    }
+      const r = await Axios({ ...SummaryApi.getCartItem });
+      if (r.data.success) dispatch(handleAddItemCart(r.data.data));
+    } catch {}
   };
 
   const updateCartItem = async (cartItemId, quantity) => {
-    if (!isLoggedIn) {
-      // For guest users, update guest cart
-      updateGuestCartItem(cartItemId, quantity);
-      return { success: true };
-    }
-
-    if (quantity <= 0) {
-      return deleteCartItem(cartItemId);
-    }
-
+    if (quantity <= 0) return deleteCartItem(cartItemId);
     try {
-      const response = await Axios({
-        ...SummaryApi.updateCartItemQty,
-        data: {
-          _id: cartItemId,
-          qty: quantity,
-        },
-      });
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        fetchCartItem();
-        triggerCartUpdate();
-        return responseData;
-      }
-    } catch (error) {
-      AxiosToastError(error);
-      return error;
-    }
+      const r = await Axios({ ...SummaryApi.updateCartItemQty, data: { _id: cartItemId, qty: quantity } });
+      if (r.data.success) { fetchCartItem(); triggerCartUpdate(); return r.data; }
+    } catch (e) { AxiosToastError(e); return e; }
   };
 
   const deleteCartItem = async (cartId) => {
-    if (!isLoggedIn) {
-      removeFromGuestCart(cartId);
-      return { success: true };
-    }
-
     try {
-      const response = await Axios({
-        ...SummaryApi.deleteCartItem,
-        data: {
-          _id: cartId,
-        },
-      });
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        toast.success(responseData.message);
-        fetchCartItem();
-        triggerCartUpdate();
-      }
-    } catch (error) {
-      AxiosToastError(error);
-    }
+      const r = await Axios({ ...SummaryApi.deleteCartItem, data: { _id: cartId } });
+      if (r.data.success) { toast.success(r.data.message); fetchCartItem(); triggerCartUpdate(); }
+    } catch (e) { AxiosToastError(e); }
   };
 
-  // ===== CURRENCY FUNCTIONS =====
-  // GlobalProvider.jsx - Use only manual rates
+  // ─── CURRENCY ─────────────────────────────────────────────────────────────────
   const fetchExchangeRates = async () => {
     try {
       setCurrencyLoading(true);
-      const response = await Axios({
-        ...SummaryApi.getExchangeRates,
-        params: {
-          baseCurrency: 'NGN',
-          source: 'MANUAL', // ✅ Only fetch manual rates
-        },
-      });
-
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        const rates = { NGN: 1 };
-        responseData.data.forEach((rate) => {
-          // ✅ Only use manual rates for website
-          if (rate.source === 'MANUAL') {
-            rates[rate.targetCurrency] = rate.rate;
-          }
-        });
-        setExchangeRates(rates);
-
-        console.log('✅ Loaded manual exchange rates:', rates);
+      const r = await Axios({ ...SummaryApi.getExchangeRates, params: { limit: 100 } });
+      if (r.data.success && r.data.data.length > 0) {
+        const rateMap = { NGN: 1 };
+        const FIAT = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'];
+        const process = (rate) => {
+          const { baseCurrency: base, targetCurrency: target, rate: value } = rate;
+          if (base === 'NGN' && FIAT.includes(target)) rateMap[target] = value;
+          else if (FIAT.includes(base) && target === 'NGN' && value > 0) rateMap[base] = 1 / value;
+        };
+        r.data.data.filter((x) => x.source !== 'MANUAL').forEach(process);
+        r.data.data.filter((x) => x.source === 'MANUAL').forEach(process);
+        setExchangeRates(rateMap);
       }
-    } catch (error) {
-      console.error('Error fetching exchange rates:', error);
-      // Use default rates if manual rates not available
-    } finally {
-      setCurrencyLoading(false);
-    }
+    } catch {} finally { setCurrencyLoading(false); }
   };
 
   const convertPrice = (priceInNGN, targetCurrency = selectedCurrency) => {
     if (targetCurrency === 'NGN') return priceInNGN;
     const rate = exchangeRates[targetCurrency];
-    if (!rate) return priceInNGN;
-    return priceInNGN * rate;
+    return rate ? priceInNGN * rate : priceInNGN;
   };
 
-  const formatPrice = (price, currency = selectedCurrency) => {
-    const convertedPrice = convertPrice(price, currency);
-
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
+  const formatPrice = (price, currency = selectedCurrency) =>
+    new Intl.NumberFormat('en-US', {
+      style: 'currency', currency,
       minimumFractionDigits: currency === 'NGN' ? 0 : 2,
-    }).format(convertedPrice);
+    }).format(convertPrice(price, currency));
+
+  const changeCurrency = (code) => {
+    setSelectedCurrency(code);
+    localStorage.setItem('selectedCurrency', code);
+    window.dispatchEvent(new CustomEvent('currency-changed', { detail: { currency: code } }));
   };
 
-  const changeCurrency = (currencyCode) => {
-    setSelectedCurrency(currencyCode);
-    localStorage.setItem('selectedCurrency', currencyCode);
+  const getPaymentMethod = (currency = selectedCurrency) => currency === 'NGN' ? 'paystack' : 'stripe';
 
-    window.dispatchEvent(
-      new CustomEvent('currency-changed', {
-        detail: { currency: currencyCode },
-      })
-    );
-  };
-
-  const getPaymentMethod = (currency = selectedCurrency) => {
-    return currency === 'NGN' ? 'paystack' : 'stripe';
-  };
-
-  // ===== OTHER FUNCTIONS =====
+  // ─── ADDRESS & ORDERS ─────────────────────────────────────────────────────────
   const fetchAddress = async () => {
     if (!isLoggedIn) return;
-
-    try {
-      const response = await Axios({
-        ...SummaryApi.getAddress,
-      });
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        dispatch(handleAddAddress(responseData.data));
-      }
-    } catch (error) {
-      console.error('Error fetching addresses:', error);
-    }
+    try { const r = await Axios({ ...SummaryApi.getAddress }); if (r.data.success) dispatch(handleAddAddress(r.data.data)); } catch {}
   };
 
   const fetchOrder = async () => {
     if (!isLoggedIn) return;
-
-    try {
-      const response = await Axios({
-        ...SummaryApi.getOrderItems,
-      });
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        dispatch(setOrder(responseData.data));
-      }
-    } catch (error) {
-      console.error('Error fetching orders:', error);
-    }
+    try { const r = await Axios({ ...SummaryApi.getOrderItems }); if (r.data.success) dispatch(setOrder(r.data.data)); } catch {}
   };
 
   const handleLogout = () => {
-    // Don't preserve cart on logout anymore since we have proper migration
     localStorage.removeItem('accesstoken');
     localStorage.removeItem('refreshToken');
     dispatch(handleAddItemCart([]));
-
-    // Don't clear guest data on logout - let user keep their guest items
-    setMigrationInProgress(false);
-    triggerCartUpdate();
-    triggerWishlistUpdate();
-    triggerCompareUpdate();
+    triggerCartUpdate(); triggerWishlistUpdate(); triggerCompareUpdate();
   };
 
-  // ===== CALCULATE TOTALS =====
-  const calculateTotals = () => {
-    const currentCart = isLoggedIn ? cartItem : guestCart;
+  // ─── TOTALS ───────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    // When logged in: use server cart. When guest: use local guest cart.
+    let qty = 0, tPrice = 0, notDiscount = 0;
 
-    let qty = 0;
-    let tPrice = 0;
-    let notDiscountPrice = 0;
-
-    currentCart.forEach((item) => {
-      const quantity = item.quantity || 0;
-      qty += quantity;
-
-      if (isLoggedIn && item.productId) {
-        const price = item.selectedPrice || item.productId.btcPrice;
-        tPrice += price * quantity;
-
-        let originalPrice = item.productId.btcPrice;
-        const priceOption = item.priceOption || 'regular';
-
-        if (
-          priceOption === '3weeks' &&
-          item.productId.price3weeksDelivery > 0
-        ) {
-          originalPrice = item.productId.price3weeksDelivery;
-        } else if (
-          priceOption === '5weeks' &&
-          item.productId.price5weeksDelivery > 0
-        ) {
-          originalPrice = item.productId.price5weeksDelivery;
+    if (isLoggedIn) {
+      cartItem.forEach((item) => {
+        const quantity = item.quantity || 0;
+        qty += quantity;
+        if (item.productId) {
+          const price = item.selectedPrice || item.productId.btcPrice || item.productId.price || 0;
+          tPrice += price * quantity;
+          const priceOption = item.priceOption || 'regular';
+          let orig = item.productId.btcPrice || item.productId.price || 0;
+          if (priceOption === '3weeks' && item.productId.price3weeksDelivery > 0) orig = item.productId.price3weeksDelivery;
+          else if (priceOption === '5weeks' && item.productId.price5weeksDelivery > 0) orig = item.productId.price5weeksDelivery;
+          notDiscount += orig * quantity;
         }
-
-        notDiscountPrice += originalPrice * quantity;
-      } else if (!isLoggedIn) {
-        const priceOption = item.priceOption || 'regular';
-        let basePrice = item.btcPrice || 0;
-
-        if (priceOption === '3weeks' && item.price3weeksDelivery > 0) {
-          basePrice = item.price3weeksDelivery;
-        } else if (priceOption === '5weeks' && item.price5weeksDelivery > 0) {
-          basePrice = item.price5weeksDelivery;
-        }
-
-        const price = pricewithDiscount(basePrice, item.discount || 0);
+      });
+    } else {
+      // Guest cart totals
+      guestCart.forEach((item) => {
+        const quantity = item.quantity || 0;
+        qty += quantity;
+        const price = item.selectedPrice || item.btcPrice || item.price || 0;
         tPrice += price * quantity;
-        notDiscountPrice += basePrice * quantity;
-      }
-    });
+        notDiscount += (item.btcPrice || item.price || 0) * quantity;
+      });
+    }
 
     setTotalQty(qty);
     setTotalPrice(tPrice);
-    setNotDiscountTotalPrice(notDiscountPrice);
-  };
-
-  // ===== EFFECTS =====
-
-  // Calculate totals when cart changes
-  useEffect(() => {
-    calculateTotals();
+    setNotDiscountTotalPrice(notDiscount);
   }, [cartItem, guestCart, isLoggedIn]);
 
-  // Initialize data on mount
+  // ─── EFFECTS ──────────────────────────────────────────────────────────────────
   useEffect(() => {
-    loadGuestCart();
-    loadWishlist();
-    loadCompare();
-    fetchExchangeRates();
-
-    const savedCurrency = localStorage.getItem('selectedCurrency');
-    if (
-      savedCurrency &&
-      availableCurrencies.some((c) => c.code === savedCurrency)
-    ) {
-      setSelectedCurrency(savedCurrency);
-    }
+    loadWishlist(); loadCompare(); fetchExchangeRates();
+    const saved = localStorage.getItem('selectedCurrency');
+    if (saved && availableCurrencies.some((c) => c.code === saved)) setSelectedCurrency(saved);
   }, []);
 
-  // Handle login status changes
   useEffect(() => {
     if (isLoggedIn) {
-      fetchCartItem();
-      fetchAddress();
-      fetchOrder();
-      fetchWishlist();
-      fetchCompare();
+      // Merge guest cart first, then fetch everything
+      mergeGuestCartToServer().then(() => {
+        fetchCartItem(); fetchAddress(); fetchOrder(); fetchWishlist(); fetchCompare();
+      });
     } else {
-      // User logged out, clear user-specific data
       dispatch(handleAddItemCart([]));
     }
   }, [isLoggedIn]);
 
-  // Fetch exchange rates periodically
   useEffect(() => {
-    const interval = setInterval(fetchExchangeRates, 30 * 60 * 1000); // Every 30 minutes
-    return () => clearInterval(interval);
+    const iv = setInterval(fetchExchangeRates, 30 * 60 * 1000);
+    return () => clearInterval(iv);
   }, []);
 
-  // ===== CONTEXT VALUES =====
-  const wishlistContextValue = {
-    wishlistItems,
-    wishlistCount: wishlistItems.length,
-    loading: wishlistLoading,
-    isInWishlist,
-    addToWishlist,
-    removeFromWishlist,
-    toggleWishlist,
-    clearWishlist,
-    fetchWishlist,
-  };
-
-  const compareContextValue = {
-    compareItems,
-    compareCount: compareItems.length,
-    loading: compareLoading,
-    isInCompare,
-    addToCompare,
-    removeFromCompare,
-    toggleCompare,
-    clearCompare,
-    fetchCompare,
-  };
-
-  const currencyContextValue = {
-    selectedCurrency,
-    availableCurrencies,
-    exchangeRates,
-    currencyLoading,
-    convertPrice,
-    formatPrice,
-    changeCurrency,
-    getPaymentMethod,
-    fetchExchangeRates,
-  };
-
+  // ─── CONTEXT VALUES ───────────────────────────────────────────────────────────
   const globalContextValue = {
-    // Cart functions
-    fetchCartItem,
-    updateCartItem,
-    deleteCartItem,
-
-    // Guest cart functions
-    guestCart,
-    addToGuestCart,
-    updateGuestCartItem,
-    removeFromGuestCart,
-    clearGuestCart,
-
-    // Migration functions
-    migrateGuestDataToUser,
-    migrationInProgress,
-
-    // Totals and state
-    totalPrice,
-    totalQty,
-    notDiscountTotalPrice,
-    isLoggedIn,
-
-    // Other functions
-    fetchAddress,
-    fetchOrder,
-    getEffectiveStock,
-    handleLogout,
+    // Server cart
+    fetchCartItem, updateCartItem, deleteCartItem,
+    // Guest cart (localStorage)
+    guestCart, addToGuestCart, updateGuestCartItem, removeFromGuestCart, clearGuestCart, mergeGuestCartToServer,
+    isMerging,
+    // Totals
+    totalPrice, totalQty, notDiscountTotalPrice, isLoggedIn,
+    // Other
+    fetchAddress, fetchOrder, getEffectiveStock, handleLogout,
   };
 
   return (
     <GlobalContext.Provider value={globalContextValue}>
-      <WishlistContext.Provider value={wishlistContextValue}>
-        <CompareContext.Provider value={compareContextValue}>
-          <CurrencyContext.Provider value={currencyContextValue}>
+      <WishlistContext.Provider value={{
+        wishlistItems, wishlistCount: wishlistItems.length, loading: wishlistLoading,
+        isInWishlist, addToWishlist, removeFromWishlist, toggleWishlist, clearWishlist, fetchWishlist,
+      }}>
+        <CompareContext.Provider value={{
+          compareItems, compareCount: compareItems.length, loading: compareLoading,
+          isInCompare, addToCompare, removeFromCompare, toggleCompare, clearCompare, fetchCompare,
+        }}>
+          <CurrencyContext.Provider value={{
+            selectedCurrency, availableCurrencies, exchangeRates, currencyLoading,
+            convertPrice, formatPrice, changeCurrency, getPaymentMethod, fetchExchangeRates,
+          }}>
             {children}
           </CurrencyContext.Provider>
         </CompareContext.Provider>
       </WishlistContext.Provider>
     </GlobalContext.Provider>
   );
-};
-
-// Compare context for easier access
-export const CompareContext = createContext();
-export const useCompare = () => {
-  const context = useContext(CompareContext);
-  if (context === undefined) {
-    throw new Error('useCompare must be used within GlobalProvider');
-  }
-  return context;
 };
 
 export default GlobalProvider;

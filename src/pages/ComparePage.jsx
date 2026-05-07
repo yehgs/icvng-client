@@ -32,12 +32,7 @@ const ComparePage = () => {
     if (isLoggedIn) {
       fetchCompareList();
     } else {
-      // Load from localStorage for non-logged-in users
-      const localCompareList = JSON.parse(
-        localStorage.getItem("compareList") || "[]"
-      );
-      setCompareItems(localCompareList);
-      setLoading(false);
+      toast.error("Please sign in to add items to your cart");
     }
   }, [isLoggedIn]);
 
@@ -94,45 +89,7 @@ const ComparePage = () => {
           }, 100);
         }
       } else {
-        // For guest users, add to localStorage cart
-        const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
-
-        // Check if product already in cart
-        const existingItemIndex = guestCart.findIndex(
-          (item) => item.productId === product._id
-        );
-
-        if (existingItemIndex !== -1) {
-          // Update quantity
-          guestCart[existingItemIndex].quantity += 1;
-          toast.success("Product quantity updated in cart");
-        } else {
-          // Add new item with proper structure
-          guestCart.push({
-            productId: product._id,
-            quantity: 1,
-            name: product.name,
-            image: product.image,
-            btcPrice: product.btcPrice || product.price || 0,
-            price3weeksDelivery: product.price3weeksDelivery || 0,
-            price5weeksDelivery: product.price5weeksDelivery || 0,
-            discount: product.discount || 0,
-            productAvailability: product.productAvailability,
-            sku: product.sku,
-            productType: product.productType,
-            weight: product.weight,
-            priceOption: "regular", // Default price option
-          });
-          toast.success("Product added to cart");
-        }
-
-        localStorage.setItem("guestCart", JSON.stringify(guestCart));
-
-        // Trigger cart update event
-        window.dispatchEvent(new CustomEvent("cart-updated"));
-
-        // ✅ Remove from compare after successful add to cart
-        await removeFromCompare(product._id);
+        toast.error("Please sign in to add items to your cart");
       }
     } catch (error) {
       AxiosToastError(error);

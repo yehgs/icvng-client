@@ -22,7 +22,7 @@ const CategoryFilterSection = () => {
   const [selectedCategoryName, setSelectedCategoryName] = useState("");
   const [loading, setLoading] = useState(true);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [responsiveItemsPerSlide, setResponsiveItemsPerSlide] = useState(12);
+  const [responsiveItemsPerSlide, setResponsiveItemsPerSlide] = useState(10);
 
   // Fetch categories on mount
   useEffect(() => {
@@ -40,9 +40,9 @@ const CategoryFilterSection = () => {
       if (window.innerWidth < 640) {
         setResponsiveItemsPerSlide(4); // Mobile: 2x2 = 4 items
       } else if (window.innerWidth < 1024) {
-        setResponsiveItemsPerSlide(8); // Tablet: 4x2 = 8 items
+        setResponsiveItemsPerSlide(6); // Tablet: 3x2 = 6 items
       } else {
-        setResponsiveItemsPerSlide(12); // Desktop: 6x2 = 12 items
+        setResponsiveItemsPerSlide(10); // Desktop: 5x2 = 10 items
       }
     };
 
@@ -62,10 +62,10 @@ const CategoryFilterSection = () => {
         const categoryData = categoryResponse.data.data || [];
         console.log(
           "CategoryFilterSection: Loaded categories:",
-          categoryData.length
+          categoryData.length,
         );
         setCategories(
-          categoryData.sort((a, b) => a.name.localeCompare(b.name))
+          categoryData.sort((a, b) => a.name.localeCompare(b.name)),
         );
       }
     } catch (error) {
@@ -93,7 +93,7 @@ const CategoryFilterSection = () => {
         const productsData = response.data.data;
 
         console.log(
-          `CategoryFilterSection: Loaded ${productsData.length} products for category: ${selectedCategory}`
+          `CategoryFilterSection: Loaded ${productsData.length} products for category: ${selectedCategory}`,
         );
 
         // ✅ RANDOMIZE: Use Fisher-Yates shuffle for better randomization
@@ -107,7 +107,7 @@ const CategoryFilterSection = () => {
         }
 
         console.log(
-          `CategoryFilterSection: Randomized ${shuffledProducts.length} products`
+          `CategoryFilterSection: Randomized ${shuffledProducts.length} products`,
         );
         setProducts(shuffledProducts);
 
@@ -125,7 +125,7 @@ const CategoryFilterSection = () => {
   const handleCategoryClick = (
     categoryId,
     categorySlug = "",
-    categoryName = ""
+    categoryName = "",
   ) => {
     console.log("Category clicked:", categoryId, categorySlug, categoryName);
     setSelectedCategory(categoryId);
@@ -146,7 +146,7 @@ const CategoryFilterSection = () => {
   // Calculate the number of slides needed
   const slidesCount = Math.max(
     Math.ceil(products.length / responsiveItemsPerSlide) - 1,
-    0
+    0,
   );
 
   // Navigation functions
@@ -167,7 +167,7 @@ const CategoryFilterSection = () => {
     } else if (window.innerWidth < 1024) {
       return { gridClass: "grid-cols-4" }; // 4 products per row
     } else {
-      return { gridClass: "grid-cols-6" }; // 6 products per row
+      return { gridClass: "grid-cols-5" }; // 6 products per row
     }
   };
 
@@ -229,7 +229,7 @@ const CategoryFilterSection = () => {
                       <div className="h-4 bg-gray-200 rounded mb-4 w-1/2"></div>
                       <div className="h-8 bg-gray-200 rounded w-full"></div>
                     </div>
-                  )
+                  ),
                 )}
               </div>
             ) : products.length > 0 ? (
@@ -242,7 +242,7 @@ const CategoryFilterSection = () => {
                 {Array.from({
                   length: Math.max(
                     Math.ceil(products.length / responsiveItemsPerSlide),
-                    1
+                    1,
                   ),
                 }).map((_, slideIndex) => (
                   <div
@@ -255,7 +255,7 @@ const CategoryFilterSection = () => {
                         .slice(
                           slideIndex * responsiveItemsPerSlide,
                           slideIndex * responsiveItemsPerSlide +
-                            responsiveItemsPerSlide
+                            responsiveItemsPerSlide,
                         )
                         .map((product) => (
                           <CardProduct key={product._id} data={product} />

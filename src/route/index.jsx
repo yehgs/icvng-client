@@ -1,62 +1,63 @@
 //client/src/route/index.jsx
 import { createBrowserRouter } from "react-router-dom";
+import { lazy, Suspense } from "react";
 import App from "../App";
 import Home from "../pages/Home";
-import SearchPage from "../pages/SearchPage";
-import Login from "../pages/Login";
-import Register from "../pages/Register";
-import ForgotPassword from "../pages/ForgotPassword";
-import OtpVerification from "../pages/OtpVerification";
-import ResetPassword from "../pages/ResetPassword";
-import UserMenuMobile from "../pages/UserMenuMobile";
+const SearchPage = lazy(() => import("../pages/SearchPage"));
+const Login = lazy(() => import("../pages/Login"));
+const Register = lazy(() => import("../pages/Register"));
+const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
+const OtpVerification = lazy(() => import("../pages/OtpVerification"));
+const ResetPassword = lazy(() => import("../pages/ResetPassword"));
+const UserMenuMobile = lazy(() => import("../pages/UserMenuMobile"));
 import Dashboard from "../layouts/Dashboard";
-import Profile from "../pages/Profile";
-import MyOrders from "../pages/MyOrders";
-import Address from "../pages/Address";
-import CategoryPage from "../pages/CategoryPage";
-import BrandPage from "../pages/BrandPage";
-import SliderPage from "../pages/SliderPage";
-import CoffeeRoastAreas from "../components/CoffeeRoastAreas";
-import SubCategoryPage from "../pages/SubCategoryPage";
-import UploadProduct from "../pages/UploadProduct";
-import ProductAdmin from "../pages/ProductAdmin";
+const Profile = lazy(() => import("../pages/Profile"));
+const MyOrders = lazy(() => import("../pages/MyOrders"));
+const Address = lazy(() => import("../pages/Address"));
+const CategoryPage = lazy(() => import("../pages/CategoryPage"));
+const BrandPage = lazy(() => import("../pages/BrandPage"));
+const SliderPage = lazy(() => import("../pages/SliderPage"));
+const CoffeeRoastAreas = lazy(() => import("../components/CoffeeRoastAreas"));
+const SubCategoryPage = lazy(() => import("../pages/SubCategoryPage"));
+const UploadProduct = lazy(() => import("../pages/UploadProduct"));
+const ProductAdmin = lazy(() => import("../pages/ProductAdmin"));
 import AdminPermision from "../layouts/AdminPermision";
-import ProductDisplayPage from "../pages/ProductDisplayPage";
-import CartMobile from "../pages/CartMobile";
-import CheckoutPage from "../pages/CheckoutPage";
-import Success from "../pages/Success";
-import Cancel from "../pages/Cancel";
-import Attributes from "../components/Attributes";
-import Tags from "../components/Tags";
-import WishlistPage from "../pages/WishListPage";
-import ShopPage from "../pages/EnhancedShopPage";
-import CategoryDetailPage from "../components/CategoryDetailPage";
-import NotFoundPage from "../components/NotFoundPage";
-import ProductRequestPage from "../pages/ProductRequestPage";
-import UserProductRequests from "../pages/UserProductRequests.jsx";
-import AdminRatingsPage from "../pages/AdminRatingsPage.jsx";
-import BannerAdmin from "../pages/BannerAdmin.jsx";
-import WishListPage from "../pages/WishListPage.jsx";
-import ComparePage from "../pages/ComparePage.jsx";
-import BankTransferInstructionsPage from "../pages/BankTransferInstructionPage.jsx";
-import TrackingPage from "../pages/TrackingPage";
-import BlogPage from "../pages/BlogPage.jsx";
-import SingleBlogPost from "../pages/SingleBlogPost.jsx";
-import PaymentSuccessPage from "../pages/PaymentSuccessPage";
-import PaymentCancelPage from "../pages/PaymentCancelPage";
-import PaystackCallbackPage from "../pages/PaystackCallbackPage";
+const ProductDisplayPage = lazy(() => import("../pages/ProductDisplayPage"));
+const CartMobile = lazy(() => import("../pages/CartMobile"));
+const CheckoutPage = lazy(() => import("../pages/CheckoutPage"));
+const Success = lazy(() => import("../pages/Success"));
+const Cancel = lazy(() => import("../pages/Cancel"));
+const Attributes = lazy(() => import("../components/Attributes"));
+const Tags = lazy(() => import("../components/Tags"));
+const WishlistPage = lazy(() => import("../pages/WishListPage"));
+const ShopPage = lazy(() => import("../pages/EnhancedShopPage"));
+const CategoryDetailPage = lazy(() => import("../components/CategoryDetailPage"));
+const NotFoundPage = lazy(() => import("../components/NotFoundPage"));
+const ProductRequestPage = lazy(() => import("../pages/ProductRequestPage"));
+const UserProductRequests = lazy(() => import("../pages/UserProductRequests.jsx"));
+const AdminRatingsPage = lazy(() => import("../pages/AdminRatingsPage.jsx"));
+const BannerAdmin = lazy(() => import("../pages/BannerAdmin.jsx"));
+const WishListPage = lazy(() => import("../pages/WishListPage.jsx"));
+const ComparePage = lazy(() => import("../pages/ComparePage.jsx"));
+const BankTransferInstructionsPage = lazy(() => import("../pages/BankTransferInstructionPage.jsx"));
+const TrackingPage = lazy(() => import("../pages/TrackingPage"));
+const BlogPage = lazy(() => import("../pages/BlogPage.jsx"));
+const SingleBlogPost = lazy(() => import("../pages/SingleBlogPost.jsx"));
+const PaymentSuccessPage = lazy(() => import("../pages/PaymentSuccessPage"));
+const PaymentCancelPage = lazy(() => import("../pages/PaymentCancelPage"));
+const PaystackCallbackPage = lazy(() => import("../pages/PaystackCallbackPage"));
 
 // New Pages
-import PartnerWithUs from "../pages/PartnerWithUs";
-import AboutUs from "../pages/AboutUs.jsx";
-import OurStory from "../pages/Ourstory.jsx";
-import ReturnPolicy from "../pages/ReturnPolicy";
-import ContactUs from "../pages/Contactus.jsx";
-import FAQ from "../pages/Faq.jsx";
-import ShippingPolicy from "../pages/ShippingPolicy";
-import TermsConditions from "../pages/TermsConditions";
-import PrivacyPolicy from "../pages/Privacypolicy.jsx";
-import AdminBlogManagement from "../pages/admin/AdminBlogManagement";
+const PartnerWithUs = lazy(() => import("../pages/PartnerWithUs"));
+const AboutUs = lazy(() => import("../pages/AboutUs.jsx"));
+const OurStory = lazy(() => import("../pages/Ourstory.jsx"));
+const ReturnPolicy = lazy(() => import("../pages/ReturnPolicy"));
+const ContactUs = lazy(() => import("../pages/Contactus.jsx"));
+const FAQ = lazy(() => import("../pages/Faq.jsx"));
+const ShippingPolicy = lazy(() => import("../pages/ShippingPolicy"));
+const TermsConditions = lazy(() => import("../pages/TermsConditions"));
+const PrivacyPolicy = lazy(() => import("../pages/Privacypolicy.jsx"));
+const AdminBlogManagement = lazy(() => import("../pages/admin/AdminBlogManagement"));
 
 const router = createBrowserRouter([
   {
@@ -69,154 +70,154 @@ const router = createBrowserRouter([
       },
       {
         path: "wishlist",
-        element: <WishlistPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><WishlistPage  /></Suspense>,
       },
       {
         path: "search",
-        element: <SearchPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><SearchPage  /></Suspense>,
       },
       {
         path: "login",
-        element: <Login />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Login  /></Suspense>,
       },
       {
         path: "register",
-        element: <Register />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Register  /></Suspense>,
       },
       {
         path: "forgot-password",
-        element: <ForgotPassword />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ForgotPassword  /></Suspense>,
       },
       {
         path: "verification-otp",
-        element: <OtpVerification />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><OtpVerification  /></Suspense>,
       },
       {
         path: "/bank-transfer-instructions",
-        element: <BankTransferInstructionsPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><BankTransferInstructionsPage  /></Suspense>,
       },
       {
         path: "reset-password",
-        element: <ResetPassword />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ResetPassword  /></Suspense>,
       },
       {
         path: "user",
-        element: <UserMenuMobile />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><UserMenuMobile  /></Suspense>,
       },
       {
         path: "shop",
-        element: <ShopPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ShopPage  /></Suspense>,
       },
       // Company & Information Pages
       {
         path: "partner-with-us",
-        element: <PartnerWithUs />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PartnerWithUs  /></Suspense>,
       },
       {
         path: "about-us",
-        element: <AboutUs />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><AboutUs  /></Suspense>,
       },
       {
         path: "our-story",
-        element: <OurStory />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><OurStory  /></Suspense>,
       },
       {
         path: "contact-us",
-        element: <ContactUs />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ContactUs  /></Suspense>,
       },
       {
         path: "faq",
-        element: <FAQ />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><FAQ  /></Suspense>,
       },
       // Policy Pages
       {
         path: "return-policy",
-        element: <ReturnPolicy />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ReturnPolicy  /></Suspense>,
       },
       {
         path: "shipping-policy",
-        element: <ShippingPolicy />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ShippingPolicy  /></Suspense>,
       },
       {
         path: "terms-conditions",
-        element: <TermsConditions />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><TermsConditions  /></Suspense>,
       },
       {
         path: "privacy-policy",
-        element: <PrivacyPolicy />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PrivacyPolicy  /></Suspense>,
       },
       // Category & Product Routes
-      { path: "/category/:categorySlug", element: <CategoryDetailPage /> },
+      { path: "/category/:categorySlug", element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CategoryDetailPage  /></Suspense> },
       {
         path: "/category/:categorySlug/subcategory/:subcategorySlug",
-        element: <CategoryDetailPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CategoryDetailPage  /></Suspense>,
       },
       {
         path: "/category/:categorySlug/brand/:brandSlug",
-        element: <CategoryDetailPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CategoryDetailPage  /></Suspense>,
       },
       {
         path: "/category/:categorySlug/subcategory/:subcategorySlug/brand/:brandSlug",
-        element: <CategoryDetailPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CategoryDetailPage  /></Suspense>,
       },
-      { path: "/brand/:brandSlug", element: <CategoryDetailPage /> },
+      { path: "/brand/:brandSlug", element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CategoryDetailPage  /></Suspense> },
       {
         path: "product/:product",
-        element: <ProductDisplayPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ProductDisplayPage  /></Suspense>,
       },
       {
         path: "blogs",
-        element: <BlogPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><BlogPage  /></Suspense>,
       },
       {
         path: "blog/:slug",
-        element: <SingleBlogPost />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><SingleBlogPost  /></Suspense>,
       },
       // Cart & Checkout
       {
         path: "cart",
-        element: <CartMobile />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CartMobile  /></Suspense>,
       },
       {
         path: "checkout",
-        element: <CheckoutPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CheckoutPage  /></Suspense>,
       },
       {
         path: "success",
-        element: <Success />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Success  /></Suspense>,
       },
       {
         path: "cancel",
-        element: <Cancel />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Cancel  /></Suspense>,
       },
       {
         path: "wishlist",
-        element: <WishListPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><WishListPage  /></Suspense>,
       },
       {
         path: "compare",
-        element: <ComparePage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ComparePage  /></Suspense>,
       },
       {
         path: "*",
-        element: <NotFoundPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><NotFoundPage  /></Suspense>,
       },
       // Payment Routes
       {
         path: "/success",
-        element: <PaymentSuccessPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PaymentSuccessPage  /></Suspense>,
       },
       {
         path: "/cancel",
-        element: <PaymentCancelPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PaymentCancelPage  /></Suspense>,
       },
       {
         path: "/order-success",
-        element: <PaymentSuccessPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PaymentSuccessPage  /></Suspense>,
       },
       {
         path: "/payment/paystack/callback",
-        element: <PaystackCallbackPage />,
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PaystackCallbackPage  /></Suspense>,
       },
       // Dashboard Routes
       {
@@ -225,37 +226,37 @@ const router = createBrowserRouter([
         children: [
           {
             path: "profile",
-            element: <Profile />,
+            element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Profile  /></Suspense>,
           },
           {
             path: "myorders",
-            element: <MyOrders />,
+            element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><MyOrders  /></Suspense>,
           },
           {
             path: "address",
-            element: <Address />,
+            element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Address  /></Suspense>,
           },
           {
             path: "track",
-            element: <TrackingPage />,
+            element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><TrackingPage  /></Suspense>,
           },
           {
             path: "track/:trackingNumber",
-            element: <TrackingPage />,
+            element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><TrackingPage  /></Suspense>,
           },
           {
             path: "banners",
-            element: <BannerAdmin />,
+            element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><BannerAdmin  /></Suspense>,
           },
           {
             path: "user-request",
-            element: <UserProductRequests />,
+            element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><UserProductRequests  /></Suspense>,
           },
           {
             path: "category",
             element: (
               <AdminPermision>
-                <CategoryPage />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CategoryPage  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -263,7 +264,7 @@ const router = createBrowserRouter([
             path: "ratings",
             element: (
               <AdminPermision>
-                <AdminRatingsPage />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><AdminRatingsPage  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -271,7 +272,7 @@ const router = createBrowserRouter([
             path: "product-request",
             element: (
               <AdminPermision>
-                <ProductRequestPage />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ProductRequestPage  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -279,7 +280,7 @@ const router = createBrowserRouter([
             path: "blog-management",
             element: (
               <AdminPermision>
-                <AdminBlogManagement />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><AdminBlogManagement  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -287,7 +288,7 @@ const router = createBrowserRouter([
             path: "tags",
             element: (
               <AdminPermision>
-                <Tags />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Tags  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -295,7 +296,7 @@ const router = createBrowserRouter([
             path: "roast-areas",
             element: (
               <AdminPermision>
-                <CoffeeRoastAreas />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CoffeeRoastAreas  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -303,7 +304,7 @@ const router = createBrowserRouter([
             path: "attributes",
             element: (
               <AdminPermision>
-                <Attributes />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Attributes  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -311,7 +312,7 @@ const router = createBrowserRouter([
             path: "brand",
             element: (
               <AdminPermision>
-                <BrandPage />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><BrandPage  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -319,7 +320,7 @@ const router = createBrowserRouter([
             path: "slider",
             element: (
               <AdminPermision>
-                <SliderPage />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><SliderPage  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -327,7 +328,7 @@ const router = createBrowserRouter([
             path: "subcategory",
             element: (
               <AdminPermision>
-                <SubCategoryPage />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><SubCategoryPage  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -335,7 +336,7 @@ const router = createBrowserRouter([
             path: "upload-product",
             element: (
               <AdminPermision>
-                <UploadProduct />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><UploadProduct  /></Suspense>
               </AdminPermision>
             ),
           },
@@ -343,7 +344,7 @@ const router = createBrowserRouter([
             path: "product",
             element: (
               <AdminPermision>
-                <ProductAdmin />
+                <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ProductAdmin  /></Suspense>
               </AdminPermision>
             ),
           },

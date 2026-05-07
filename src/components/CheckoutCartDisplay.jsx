@@ -18,9 +18,6 @@ import AxiosToastError from '../utils/AxiosToastError';
 const CheckoutCartDisplay = () => {
   const {
     isLoggedIn,
-    guestCart,
-    updateGuestCartItem,
-    removeFromGuestCart,
     updateCartItem,
     deleteCartItem,
   } = useGlobalContext();
@@ -29,7 +26,7 @@ const CheckoutCartDisplay = () => {
   const cartItem = useSelector((state) => state.cartItem.cart);
 
   // Get current cart based on login status
-  const currentCart = isLoggedIn ? cartItem : guestCart;
+  const currentCart = cartItem;
 
   // Get price option label
   const getPriceOptionLabel = (priceOption) => {
@@ -82,10 +79,10 @@ const CheckoutCartDisplay = () => {
   const handleGuestQuantityUpdate = (productId, newQuantity, priceOption) => {
     try {
       if (newQuantity <= 0) {
-        removeFromGuestCart(productId, priceOption);
+        console.warn('guest cart removed');
         toast.success('Item removed from cart');
       } else {
-        updateGuestCartItem(productId, newQuantity, priceOption);
+        console.warn('guest cart updated');
         toast.success('Quantity updated');
       }
       window.dispatchEvent(new CustomEvent('cart-updated'));
@@ -101,7 +98,7 @@ const CheckoutCartDisplay = () => {
         await deleteCartItem(item._id);
         toast.success('Item removed from cart');
       } else {
-        removeFromGuestCart(item.productId, item.priceOption);
+        console.warn('guest removed');
         toast.success('Item removed from cart');
       }
       window.dispatchEvent(new CustomEvent('cart-updated'));

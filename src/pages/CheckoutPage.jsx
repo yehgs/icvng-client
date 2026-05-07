@@ -1,1001 +1,674 @@
-// icvng-client/src/pages/Complete CheckoutPage.jsx
-import React, { useState, useEffect } from "react";
-import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
-import CurrencySelector from "../components/CurrencySelector";
-import CheckoutCartDisplay from "../components/CheckoutCartDisplay";
-import ShippingMethodSelector from "../components/ShippingMethodSelector";
-import AddressFormModal from "../components/AddressFormModal";
-import AuthModal from "../components/AuthModel";
-import { useSelector } from "react-redux";
-import AxiosToastError from "../utils/AxiosToastError";
-import Axios from "../utils/Axios";
-import SummaryApi from "../common/SummaryApi";
-import toast from "react-hot-toast";
-import { useNavigate, Link } from "react-router-dom";
+// client/src/pages/CheckoutPage.jsx
+// 4-step checkout: Address → Shipping → Payment → Review
+// Login required — guests see auth modal from cart drawer before reaching here
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
+import Axios from '../utils/Axios';
+import SummaryApi from '../common/SummaryApi';
+import AxiosToastError from '../utils/AxiosToastError';
+import toast from 'react-hot-toast';
+import { nigeriaStatesLgas } from '../data/nigeria-states-lgas';
 import {
-  FaUser,
-  FaLock,
-  FaCreditCard,
-  FaUniversity,
-  FaShoppingCart,
-  FaMapMarkerAlt,
-  FaPlus,
-  FaEdit,
-  FaShieldAlt,
-} from "react-icons/fa";
+  MapPin, Truck, CreditCard, FileText, ChevronRight,
+  Plus, Loader2, Package, Minus, Trash2, Store,
+} from 'lucide-react';
+import { FaShoppingCart, FaShieldAlt } from 'react-icons/fa';
 
+const STEPS = ['Address', 'Shipping', 'Payment', 'Review'];
+
+// ─── Simple inline address form ──────────────────────────────────────────────
+function AddressForm({ onSave, saving }) {
+  const [form, setForm] = useState({
+    fullName: '', phone: '', address_line: '', address_line_2: '',
+    city: '', state: 'Rivers', lga: '', country: 'Nigeria', label: '',
+  });
+
+  const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+  const inp = 'w-full border border-gray-300 px-3 py-2 text-sm rounded focus:outline-none focus:border-green-500 bg-white';
+
+  const stateData = nigeriaStatesLgas.find((s) => s.state === form.state);
+  const lgas = stateData?.lga || [];
+
+  const handleUse = () => {
+    if (!form.fullName || !form.phone || !form.address_line || !form.city || !form.state) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    onSave(form);
+  };
+
+  return (
+    <div className="space-y-3 border border-gray-200 p-4 rounded-lg bg-gray-50">
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name *</label>
+        <input placeholder="e.g. Chidi Okeke" value={form.fullName}
+          onChange={(e) => set('fullName', e.target.value)} className={inp} />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">Phone Number *</label>
+        <input placeholder="+234 801 234 5678" value={form.phone}
+          onChange={(e) => set('phone', e.target.value)} className={inp} />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">Street Address *</label>
+        <input placeholder="House number and street name" value={form.address_line}
+          onChange={(e) => set('address_line', e.target.value)} className={inp} />
+      </div>
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">Apartment / Floor (optional)</label>
+        <input placeholder="e.g. Flat 3B, Block A" value={form.address_line_2}
+          onChange={(e) => set('address_line_2', e.target.value)} className={inp} />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">City / Town *</label>
+          <input placeholder="e.g. Port Harcourt" value={form.city}
+            onChange={(e) => set('city', e.target.value)} className={inp} />
+        </div>
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">State *</label>
+          <select value={form.state}
+            onChange={(e) => { set('state', e.target.value); set('lga', ''); }}
+            className={inp}>
+            {nigeriaStatesLgas.map((s) => (
+              <option key={s.state} value={s.state}>{s.state}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+      {lgas.length > 0 && (
+        <div>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
+            LGA <span className="font-normal text-gray-500">— for accurate shipping cost</span>
+          </label>
+          <select value={form.lga} onChange={(e) => set('lga', e.target.value)} className={inp}>
+            <option value="">Select LGA...</option>
+            {lgas.map((l) => <option key={l} value={l}>{l}</option>)}
+          </select>
+        </div>
+      )}
+      <div>
+        <label className="block text-xs font-semibold text-gray-700 mb-1">Address Label (optional)</label>
+        <input placeholder="e.g. Home, Office" value={form.label}
+          onChange={(e) => set('label', e.target.value)} className={inp} />
+      </div>
+      <button type="button" onClick={handleUse} disabled={saving}
+        className="w-full bg-green-600 text-white text-sm font-semibold py-2.5 rounded hover:bg-green-700 disabled:opacity-60 flex items-center justify-center gap-2 transition">
+        {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</> : 'Use This Address'}
+      </button>
+    </div>
+  );
+}
+
+// ─── Cart adjuster in sidebar ─────────────────────────────────────────────────
+function CartAdjuster({ items, onUpdate, onRemove, formatPrice }) {
+  if (!items?.length) return null;
+  return (
+    <div className="bg-gray-50 border border-gray-200 rounded p-3 space-y-3">
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Your Items</p>
+      {items.map((item) => {
+        const product = item.productId;
+        const price = item.selectedPrice || product?.price || 0;
+        return (
+          <div key={item._id} className="flex items-center gap-2">
+            <div className="w-9 h-9 bg-white rounded border overflow-hidden shrink-0">
+              {product?.image?.[0] && <img src={product.image[0]} alt={product.name} className="w-full h-full object-contain" />}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-gray-900 truncate">{product?.name}</p>
+              <p className="text-xs text-gray-500">{formatPrice(price)}</p>
+            </div>
+            <div className="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
+              <button onClick={() => onUpdate(item, item.quantity - 1)} disabled={item.quantity <= 1}
+                className="px-1.5 py-1 text-gray-400 hover:bg-gray-50 disabled:opacity-30">
+                <Minus className="w-3 h-3" />
+              </button>
+              <span className="w-6 text-center text-xs font-semibold">{item.quantity}</span>
+              <button onClick={() => onUpdate(item, item.quantity + 1)}
+                className="px-1.5 py-1 text-gray-400 hover:bg-gray-50">
+                <Plus className="w-3 h-3" />
+              </button>
+            </div>
+            <p className="text-xs font-bold w-16 text-right shrink-0">{formatPrice(price * item.quantity)}</p>
+            <button onClick={() => onRemove(item)} className="p-1 text-gray-300 hover:text-red-500 transition">
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── Main Checkout ────────────────────────────────────────────────────────────
 const CheckoutPage = () => {
-  const {
-    notDiscountTotalPrice,
-    totalPrice,
-    totalQty,
-    fetchCartItem,
-    fetchOrder,
-    isLoggedIn,
-    guestCart,
-    fetchAddress,
-  } = useGlobalContext();
-
-  const {
-    selectedCurrency,
-    formatPrice,
-    convertPrice,
-    getPaymentMethod,
-    exchangeRates,
-  } = useCurrency();
-
-  const [loading, setLoading] = useState(false);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [selectedShippingMethod, setSelectedShippingMethod] = useState(null);
-  const [shippingCost, setShippingCost] = useState(0);
-  const [shippingMethods, setShippingMethods] = useState([]);
-  const [shippingLoading, setShippingLoading] = useState(false);
-  const [selectedAddressId, setSelectedAddressId] = useState(null);
-  const [showAddressForm, setShowAddressForm] = useState(false);
-  const [editingAddress, setEditingAddress] = useState(null);
-  const [agreeToTerms, setAgreeToTerms] = useState(false);
-
-  const addressList = useSelector((state) => state.addresses.addressList);
-  const [selectAddress, setSelectAddress] = useState(0);
-  const cartItemsList = useSelector((state) => state.cartItem.cart);
+  const { isLoggedIn, fetchCartItem, fetchOrder, updateCartItem, deleteCartItem, isMerging } = useGlobalContext();
+  const { selectedCurrency, formatPrice, convertPrice, getPaymentMethod, exchangeRates } = useCurrency();
+  const cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
-  // Get current cart items based on login status
-  const currentCartItems = isLoggedIn ? cartItemsList : guestCart;
-
-  // Convert prices to selected currency
-  const convertedTotalPrice = convertPrice(totalPrice);
-  const convertedNotDiscountTotalPrice = convertPrice(notDiscountTotalPrice);
-  const convertedShippingCost = convertPrice(shippingCost);
-
-  // Calculate final total with shipping
-  const finalTotal = totalPrice + shippingCost;
-  const convertedFinalTotal = convertPrice(finalTotal);
-
-  // Calculate discount amount
-  const discountAmount = notDiscountTotalPrice - totalPrice;
-  const hasDiscount = discountAmount > 0;
-
-  const handleAuthSuccess = (userData) => {
-    toast.success("Welcome! Your cart has been preserved.");
-    setShowAuthModal(false);
-    fetchCartItem();
-    fetchAddress();
-    fetchOrder();
-  };
-
-  // Handle address selection change
-  const handleAddressSelect = async (addressIndex) => {
-    setSelectAddress(addressIndex);
-    const selectedAddr = addressList[addressIndex];
-    if (selectedAddr) {
-      setSelectedAddressId(selectedAddr._id);
-
-      toast.loading("Loading shipping options...", { id: "shipping-load" });
-
-      try {
-        await fetchShippingMethods(selectedAddr._id, totalPrice);
-        toast.dismiss("shipping-load");
-      } catch (error) {
-        toast.dismiss("shipping-load");
-        console.error("Error in address selection:", error);
-      }
-    }
-  };
-
-  // Fetch shipping methods when address changes
-  const fetchShippingMethods = async (addressId, orderValue) => {
-    try {
-      setShippingLoading(true);
-      setShippingMethods([]);
-      setSelectedShippingMethod(null);
-      setShippingCost(0);
-
-      const cartItems = isLoggedIn ? cartItemsList : guestCart;
-
-      if (!cartItems || cartItems.length === 0) {
-        throw new Error("No items in cart");
-      }
-
-      // DEBUG: Verify orderValue
-      console.log("💰 Order Value received:", orderValue);
-      if (!orderValue || orderValue === 0) {
-        console.warn("⚠️ Warning: orderValue is 0 or undefined!");
-      }
-
-      const itemsForShipping = cartItems.map((item) => {
-        if (isLoggedIn && item.productId) {
-          return {
-            productId: item.productId._id,
-            quantity: item.quantity,
-            category: item.productId.category?._id || item.productId.category,
-            weight: item.productId.weight || 1,
-            name: item.productId.name,
-            priceOption: item.priceOption || "regular",
-            selectedPrice: item.selectedPrice || item.productId.price,
-          };
-        } else {
-          return {
-            productId: item.productId || item._id,
-            quantity: item.quantity,
-            category: item.category?._id || item.category,
-            weight: item.weight || 1,
-            name: item.name,
-            priceOption: item.priceOption || "regular",
-            selectedPrice: item.price,
-          };
-        }
-      });
-
-      const totalWeight = itemsForShipping.reduce((total, item) => {
-        const weight = item.weight || 1;
-        return total + weight * item.quantity;
-      }, 0);
-
-      console.log("Fetching shipping for:", {
-        addressId,
-        items: itemsForShipping,
-        itemCount: itemsForShipping.length,
-        orderValue: orderValue,
-        totalWeight,
-      });
-
-      const response = await Axios({
-        url: "/api/shipping/calculate-checkout",
-        method: "post",
-        data: {
-          addressId,
-          items: itemsForShipping,
-          orderValue: orderValue,
-          totalWeight,
-        },
-      });
-
-      if (response.data.success) {
-        const methods = response.data.data.methods || [];
-
-        // ✅ SORT METHODS: Paid shipping first, then pickup last
-        const sortedMethods = methods.sort((a, b) => {
-          // Pickup always goes to bottom
-          if (a.type === "pickup" && b.type !== "pickup") return 1;
-          if (b.type === "pickup" && a.type !== "pickup") return -1;
-
-          // Among non-pickup methods, sort by cost (free first, then by price)
-          if (a.type !== "pickup" && b.type !== "pickup") {
-            // Both free or both paid - maintain original order
-            if ((a.cost === 0 && b.cost === 0) || (a.cost > 0 && b.cost > 0)) {
-              return 0;
-            }
-            // Free methods before paid methods (among non-pickup)
-            return a.cost === 0 ? -1 : 1;
-          }
-
-          return 0;
-        });
-
-        setShippingMethods(sortedMethods);
-
-        console.log(`Received ${sortedMethods.length} shipping methods`);
-        console.log(
-          "Sorted order:",
-          sortedMethods.map((m) => `${m.name} (${m.type})`)
-        );
-
-        if (sortedMethods.length > 0) {
-          toast.success(
-            `${sortedMethods.length} shipping option${
-              sortedMethods.length > 1 ? "s" : ""
-            } available`
-          );
-        } else {
-          toast.error("No shipping methods available for your location");
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching shipping methods:", error);
-      toast.error(
-        error.response?.data?.message || "Failed to load shipping methods"
-      );
-      setShippingMethods([]);
-      setSelectedShippingMethod(null);
-      setShippingCost(0);
-    } finally {
-      setShippingLoading(false);
-    }
-  };
-
-  // Handle shipping method selection
-  const handleShippingMethodSelect = (method) => {
-    setSelectedShippingMethod(method);
-    setShippingCost(method.cost || 0);
-  };
-
-  // Handle new address creation
-  const handleAddressSubmit = async (addressData) => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.createAddress,
-        data: addressData,
-      });
-
-      if (response.data.success) {
-        toast.success("Address saved successfully");
-        fetchAddress();
-        setShowAddressForm(false);
-
-        // Auto-select the new address
-        const newAddressId = response.data.data._id;
-        setSelectedAddressId(newAddressId);
-        await fetchShippingMethods(newAddressId);
-      }
-    } catch (error) {
-      AxiosToastError(error);
-    }
-  };
-
-  // Handle address editing
-  const handleEditAddress = (address) => {
-    setEditingAddress(address);
-    setShowAddressForm(true);
-  };
-
-  // Handle address update
-  const handleAddressUpdate = async (addressData) => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.updateAddress,
-        data: {
-          ...addressData,
-          _id: editingAddress._id,
-        },
-      });
-
-      if (response.data.success) {
-        toast.success("Address updated successfully");
-        fetchAddress();
-        setShowAddressForm(false);
-        setEditingAddress(null);
-      }
-    } catch (error) {
-      AxiosToastError(error);
-    }
-  };
-
-  // Prepare order items helper function
-  const prepareOrderItems = () => {
-    return currentCartItems.map((item) => {
-      if (isLoggedIn && item.productId) {
-        return {
-          productId: item.productId._id,
-          quantity: item.quantity,
-          priceOption: item.priceOption || "regular",
-          selectedPrice: item.selectedPrice || item.productId.price,
-        };
-      } else {
-        return {
-          productId: item.productId || item._id,
-          quantity: item.quantity,
-          priceOption: item.priceOption || "regular",
-          selectedPrice: item.price,
-        };
-      }
-    });
-  };
-
-  // Handle Direct Bank Transfer
-  const handleDirectBankTransfer = async () => {
-    if (selectedCurrency !== "NGN") {
-      toast.error("Direct Bank Transfer is only available for NGN currency");
-      return;
-    }
-
-    if (!isLoggedIn) {
-      toast.error("Please login to complete your order");
-      setShowAuthModal(true);
-      return;
-    }
-
-    if (!validateCheckout()) return;
-
-    try {
-      setLoading(true);
-
-      const bankDetails = {
-        bankName: import.meta.env.VITE_BANK_NAME || "ZENITH BANK PLC",
-        accountName:
-          import.meta.env.VITE_BANK_ACCOUNT_NAME || "I-COFFEE VENTURES",
-        accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || "1310523997",
-        sortCode: import.meta.env.VITE_BANK_SORT_CODE || "057150042",
-        reference: `ICOFFEE-${Date.now()}-${user._id}`,
-      };
-
-      const orderItems = prepareOrderItems();
-
-      const response = await Axios({
-        ...SummaryApi.directBankTransferOrder,
-        data: {
-          list_items: orderItems,
-          addressId: selectedAddressId,
-          subTotalAmt: totalPrice,
-          totalAmt: finalTotal,
-          shippingCost: shippingCost,
-          shippingMethodId: selectedShippingMethod._id,
-          currency: selectedCurrency,
-          bankDetails: bankDetails,
-        },
-      });
-
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        toast.success("Order created! Please complete bank transfer.");
-
-        if (fetchCartItem) fetchCartItem();
-        if (fetchOrder) fetchOrder();
-
-        navigate("/bank-transfer-instructions", {
-          state: {
-            orderDetails: responseData.data,
-            bankDetails: bankDetails,
-            totalAmount: finalTotal,
-            shippingCost: shippingCost,
-            shippingMethod: selectedShippingMethod,
-          },
-        });
-      }
-    } catch (error) {
-      AxiosToastError(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Validate checkout form
-  const validateCheckout = () => {
-    if (!selectedShippingMethod) {
-      toast.error("Please select a shipping method");
-      return false;
-    }
-
-    if (!selectedAddressId) {
-      toast.error("Please select a delivery address");
-      return false;
-    }
-
-    if (!agreeToTerms) {
-      toast.error("Please agree to the terms and conditions");
-      return false;
-    }
-
-    return true;
-  };
-
-  // Handle Online Payment (Paystack or Stripe)
-  const handleOnlinePayment = async () => {
-    if (!isLoggedIn) {
-      toast.error("Please login to complete your order");
-      setShowAuthModal(true);
-      return;
-    }
-
-    if (!validateCheckout()) return;
-
-    try {
-      setLoading(true);
-      toast.loading("Processing payment...", { id: "payment-processing" });
-
-      const paymentMethod = getPaymentMethod();
-
-      if (paymentMethod === "stripe") {
-        await handleStripePayment();
-      } else {
-        await handlePaystackPayment();
-      }
-    } catch (error) {
-      AxiosToastError(error);
-    } finally {
-      setLoading(false);
-      toast.dismiss("payment-processing");
-    }
-  };
-
-  const handleStripePayment = async () => {
-    try {
-      const { loadStripe } = await import("@stripe/stripe-js");
-      const stripePublicKey = import.meta.env.VITE_STRIPE_PUBLIC_KEY;
-
-      if (!stripePublicKey) {
-        throw new Error("Stripe configuration missing");
-      }
-
-      const stripePromise = await loadStripe(stripePublicKey);
-      const orderItems = prepareOrderItems();
-      const convertedSubTotal = convertPrice(totalPrice, selectedCurrency);
-      const convertedShipping = convertPrice(shippingCost, selectedCurrency);
-      const convertedTotal = convertPrice(finalTotal, selectedCurrency);
-      const exchangeRate = exchangeRates[selectedCurrency] || 1;
-
-      console.log("💰 Sending to Stripe:", {
-        currency: selectedCurrency,
-        originalNGN: {
-          subtotal: totalPrice,
-          shipping: shippingCost,
-          total: finalTotal,
-        },
-        converted: {
-          subtotal: convertedSubTotal,
-          shipping: convertedShipping,
-          total: convertedTotal,
-        },
-        exchangeRate: exchangeRate,
-      });
-
-      const response = await Axios({
-        ...SummaryApi.payment_url,
-        data: {
-          list_items: orderItems,
-          addressId: selectedAddressId,
-
-          // ✅ Send CONVERTED amounts (what Stripe will charge)
-          subTotalAmt: convertedSubTotal,
-          totalAmt: convertedTotal,
-          shippingCost: convertedShipping,
-
-          // ✅ Send ORIGINAL NGN amounts for record-keeping
-          originalAmounts: {
-            subTotalAmt: totalPrice,
-            shippingCost: shippingCost,
-            totalAmt: finalTotal,
-          },
-
-          // ✅ Send exchange rate info for admin records
-          exchangeRateInfo: {
-            rate: exchangeRate,
-            fromCurrency: "NGN",
-            toCurrency: selectedCurrency,
-            rateSource: "manual",
-            appliedAt: new Date().toISOString(),
-          },
-
-          shippingMethodId: selectedShippingMethod._id,
-          currency: selectedCurrency, // Target currency
-          paymentMethod: "stripe",
-        },
-      });
-
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        await stripePromise.redirectToCheckout({
-          sessionId: responseData.id,
-        });
-
-        fetchCartItem();
-        fetchOrder();
-      }
-    } catch (error) {
-      console.error("Stripe payment error:", error);
-      throw error;
-    }
-  };
-
-  const handlePaystackPayment = async () => {
-    try {
-      const orderItems = prepareOrderItems();
-
-      // ✅ For Paystack, everything is already in NGN
-      const response = await Axios({
-        ...SummaryApi.paystackPaymentController,
-        data: {
-          list_items: orderItems,
-          addressId: selectedAddressId,
-          subTotalAmt: totalPrice, // Already in NGN
-          totalAmt: finalTotal,
-          shippingCost: shippingCost,
-
-          // ✅ For NGN, exchange rate is 1:1
-          exchangeRateInfo: {
-            rate: 1,
-            fromCurrency: "NGN",
-            toCurrency: "NGN",
-            rateSource: "manual",
-            appliedAt: new Date().toISOString(),
-          },
-
-          shippingMethodId: selectedShippingMethod._id,
-          currency: "NGN",
-          paymentMethod: "paystack",
-        },
-      });
-
-      const { data: responseData } = response;
-
-      if (responseData.success) {
-        window.location.href = responseData.paymentUrl;
-        fetchCartItem();
-        fetchOrder();
-      }
-    } catch (error) {
-      console.error("Paystack payment error:", error);
-      throw error;
-    }
-  };
-
-  // Auto-fetch shipping methods when logged in user selects existing address
+  const [step, setStep] = useState(0);
+  const [addressList, setAddressList] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [showAddressForm, setShowAddressForm] = useState(false);
+  const [addressSaving, setAddressSaving] = useState(false);
+  const [shippingMethods, setShippingMethods] = useState([]);
+  const [selectedMethod, setSelectedMethod] = useState(null);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const [contact, setContact] = useState({ name: '', email: '', phone: '', notes: '', paymentMethod: 'paystack' });
+  const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Redirect if not logged in (shouldn't reach here — cart drawer blocks it)
   useEffect(() => {
-    if (isLoggedIn && addressList.length > 0 && addressList[selectAddress]) {
-      const selectedAddr = addressList[selectAddress];
-      if (currentCartItems.length > 0 && totalPrice > 0) {
-        fetchShippingMethods(selectedAddr._id, totalPrice);
+    if (!isLoggedIn) navigate('/');
+  }, [isLoggedIn]);
+
+  // Pre-fill contact from user account
+  useEffect(() => {
+    if (user) setContact((p) => ({ ...p, name: user.name || '', email: user.email || '', phone: user.mobile || '' }));
+  }, [user]);
+
+  // Load saved addresses
+  useEffect(() => {
+    if (!isLoggedIn) return;
+    Axios({ ...SummaryApi.getAddress }).then((res) => {
+      if (res.data.success) {
+        const addrs = res.data.data || [];
+        setAddressList(addrs);
+        const primary = addrs.find((a) => a.is_primary) || addrs[0];
+        if (primary) { setSelectedAddressId(primary._id); loadShipping(primary._id); }
+        else setShowAddressForm(true);
       }
-      setSelectedAddressId(selectedAddr._id);
-    }
-  }, [
-    isLoggedIn,
-    addressList,
-    selectAddress,
-    currentCartItems.length,
-    totalPrice,
-  ]);
+    }).catch(() => {});
+  }, [isLoggedIn]);
 
-  // Check if form is valid for proceeding
-  const canProceed =
-    currentCartItems.length > 0 &&
-    selectedAddressId &&
-    selectedShippingMethod &&
-    agreeToTerms;
+  const subtotal = useMemo(() =>
+    cartItem.reduce((s, item) => s + (item.selectedPrice || item.productId?.price || 0) * item.quantity, 0),
+    [cartItem]);
 
-  if (currentCartItems.length === 0) {
+  const shippingCost = selectedMethod?.cost || 0;
+  const total = subtotal + shippingCost;
+
+  const loadShipping = async (addressId) => {
+    if (!addressId || cartItem.length === 0) return;
+    setShippingLoading(true);
+    setShippingMethods([]);
+    setSelectedMethod(null);
+    try {
+      const items = cartItem.map((item) => ({
+        productId: item.productId._id,
+        quantity: item.quantity,
+        category: item.productId.category?._id || item.productId.category,
+        weight: item.productId.weight || 1,
+        name: item.productId.name,
+        priceOption: item.priceOption || 'regular',
+        selectedPrice: item.selectedPrice || item.productId.price,
+      }));
+      const totalWeight = items.reduce((t, i) => t + (i.weight || 1) * i.quantity, 0);
+
+      const res = await Axios({
+        url: '/api/shipping/calculate-checkout', method: 'post',
+        data: { addressId, items, orderValue: subtotal, totalWeight },
+      });
+
+      if (res.data.success) {
+        const methods = (res.data.data?.methods || []).sort((a, b) => {
+          if (a.type === 'pickup' && b.type !== 'pickup') return 1;
+          if (b.type === 'pickup' && a.type !== 'pickup') return -1;
+          return a.cost - b.cost;
+        });
+        setShippingMethods(methods);
+        if (methods.length > 0) setSelectedMethod(methods[0]);
+        else toast.error('No shipping options for this address');
+      }
+    } catch { toast.error('Failed to load shipping options'); }
+    finally { setShippingLoading(false); }
+  };
+
+  const handleSaveAddress = async (formData) => {
+    setAddressSaving(true);
+    try {
+      const res = await Axios({ ...SummaryApi.createAddress, data: { ...formData, status: true } });
+      if (res.data.success) {
+        toast.success('Address saved');
+        const newAddr = res.data.data;
+        setAddressList((p) => [...p, newAddr]);
+        setSelectedAddressId(newAddr._id);
+        setShowAddressForm(false);
+        await loadShipping(newAddr._id);
+      }
+    } catch (e) { AxiosToastError(e); }
+    finally { setAddressSaving(false); }
+  };
+
+  const handleCartUpdate = async (item, qty) => {
+    if (qty < 1) return;
+    await updateCartItem(item._id, qty);
+    fetchCartItem?.();
+  };
+
+  const handleCartRemove = async (item) => {
+    await deleteCartItem(item._id);
+    fetchCartItem?.();
+    toast.success('Item removed');
+  };
+
+  const handleSubmit = async () => {
+    if (!agreeToTerms) { toast.error('Please agree to the terms and conditions'); return; }
+    if (!selectedMethod) { toast.error('Please select a shipping method'); return; }
+    if (!contact.name || !contact.email || !contact.phone) { toast.error('Please complete your contact details'); return; }
+
+    setSubmitting(true);
+    try {
+      const orderItems = cartItem.map((item) => ({
+        productId: item.productId._id,
+        quantity: item.quantity,
+        priceOption: item.priceOption || 'regular',
+        selectedPrice: item.selectedPrice || item.productId.price,
+      }));
+
+      if (contact.paymentMethod === 'bank_transfer') {
+        const bankDetails = {
+          bankName: import.meta.env.VITE_BANK_NAME || 'ZENITH BANK PLC',
+          accountName: import.meta.env.VITE_BANK_ACCOUNT_NAME || 'I-COFFEE VENTURES',
+          accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || '1310523997',
+          reference: `ICOFFEE-${Date.now()}-${user._id}`,
+        };
+        const res = await Axios({
+          ...SummaryApi.directBankTransferOrder,
+          data: {
+            list_items: orderItems, addressId: selectedAddressId,
+            subTotalAmt: subtotal, totalAmt: total, shippingCost,
+            shippingMethodId: selectedMethod._id, currency: 'NGN', bankDetails,
+            customerNotes: contact.notes,
+          },
+        });
+        if (res.data.success) {
+          fetchCartItem?.(); fetchOrder?.();
+          navigate('/bank-transfer-instructions', {
+            state: { orderDetails: res.data.data, bankDetails, totalAmount: total, shippingCost, shippingMethod: selectedMethod },
+          });
+        }
+      } else {
+        // Paystack (NGN) or Stripe (international)
+        const paymentMethod = getPaymentMethod();
+        const convertedSubTotal = convertPrice(subtotal);
+        const convertedShipping = convertPrice(shippingCost);
+        const convertedTotal = convertPrice(total);
+        const exchangeRate = exchangeRates[selectedCurrency] || 1;
+        const endpoint = paymentMethod === 'stripe' ? SummaryApi.payment_url : SummaryApi.paystackPaymentController;
+
+        const res = await Axios({
+          ...endpoint,
+          data: {
+            list_items: orderItems,
+            addressId: selectedAddressId,
+            subTotalAmt: selectedCurrency === 'NGN' ? subtotal : convertedSubTotal,
+            totalAmt: selectedCurrency === 'NGN' ? total : convertedTotal,
+            shippingCost: selectedCurrency === 'NGN' ? shippingCost : convertedShipping,
+            originalAmounts: { subTotalAmt: subtotal, shippingCost, totalAmt: total },
+            exchangeRateInfo: { rate: exchangeRate, fromCurrency: 'NGN', toCurrency: selectedCurrency },
+            shippingMethodId: selectedMethod._id,
+            currency: selectedCurrency, paymentMethod,
+            customerNotes: contact.notes,
+          },
+        });
+
+        if (res.data.success) {
+          fetchCartItem?.(); fetchOrder?.();
+          if (paymentMethod === 'stripe') {
+            const { loadStripe } = await import('@stripe/stripe-js');
+            const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
+            await stripe.redirectToCheckout({ sessionId: res.data.id });
+          } else {
+            window.location.href = res.data.paymentUrl;
+          }
+        }
+      }
+    } catch (e) { AxiosToastError(e); }
+    finally { setSubmitting(false); }
+  };
+
+  // While guest cart is being merged — show a loading screen instead of "empty cart"
+  if (isMerging) {
     return (
-      <section className="bg-blue-50 min-h-screen flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
-          <FaShoppingCart className="mx-auto text-gray-400 text-6xl mb-4" />
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-            Your Cart is Empty
-          </h2>
-          <p className="text-gray-600 mb-6">
-            Add some items to your cart before proceeding to checkout.
-          </p>
-          <Link
-            to="/shop"
-            className="block w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-4 rounded-md transition"
-          >
-            Continue Shopping
-          </Link>
-        </div>
-      </section>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
+        <Loader2 className="w-10 h-10 text-green-600 animate-spin" />
+        <p className="text-gray-600 font-medium">Loading your cart…</p>
+      </div>
     );
   }
 
+  if (cartItem.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <FaShoppingCart className="mx-auto text-gray-300 text-6xl mb-4" />
+          <p className="text-gray-600 mb-4 text-lg font-medium">Your cart is empty</p>
+          <Link to="/shop" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition">
+            Continue Shopping
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const selectedAddress = addressList.find((a) => a._id === selectedAddressId);
+  const inp = 'w-full border border-gray-300 px-3 py-2 text-sm rounded focus:outline-none focus:border-green-500 bg-white';
+
   return (
-    <section className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto p-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Checkout</h1>
-          <p className="text-gray-600">
-            Review your order and complete your purchase
-          </p>
+    <div className="min-h-screen bg-gray-50 py-6 lg:py-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wide">Checkout</h1>
+
+        {/* Step Progress */}
+        <div className="flex items-center mb-8">
+          {STEPS.map((s, i) => (
+            <div key={s} className="flex items-center flex-1">
+              <div className="flex items-center gap-2">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  i < step ? 'bg-green-600 text-white' : i === step ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>
+                  {i < step ? '✓' : i + 1}
+                </div>
+                <span className={`text-sm font-medium hidden sm:block ${i === step ? 'text-gray-900' : 'text-gray-400'}`}>{s}</span>
+              </div>
+              {i < STEPS.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-green-600' : 'bg-gray-200'}`} />}
+            </div>
+          ))}
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Left Column - Cart Items & Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Cart Display */}
-            <CheckoutCartDisplay />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* ── Left column ── */}
+          <div className="lg:col-span-2 space-y-4">
 
-            {/* Authentication Status */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Account Status
-                </h3>
-                {isLoggedIn ? (
-                  <div className="flex items-center gap-2 text-green-600">
-                    <FaUser />
-                    <span className="text-sm font-medium">
-                      Logged in as {user.name}
-                    </span>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setShowAuthModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-secondary-200 text-white rounded-md hover:bg-secondary-100 transition-colors"
-                  >
-                    <FaUser size={16} />
-                    Login / Register
-                  </button>
-                )}
-              </div>
-
-              {!isLoggedIn && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                  <p className="text-amber-800 text-sm">
-                    <strong>Note:</strong> You need to login or register to
-                    complete your order. Your cart items will be preserved
-                    during the login process.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Currency Selector */}
-            <div className="bg-white p-6 rounded-lg shadow-sm">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Payment Currency
-                </h3>
-                <CurrencySelector />
-              </div>
-              <div className="text-sm text-gray-600">
-                {selectedCurrency === "NGN" ? (
-                  <div className="space-y-1">
-                    <p className="text-green-600">
-                      ✓ Paystack payment available (Cards, Bank Transfer)
-                    </p>
-                    <p className="text-blue-600">
-                      ✓ Direct Bank Transfer available
-                    </p>
-                  </div>
-                ) : (
-                  <p className="text-blue-600">
-                    ✓ Stripe payment available (International cards)
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Delivery Address */}
-            {isLoggedIn && (
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-semibold text-gray-800 flex items-center">
-                    <FaMapMarkerAlt className="mr-2 text-blue-600" />
-                    Delivery Address
-                  </h3>
-                  <button
-                    onClick={() => setShowAddressForm(true)}
-                    className="flex items-center gap-2 px-3 py-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
-                  >
-                    <FaPlus size={14} />
-                    Add New Address
-                  </button>
-                </div>
-
-                {addressList.length > 0 ? (
-                  <div className="grid gap-3">
-                    {addressList.map((address, index) => (
-                      <label
-                        key={address._id}
-                        htmlFor={"address" + index}
-                        className={!address.status ? "hidden" : "block"}
-                      >
-                        <div className="border rounded-lg p-4 flex gap-3 hover:bg-blue-50 cursor-pointer transition-colors">
-                          <input
-                            id={"address" + index}
-                            type="radio"
-                            value={index}
-                            onChange={(e) =>
-                              handleAddressSelect(parseInt(e.target.value))
-                            }
-                            name="address"
-                            checked={selectAddress === index}
-                            className="mt-1"
-                          />
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <p className="font-medium text-gray-800">
-                                {address.address_line}
-                              </p>
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleEditAddress(address);
-                                }}
-                                className="text-blue-600 hover:text-blue-700 p-1"
-                                title="Edit address"
-                              >
-                                <FaEdit size={14} />
-                              </button>
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              {address.city}, {address.state}, {address.country}{" "}
-                              - {address.postal_code}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              {address.mobile}
-                            </p>
-                            {address.is_primary && (
-                              <span className="inline-flex px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full mt-1">
-                                Primary Address
-                              </span>
-                            )}
+            {/* STEP 0 — Address */}
+            {step === 0 && (
+              <div className="bg-white border border-gray-200 p-5 rounded-lg">
+                <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-green-600" /> Delivery Address
+                </h2>
+                {addressList.length > 0 && !showAddressForm && (
+                  <div className="space-y-3 mb-4">
+                    {addressList.filter((a) => a.status !== false).map((addr) => (
+                      <label key={addr._id} className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                        selectedAddressId === addr._id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                        <input type="radio" name="address" checked={selectedAddressId === addr._id}
+                          onChange={() => setSelectedAddressId(addr._id)} className="mt-1" />
+                        <div>
+                          <div className="font-medium text-sm text-gray-900">
+                            {addr.fullName || addr.address_line}
+                            {addr.label && <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{addr.label}</span>}
+                            {addr.is_primary && <span className="ml-2 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">Primary</span>}
                           </div>
+                          <div className="text-xs text-gray-500 mt-0.5">
+                            {addr.address_line}{addr.address_line_2 ? `, ${addr.address_line_2}` : ''}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {addr.lga ? `${addr.lga}, ` : ''}{addr.city}, {addr.state}
+                          </div>
+                          <div className="text-xs text-gray-400">{addr.mobile || addr.phone}</div>
                         </div>
                       </label>
                     ))}
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <FaMapMarkerAlt className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-4">No addresses found</p>
-                    <button
-                      onClick={() => setShowAddressForm(true)}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                    >
-                      <FaPlus size={14} />
-                      Add Your First Address
+                )}
+                {showAddressForm
+                  ? <AddressForm onSave={handleSaveAddress} saving={addressSaving} />
+                  : <button onClick={() => setShowAddressForm(true)}
+                      className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700 mb-4">
+                      <Plus className="w-4 h-4" /> Add new address
                     </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Shipping Method Selector */}
-            {selectedAddressId && (
-              <ShippingMethodSelector
-                selectedAddress={addressList[selectAddress]}
-                cartItems={currentCartItems}
-                orderValue={totalPrice}
-                onMethodSelect={handleShippingMethodSelect}
-                selectedMethodId={selectedShippingMethod?._id}
-                loading={shippingLoading}
-                methods={shippingMethods}
-              />
-            )}
-          </div>
-
-          {/* Right Column - Order Summary & Payment */}
-          <div className="space-y-6">
-            {/* Order Summary */}
-            <div className="bg-white p-6 rounded-lg shadow-sm sticky top-4">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">
-                Order Summary
-              </h3>
-
-              <div className="space-y-4 mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Items total</span>
-                  <span className="font-medium">{formatPrice(totalPrice)}</span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Quantity</span>
-                  <span className="font-medium">
-                    {totalQty} item{totalQty > 1 ? "s" : ""}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Shipping</span>
-                  <span
-                    className={`font-medium ${
-                      shippingCost === 0 ? "text-green-600" : "text-gray-900"
-                    }`}
-                  >
-                    {shippingCost === 0 ? "Free" : formatPrice(shippingCost)}
-                  </span>
-                </div>
-
-                {selectedShippingMethod && (
-                  <div className="text-xs text-gray-500">
-                    {selectedShippingMethod.name}
-                  </div>
-                )}
-
-                {selectedCurrency !== "NGN" && (
-                  <div className="flex justify-between items-center text-sm">
-                    <span className="text-gray-500">Exchange Rate</span>
-                    <span className="text-gray-500">Live rates applied</span>
-                  </div>
-                )}
-
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-800">
-                      Total
-                    </span>
-                    <span className="text-xl font-bold text-green-600">
-                      {formatPrice(finalTotal)}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payment Buttons */}
-              <div className="space-y-3">
-                <button
-                  onClick={handleOnlinePayment}
-                  disabled={!canProceed || loading || !isLoggedIn}
-                  className={`w-full py-4 px-6 rounded-lg font-semibold transition flex items-center justify-center ${
-                    canProceed && isLoggedIn && !loading
-                      ? "bg-green-600 hover:bg-green-700 text-white"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                  }`}
-                >
-                  {loading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white mr-2"></div>
-                      Processing...
-                    </div>
-                  ) : (
-                    <>
-                      <FaCreditCard className="mr-2" />
-                      {selectedCurrency === "NGN"
-                        ? "Pay with Paystack"
-                        : "Pay with Stripe"}
-                      {!isLoggedIn && " (Login Required)"}
-                    </>
-                  )}
-                </button>
-
-                {selectedCurrency === "NGN" && (
-                  <button
-                    onClick={handleDirectBankTransfer}
-                    disabled={!canProceed || loading || !isLoggedIn}
-                    className={`w-full py-4 px-6 border-2 font-semibold rounded-lg transition flex items-center justify-center ${
-                      canProceed && isLoggedIn && !loading
-                        ? "border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
-                        : "border-gray-300 text-gray-400 cursor-not-allowed"
-                    }`}
-                  >
-                    {loading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-blue-600 mr-2"></div>
-                        Processing...
-                      </div>
-                    ) : (
-                      <>
-                        <FaUniversity className="mr-2" />
-                        Direct Bank Transfer
-                        {!isLoggedIn && " (Login Required)"}
-                      </>
-                    )}
+                }
+                {!showAddressForm && (
+                  <button onClick={() => {
+                    if (!selectedAddressId) { toast.error('Please select a delivery address'); return; }
+                    loadShipping(selectedAddressId);
+                    setStep(1);
+                  }} className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
+                    Continue to Shipping <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
               </div>
+            )}
 
-              {/* Status Messages */}
-              {!isLoggedIn && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800 text-center">
-                    Please login or register to complete your order
+            {/* STEP 1 — Shipping */}
+            {step === 1 && (
+              <div className="bg-white border border-gray-200 p-5 rounded-lg">
+                <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                  <Truck className="w-5 h-5 text-green-600" /> Shipping Method
+                </h2>
+                {selectedAddress && (
+                  <p className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-green-500" />
+                    Delivering to: <strong>{selectedAddress.lga ? `${selectedAddress.lga}, ` : ''}{selectedAddress.state}</strong>
                   </p>
-                </div>
-              )}
-
-              {isLoggedIn && !canProceed && (
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800 text-center">
-                    {currentCartItems.length === 0
-                      ? "Your cart is empty"
-                      : !selectedAddressId
-                      ? "Please select a delivery address"
-                      : !selectedShippingMethod
-                      ? "Please select a shipping method"
-                      : !agreeToTerms
-                      ? "Please agree to the terms and conditions"
-                      : "Please complete all required fields"}
-                  </p>
-                </div>
-              )}
-
-              {/* Terms and Conditions */}
-              {isLoggedIn && (
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="agreeToTerms"
-                      checked={agreeToTerms}
-                      onChange={(e) => setAgreeToTerms(e.target.checked)}
-                      className="mt-1 w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                    />
-                    <label
-                      htmlFor="agreeToTerms"
-                      className="flex-1 cursor-pointer"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <FaShieldAlt className="text-blue-600" />
-                        <span className="font-medium text-gray-800">
-                          Terms and Conditions
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        I agree to the{" "}
-                        <Link
-                          to="/terms-and-conditions"
-                          target="_blank"
-                          className="text-blue-600 hover:text-blue-700 underline"
-                        >
-                          Terms and Conditions
-                        </Link>
-                        ,{" "}
-                        <Link
-                          to="/privacy-policy"
-                          target="_blank"
-                          className="text-blue-600 hover:text-blue-700 underline"
-                        >
-                          Privacy Policy
-                        </Link>
-                        , and{" "}
-                        <Link
-                          to="/refund-policy"
-                          target="_blank"
-                          className="text-blue-600 hover:text-blue-700 underline"
-                        >
-                          Refund Policy
-                        </Link>
-                      </p>
-                    </label>
+                )}
+                {shippingLoading ? (
+                  <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
+                ) : shippingMethods.length === 0 ? (
+                  <div className="py-6 text-center text-gray-500">
+                    <Truck className="w-10 h-10 text-gray-200 mx-auto mb-2" />
+                    <p className="text-sm">No shipping options available for this address.</p>
+                    <button onClick={() => setStep(0)} className="text-green-600 text-sm mt-2 hover:underline">← Change address</button>
                   </div>
-                  {/* {!agreeToTerms &&
-                    selectedAddressId &&
-                    selectedShippingMethod && (
-                      <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
-                        <FaInfoCircle className="text-yellow-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-sm text-yellow-800">
-                          Please agree to the terms and conditions to proceed
-                          with your order
-                        </p>
-                      </div>
-                    )} */}
+                ) : (
+                  <div className="space-y-3">
+                    {shippingMethods.map((method) => (
+                      <label key={method._id} className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                        selectedMethod?._id === method._id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
+                      }`}>
+                        <input type="radio" checked={selectedMethod?._id === method._id}
+                          onChange={() => setSelectedMethod(method)} className="mt-1" />
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              {method.type === 'pickup' ? <Store className="w-4 h-4 text-amber-600" /> : <Truck className="w-4 h-4 text-green-600" />}
+                              <span className="font-semibold text-sm text-gray-900">{method.name}</span>
+                            </div>
+                            <span className="text-sm font-bold">
+                              {method.cost === 0 ? <span className="text-green-600">FREE</span> : formatPrice(method.cost)}
+                            </span>
+                          </div>
+                          {method.estimatedDays && <p className="text-xs text-gray-500 mt-0.5">Est. {method.estimatedDays} business day(s)</p>}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                <div className="flex gap-3 mt-5">
+                  <button onClick={() => setStep(0)} className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition">← Back</button>
+                  <button onClick={() => setStep(2)} disabled={!selectedMethod}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
+                    Continue to Payment <ChevronRight className="w-4 h-4" />
+                  </button>
                 </div>
-              )}
+              </div>
+            )}
 
-              {/* Security Notice */}
-              <div className="mt-6 pt-4 border-t">
-                <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
-                  <FaLock />
-                  <span>Your information is secure and encrypted</span>
+            {/* STEP 2 — Payment & Contact */}
+            {step === 2 && (
+              <div className="bg-white border border-gray-200 p-5 rounded-lg">
+                <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-green-600" /> Contact & Payment
+                </h2>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name *</label>
+                      <input value={contact.name} onChange={(e) => setContact((p) => ({ ...p, name: e.target.value }))} className={inp} placeholder="Your full name" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Phone *</label>
+                      <input value={contact.phone} onChange={(e) => setContact((p) => ({ ...p, phone: e.target.value }))} className={inp} placeholder="+234 801 234 5678" />
+                    </div>
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Email *</label>
+                      <input type="email" value={contact.email} onChange={(e) => setContact((p) => ({ ...p, email: e.target.value }))} className={inp} placeholder="your@email.com" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">Payment Method *</label>
+                    <div className="space-y-2">
+                      {selectedCurrency === 'NGN' ? (
+                        <>
+                          <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
+                            <input type="radio" value="paystack" checked={contact.paymentMethod === 'paystack'}
+                              onChange={() => setContact((p) => ({ ...p, paymentMethod: 'paystack' }))} />
+                            <span className="text-sm">💳 Pay Online (Card / Bank via Paystack)</span>
+                          </label>
+                          <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
+                            <input type="radio" value="bank_transfer" checked={contact.paymentMethod === 'bank_transfer'}
+                              onChange={() => setContact((p) => ({ ...p, paymentMethod: 'bank_transfer' }))} />
+                            <span className="text-sm">🏦 Manual Bank Transfer</span>
+                          </label>
+                        </>
+                      ) : (
+                        <label className="flex items-center gap-3 p-3 border border-green-400 rounded-lg bg-green-50">
+                          <input type="radio" checked readOnly />
+                          <span className="text-sm">💳 Pay with Stripe (International)</span>
+                        </label>
+                      )}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">Order Notes (optional)</label>
+                    <textarea value={contact.notes} rows={3} className={inp + ' resize-none'}
+                      onChange={(e) => setContact((p) => ({ ...p, notes: e.target.value }))}
+                      placeholder="Any special instructions for your order?" />
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button onClick={() => setStep(1)} className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition">← Back</button>
+                    <button onClick={() => setStep(3)} disabled={!contact.name || !contact.email || !contact.phone}
+                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
+                      Review Order <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
+              </div>
+            )}
+
+            {/* STEP 3 — Review */}
+            {step === 3 && (
+              <div className="bg-white border border-gray-200 p-5 rounded-lg">
+                <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-green-600" /> Review Your Order
+                </h2>
+
+                {/* Items */}
+                <div className="space-y-3 mb-5">
+                  {cartItem.map((item) => {
+                    const product = item.productId;
+                    const price = item.selectedPrice || product?.price || 0;
+                    return (
+                      <div key={item._id} className="flex items-center gap-3 py-3 border-b border-gray-100">
+                        <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden shrink-0">
+                          {product?.image?.[0] && <img src={product.image[0]} alt={product.name} className="w-full h-full object-contain" />}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900 truncate">{product?.name}</p>
+                          <p className="text-xs text-gray-500">Qty: {item.quantity}</p>
+                        </div>
+                        <p className="text-sm font-bold">{formatPrice(price * item.quantity)}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Address summary */}
+                {selectedAddress && (
+                  <div className="mb-3 p-3 bg-gray-50 rounded-lg text-sm">
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> Delivering to:</p>
+                    <p className="text-gray-700 font-medium">{selectedAddress.fullName || contact.name}</p>
+                    <p className="text-gray-600">
+                      {selectedAddress.address_line}{selectedAddress.address_line_2 ? `, ${selectedAddress.address_line_2}` : ''},
+                      {selectedAddress.lga ? ` ${selectedAddress.lga},` : ''} {selectedAddress.city}, {selectedAddress.state}
+                    </p>
+                    <p className="text-gray-500 text-xs mt-0.5">{selectedAddress.mobile || selectedAddress.phone || contact.phone}</p>
+                  </div>
+                )}
+
+                {/* Shipping summary */}
+                {selectedMethod && (
+                  <div className="mb-3 p-3 bg-gray-50 rounded-lg text-sm">
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> Shipping:</p>
+                    <p className="text-gray-600">{selectedMethod.name} — {shippingCost === 0 ? <span className="text-green-600 font-semibold">FREE</span> : formatPrice(shippingCost)}</p>
+                  </div>
+                )}
+
+                {/* Contact summary */}
+                <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
+                  <p className="font-semibold text-gray-700 mb-1">Contact & Payment:</p>
+                  <p className="text-gray-600">{contact.name} · {contact.email} · {contact.phone}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">
+                    {contact.paymentMethod === 'paystack' ? '💳 Paystack' : contact.paymentMethod === 'bank_transfer' ? '🏦 Bank Transfer' : '💳 Stripe'}
+                  </p>
+                </div>
+
+                {/* Terms */}
+                <label className="flex items-start gap-3 cursor-pointer mb-5">
+                  <input type="checkbox" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 accent-green-600" />
+                  <span className="text-sm text-gray-600">
+                    I agree to the{' '}
+                    <Link to="/terms-and-conditions" target="_blank" className="text-green-600 underline">Terms & Conditions</Link>,{' '}
+                    <Link to="/privacy-policy" target="_blank" className="text-green-600 underline">Privacy Policy</Link>, and{' '}
+                    <Link to="/refund-policy" target="_blank" className="text-green-600 underline">Refund Policy</Link>.
+                  </span>
+                </label>
+
+                <div className="flex gap-3">
+                  <button onClick={() => setStep(2)} className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition">← Back</button>
+                  <button onClick={handleSubmit} disabled={submitting || !agreeToTerms}
+                    className="flex-1 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
+                    {submitting
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+                      : <>Place Order — {formatPrice(total)}</>}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* ── Right: Order Summary ── */}
+          <div className="lg:col-span-1">
+            <div className="bg-white border border-gray-200 p-5 rounded-lg sticky top-4 space-y-4">
+              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wide">Order Summary</h3>
+              <CartAdjuster items={cartItem} onUpdate={handleCartUpdate} onRemove={handleCartRemove} formatPrice={formatPrice} />
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-gray-600">
+                  <span>Subtotal ({cartItem.length} item{cartItem.length !== 1 ? 's' : ''})</span>
+                  <span>{formatPrice(subtotal)}</span>
+                </div>
+                {selectedMethod && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>Shipping</span>
+                    <span>{shippingCost === 0 ? <span className="text-green-600 font-semibold">FREE</span> : formatPrice(shippingCost)}</span>
+                  </div>
+                )}
+              </div>
+              <div className="border-t border-gray-200 pt-3">
+                <div className="flex justify-between font-bold text-gray-900 text-base">
+                  <span>Total</span>
+                  <span>{formatPrice(total)}</span>
+                </div>
+              </div>
+              <div className="flex items-center justify-center gap-2 text-xs text-gray-400 pt-2 border-t border-gray-100">
+                <FaShieldAlt className="text-green-500" /> Secure & encrypted checkout
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Address Form Modal */}
-      <AddressFormModal
-        isOpen={showAddressForm}
-        onClose={() => {
-          setShowAddressForm(false);
-          setEditingAddress(null);
-        }}
-        onSubmit={editingAddress ? handleAddressUpdate : handleAddressSubmit}
-        initialData={editingAddress}
-        loading={loading}
-      />
-
-      {/* Auth Modal */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-        mode="login"
-      />
-    </section>
+    </div>
   );
 };
 

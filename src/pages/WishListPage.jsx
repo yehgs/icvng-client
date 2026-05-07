@@ -29,12 +29,7 @@ const WishlistPage = () => {
     if (isLoggedIn) {
       fetchWishlist();
     } else {
-      // Load from localStorage for non-logged-in users
-      const localWishlist = JSON.parse(
-        localStorage.getItem("wishlist") || "[]"
-      );
-      setWishlistItems(localWishlist);
-      setLoading(false);
+      toast.error("Please sign in to add items to your cart");
     }
   }, [isLoggedIn]);
 
@@ -91,45 +86,7 @@ const WishlistPage = () => {
           }, 100);
         }
       } else {
-        // For guest users, add to localStorage cart
-        const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
-
-        // Check if product already in cart
-        const existingItemIndex = guestCart.findIndex(
-          (item) => item.productId === product._id
-        );
-
-        if (existingItemIndex !== -1) {
-          // Update quantity
-          guestCart[existingItemIndex].quantity += 1;
-          toast.success("Product quantity updated in cart");
-        } else {
-          // Add new item with proper structure
-          guestCart.push({
-            productId: product._id,
-            quantity: 1,
-            name: product.name,
-            image: product.image,
-            btcPrice: product.btcPrice || product.price || 0,
-            price3weeksDelivery: product.price3weeksDelivery || 0,
-            price5weeksDelivery: product.price5weeksDelivery || 0,
-            discount: product.discount || 0,
-            productAvailability: product.productAvailability,
-            sku: product.sku,
-            productType: product.productType,
-            weight: product.weight,
-            priceOption: "regular", // Default price option
-          });
-          toast.success("Product added to cart");
-        }
-
-        localStorage.setItem("guestCart", JSON.stringify(guestCart));
-
-        // Trigger cart update event
-        window.dispatchEvent(new CustomEvent("cart-updated"));
-
-        // ✅ Remove from wishlist after successful add to cart
-        await removeFromWishlist(product._id);
+        toast.error("Please sign in to add items to your cart");
       }
     } catch (error) {
       AxiosToastError(error);
@@ -179,43 +136,7 @@ const WishlistPage = () => {
         // ✅ Clear wishlist after adding all to cart
         await handleClearWishlist(true); // Pass true to skip confirmation
       } else {
-        // For guest users, add all to localStorage
-        const guestCart = JSON.parse(localStorage.getItem("guestCart") || "[]");
-        let addedCount = 0;
-
-        availableItems.forEach((item) => {
-          const existingItemIndex = guestCart.findIndex(
-            (cartItem) => cartItem.productId === item._id
-          );
-
-          if (existingItemIndex !== -1) {
-            guestCart[existingItemIndex].quantity += 1;
-          } else {
-            guestCart.push({
-              productId: item._id,
-              quantity: 1,
-              name: item.name,
-              image: item.image,
-              btcPrice: item.btcPrice || item.price || 0,
-              price3weeksDelivery: item.price3weeksDelivery || 0,
-              price5weeksDelivery: item.price5weeksDelivery || 0,
-              discount: item.discount || 0,
-              productAvailability: item.productAvailability,
-              sku: item.sku,
-              productType: item.productType,
-              weight: item.weight,
-              priceOption: "regular",
-            });
-            addedCount++;
-          }
-        });
-
-        localStorage.setItem("guestCart", JSON.stringify(guestCart));
-        toast.success(`Added ${addedCount} items to cart`);
-        window.dispatchEvent(new CustomEvent("cart-updated"));
-
-        // ✅ Clear wishlist after adding all to cart
-        await handleClearWishlist(true); // Pass true to skip confirmation
+        toast.error("Please sign in to add items to your cart");
       }
     } catch (error) {
       toast.error("Failed to add all items to cart");
