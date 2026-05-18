@@ -213,8 +213,11 @@ const ProductDisplayPage = () => {
   //                               3-week (all other categories)
   // Computed fresh each render so it always reflects latest data + category
   const priceOptions = [
-    // Option 1 — Regular (fast) delivery, only when stock is available
-    ...(onlineStock > 0 && getPrimaryPrice(data) > 0
+    // Option 1 — Regular price — shown whenever btcPrice (or price) is set.
+    // btcPrice is the canonical regular price; product.price is the fallback.
+    // Stock availability affects the description label but does NOT hide the price —
+    // hiding it would show the "Pricing Unavailable" block even for priced products.
+    ...(getPrimaryPrice(data) > 0
       ? [
           {
             key: "regular",
@@ -224,8 +227,10 @@ const ProductDisplayPage = () => {
             color: "text-green-600",
             bgColor: "bg-green-50",
             borderColor: "border-green-200",
-            description: `Standard delivery (1-3 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`,
-            delivery: "Fast Delivery",
+            description: onlineStock > 0
+              ? `Standard delivery (1-3 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`
+              : "Available on special order — contact us for stock availability",
+            delivery: onlineStock > 0 ? "Fast Delivery" : "Special Order",
           },
         ]
       : []),
@@ -578,28 +583,31 @@ const ProductDisplayPage = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-800">
-                    Choose Delivery Option
+                    {/* Only say "Choose" if there are multiple delivery options */}
+                    {priceOptions.length > 1 ? "Choose Delivery Option" : "Pricing"}
                   </h3>
-                  {/* Delivery mode badge */}
-                  <span
-                    className={`text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 ${
-                      showFiveWeekDelivery
-                        ? "bg-red-50 text-red-700 border border-red-200"
-                        : "bg-orange-50 text-orange-700 border border-orange-200"
-                    }`}
-                  >
-                    {showFiveWeekDelivery ? (
-                      <>
-                        <FaCalendarAlt className="w-3 h-3" />
-                        Up to 5 weeks
-                      </>
-                    ) : (
-                      <>
-                        <FaClock className="w-3 h-3" />
-                        Up to 3 weeks
-                      </>
-                    )}
-                  </span>
+                  {/* Delivery mode badge — only shown when a delivery variant actually exists */}
+                  {priceOptions.some((o) => o.key === "3weeks" || o.key === "5weeks") && (
+                    <span
+                      className={`text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 ${
+                        showFiveWeekDelivery
+                          ? "bg-red-50 text-red-700 border border-red-200"
+                          : "bg-orange-50 text-orange-700 border border-orange-200"
+                      }`}
+                    >
+                      {showFiveWeekDelivery ? (
+                        <>
+                          <FaCalendarAlt className="w-3 h-3" />
+                          Up to 5 weeks
+                        </>
+                      ) : (
+                        <>
+                          <FaClock className="w-3 h-3" />
+                          Up to 3 weeks
+                        </>
+                      )}
+                    </span>
+                  )}
                 </div>
 
                 <div className="space-y-3">

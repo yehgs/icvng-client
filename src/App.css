@@ -1,12 +1,26 @@
 /* =============================================
-   TAWK.TO Z-INDEX FIX
-   Per official tawk.to docs: widget defaults to z-index 2,000,000,000.
-   To appear above it, set z-index to 2,000,000,001 or higher.
-   Source: https://help.tawk.to/article/customizing-your-z-index-with-the-javascript-api
+   CART DRAWER — Z-INDEX
+   Sits above tawk's default 2,000,000,000.
    ============================================= */
-
 .cart-drawer-backdrop {
   position: fixed !important;
   top: 0; left: 0; right: 0; bottom: 0;
   z-index: 2000000001 !important;
+}
+
+/* =============================================
+   TAWK.TO — FORCE BEHIND CART DRAWER
+   When .cart-drawer-backdrop is in the DOM, demote every
+   tawk element via CSS. The JS hook also calls
+   Tawk_API.hideWidget() for belt-and-suspenders coverage.
+   ============================================= */
+body:has(.cart-drawer-backdrop) [id*="tawk"],
+body:has(.cart-drawer-backdrop) [class*="tawk"],
+body:has(.cart-drawer-backdrop) #tawk-bubble-container,
+body:has(.cart-drawer-backdrop) .tawkchat-container,
+body:has(.cart-drawer-backdrop) .widget-visible,
+body:has(.cart-drawer-backdrop) iframe[src*="tawk.to"],
+body:has(.cart-drawer-backdrop) iframe[id*="tawk"],
+body:has(.cart-drawer-backdrop) iframe[name*="tawk"] {
+  z-index: 1 !important;
 }

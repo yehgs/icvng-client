@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { IoClose } from 'react-icons/io5';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
@@ -48,6 +48,74 @@ function AuthRequiredModal({ onClose, navigate, close }) {
 }
 
 // ─── Cart Drawer ──────────────────────────────────────────────────────────────
+// Push every tawk.to element behind the cart drawer while it is open,
+// then restore them when the drawer unmounts.
+// Tawk injects several iframes + a container div — we target all of them.
+function useTawkZIndex() {
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    // Selectors that cover every element tawk injects into the page
+    const TAWK_SELECTORS = [
+      'iframe[src*="tawk.to"]',
+      'iframe[id*="tawk"]',
+      'iframe[name*="tawk"]',
+      '[id*="tawk"]',
+      '[class*="tawk"]',
+      // The bubble launcher tawk uses in some embed versions
+      '#tawk-bubble-container',
+      '.tawkchat-container',
+      '.widget-visible',
+    ].join(', ');
+
+    const applyZ = (zIndex) => {
+      try {
+        // 1. Use the official Tawk_API if available (most reliable)
+        if (window.Tawk_API) {
+          if (zIndex === 1) {
+            // Cart is open — hide tawk completely so it can't overlap
+            if (typeof window.Tawk_API.hideWidget === 'function') {
+              window.Tawk_API.hideWidget();
+            }
+          } else {
+            // Cart closed — show tawk again
+            if (typeof window.Tawk_API.showWidget === 'function') {
+              window.Tawk_API.showWidget();
+            }
+          }
+        }
+
+        // 2. Belt-and-suspenders: also directly style every matched element
+        document.querySelectorAll(TAWK_SELECTORS).forEach((el) => {
+          el.style.setProperty('z-index', String(zIndex), 'important');
+        });
+
+        // 3. Walk ALL iframes and hit any that embed tawk.to in their src
+        document.querySelectorAll('iframe').forEach((iframe) => {
+          const src = iframe.src || iframe.getAttribute('src') || '';
+          if (src.includes('tawk.to') || src.includes('tawkto')) {
+            iframe.style.setProperty('z-index', String(zIndex), 'important');
+            // Also style the immediate parent wrapper tawk injects
+            if (iframe.parentElement) {
+              iframe.parentElement.style.setProperty('z-index', String(zIndex), 'important');
+            }
+          }
+        });
+      } catch (e) {
+        // Never crash the cart drawer over a widget issue
+      }
+    };
+
+    // Drawer is mounting — push tawk behind (drawer backdrop is z-index 2,000,000,001)
+    applyZ(1);
+
+    return () => {
+      // Drawer unmounting — restore tawk
+      applyZ(2000000000);
+    };
+  }, []); // run once on mount / cleanup on unmount — no deps needed
+}
+
 const DisplayCartItem = ({ close }) => {
   const {
     notDiscountTotalPrice, totalPrice, totalQty,
@@ -61,6 +129,9 @@ const DisplayCartItem = ({ close }) => {
   const navigate = useNavigate();
   const [loadingItems, setLoadingItems] = useState({});
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // Keep tawk.to widget behind the cart drawer while it is open
+  useTawkZIndex();
 
   // Use server cart when logged in, guest cart when not
   const currentCart = isLoggedIn ? cartItem : guestCart;
@@ -158,7 +229,7 @@ const DisplayCartItem = ({ close }) => {
   // ─── Render a server cart item ────────────────────────────────────────────────
   const renderServerItem = (item, index) => {
     const priceOption = item.priceOption || 'regular';
-    const displayPrice = item.selectedPrice || item?.productId?.price || 0;
+    const displayPrice = item.selectedPrice || item?.productId?.btcPrice || item?.productId?.price || 0;
     const key = item._id;
     const isLoading = loadingItems[key];
     return (

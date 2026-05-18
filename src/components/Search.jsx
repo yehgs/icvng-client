@@ -248,7 +248,7 @@ const SearchInput = () => {
                     </div>
                   </div>
                   <div className="text-primary-600 font-bold">
-                    {DisplayPriceInNaira(product.btcPrice > 0 ? product.btcPrice : product.btcPrice)}
+                    {DisplayPriceInNaira(product.btcPrice > 0 ? product.btcPrice : product.price)}
                   </div>
                 </div>
               ))}

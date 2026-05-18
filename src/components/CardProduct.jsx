@@ -87,9 +87,13 @@ const CardProduct = ({ data }) => {
     const options = [];
     const primaryPrice = getPrimaryPrice(data);
 
-    if (onlineStock > 0 && primaryPrice > 0) {
+    // Show the regular price option whenever btcPrice (or price) is set.
+    // onlineStock=0 affects the label but must not suppress the price entirely —
+    // that would wrongly trigger the "Request Information" button for priced products.
+    if (primaryPrice > 0) {
       options.push({
-        price: primaryPrice, label: "1 to 3 Days",
+        price: primaryPrice,
+        label: onlineStock > 0 ? "1 to 3 Days" : "Special Order",
         icon: <FaShippingFast className="w-3 h-3" />,
         color: "text-green-600", bgColor: "bg-green-50", key: "regular",
       });

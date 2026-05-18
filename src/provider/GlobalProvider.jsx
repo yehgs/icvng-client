@@ -318,7 +318,7 @@ const GlobalProvider = ({ children }) => {
         qty += quantity;
         const price = item.selectedPrice || item.btcPrice || item.price || 0;
         tPrice += price * quantity;
-        notDiscount += (item.btcPrice || item.price || 0) * quantity;
+        notDiscount += (item.selectedPrice || item.btcPrice || item.price || 0) * quantity;
       });
     }
 
