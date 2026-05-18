@@ -235,7 +235,15 @@ function App() {
         <Outlet />
       </main>
       <Footer />
-      <Toaster />
+      <Toaster
+        toastOptions={{
+          // Prevent duplicate toasts with the same message
+          id: undefined,
+          duration: 4000,
+          error: { duration: 5000 },
+        }}
+        containerStyle={{ zIndex: 99999 }}
+      />
       {location.pathname !== "/checkout" && <CartMobileLink />}
     </GlobalProvider>
   );

@@ -1,11 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { FaHeart, FaRegHeart } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
-import AxiosToastError from '../utils/AxiosToastError';
 import { updateWishlistCount } from '../utils/eventUtils';
+
+// Module-level cache so each productId is only checked once per page load,
+// even when multiple WishlistButton instances mount simultaneously.
+const statusCache = new Map();
 
 const WishlistButton = ({ product, className = '', iconOnly = false }) => {
   const [loading, setLoading] = useState(false);
@@ -13,99 +16,96 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
   const user = useSelector((state) => state.user);
   const isLoggedIn = Boolean(user?._id);
 
-  // Check if product is in wishlist on component mount
+  // Derive initial state from localStorage immediately (no flicker for guests)
   useEffect(() => {
-    if (isLoggedIn && product?._id) {
-      checkWishlistStatus();
-    } else if (!isLoggedIn && product?._id) {
-      // Check localStorage for non-logged-in users
-      const localWishlist = JSON.parse(
-        localStorage.getItem('wishlist') || '[]'
-      );
-      setIsFavorite(localWishlist.some((item) => item._id === product._id));
-    }
-  }, [isLoggedIn, product?._id]);
+    if (!product?._id) return;
 
-  const checkWishlistStatus = async () => {
-    try {
-      const response = await Axios({
-        ...SummaryApi.checkWishlist(product._id),
-      });
-
-      const { data: responseData } = response;
-      if (responseData.success) {
-        setIsFavorite(responseData.isInWishlist);
+    if (!isLoggedIn) {
+      try {
+        const local = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        setIsFavorite(local.some((item) => item._id === product._id));
+      } catch {
+        setIsFavorite(false);
       }
-    } catch (error) {
-      // Silently handle error - don't show toast for status check
-      console.error('Error checking wishlist status:', error);
+      return;
     }
-  };
 
-  const handleToggleWishlist = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+    // Logged-in: check server once, using cache to avoid duplicate requests
+    const pid = product._id;
 
-    setLoading(true);
-    try {
-      if (isLoggedIn) {
-        // Handle database wishlist for logged-in users
-        const response = await Axios({
-          ...SummaryApi.toggleWishlist,
-          data: {
-            productId: product._id,
-          },
-        });
+    if (statusCache.has(pid)) {
+      setIsFavorite(statusCache.get(pid));
+      return;
+    }
 
-        const { data: responseData } = response;
+    // Mark as pending to prevent concurrent duplicate requests
+    statusCache.set(pid, false);
 
-        if (responseData.success) {
-          const added = responseData.action === 'added';
-          setIsFavorite(added);
+    Axios({ ...SummaryApi.checkWishlist(pid) })
+      .then((res) => {
+        const val = Boolean(res.data?.isInWishlist);
+        statusCache.set(pid, val);
+        setIsFavorite(val);
+      })
+      .catch(() => {
+        // Silently swallow — don't show toast or console error on page load
+        statusCache.delete(pid);
+      });
+  }, [isLoggedIn, product?._id]); // eslint-disable-line
 
-          toast.success(
-            added
-              ? `${product.name} added to wishlist`
-              : `${product.name} removed from wishlist`
-          );
+  const handleToggleWishlist = useCallback(
+    async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-          // Update header count using event utils
+      setLoading(true);
+      try {
+        if (isLoggedIn) {
+          const res = await Axios({
+            ...SummaryApi.toggleWishlist,
+            data: { productId: product._id },
+          });
+
+          if (res.data?.success) {
+            const added = res.data.action === 'added';
+            setIsFavorite(added);
+            statusCache.set(product._id, added);
+            toast.success(
+              added
+                ? `${product.name} added to wishlist`
+                : `${product.name} removed from wishlist`
+            );
+            updateWishlistCount();
+          }
+        } else {
+          // Guest — localStorage only
+          const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
+          const already = wishlist.some((i) => i._id === product._id);
+
+          if (already) {
+            localStorage.setItem(
+              'wishlist',
+              JSON.stringify(wishlist.filter((i) => i._id !== product._id))
+            );
+            setIsFavorite(false);
+            toast.success(`${product.name} removed from wishlist`);
+          } else {
+            localStorage.setItem('wishlist', JSON.stringify([...wishlist, product]));
+            setIsFavorite(true);
+            toast.success(`${product.name} added to wishlist`);
+          }
           updateWishlistCount();
         }
-      } else {
-        // Handle localStorage wishlist for non-logged-in users
-        const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-        const isCurrentlyInWishlist = wishlist.some(
-          (item) => item._id === product._id
-        );
-
-        if (isCurrentlyInWishlist) {
-          // Remove from wishlist
-          const updatedWishlist = wishlist.filter(
-            (item) => item._id !== product._id
-          );
-          localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
-          setIsFavorite(false);
-          toast.success(`${product.name} removed from wishlist`);
-        } else {
-          // Add to wishlist
-          const updatedWishlist = [...wishlist, product];
-          localStorage.setItem('wishlist', JSON.stringify(updatedWishlist));
-          setIsFavorite(true);
-          toast.success(`${product.name} added to wishlist`);
-        }
-
-        // Update header count using event utils
-        updateWishlistCount();
+      } catch (error) {
+        const msg = error?.response?.data?.message || 'Failed to update wishlist';
+        toast.error(msg);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      AxiosToastError(error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    [isLoggedIn, product]
+  );
 
-  // If iconOnly is true, render just the icon button
   if (iconOnly) {
     return (
       <button
@@ -116,7 +116,7 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
         disabled={loading}
       >
         {loading ? (
-          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700"></div>
+          <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700" />
         ) : isFavorite ? (
           <FaHeart className="text-red-500" />
         ) : (
@@ -126,7 +126,6 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
     );
   }
 
-  // Default button with text and icon
   return (
     <button
       onClick={handleToggleWishlist}
@@ -134,16 +133,16 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
       disabled={loading}
     >
       {loading ? (
-        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700"></div>
+        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700" />
       ) : isFavorite ? (
         <>
           <FaHeart className="text-red-500" />
-          <span>{iconOnly ? '' : 'Remove from Wishlist'}</span>
+          <span>Remove from Wishlist</span>
         </>
       ) : (
         <>
           <FaRegHeart className="text-gray-500 hover:text-red-500 transition-colors" />
-          <span>{iconOnly ? '' : 'Add to Wishlist'}</span>
+          <span>Add to Wishlist</span>
         </>
       )}
     </button>

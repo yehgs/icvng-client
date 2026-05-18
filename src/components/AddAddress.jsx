@@ -298,13 +298,12 @@ const AddAddress = ({ close }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Postal Code *
+                Postal Code (Optional)
               </label>
               <Controller
                 name="postal_code"
                 control={control}
                 rules={{
-                  required: 'Postal code is required',
                   pattern: {
                     value: /^\d{6}$/,
                     message: 'Postal code must be exactly 6 digits',

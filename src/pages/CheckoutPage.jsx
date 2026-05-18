@@ -32,10 +32,12 @@ function AddressForm({ onSave, saving }) {
   const lgas = stateData?.lga || [];
 
   const handleUse = () => {
-    if (!form.fullName || !form.phone || !form.address_line || !form.city || !form.state) {
-      toast.error('Please fill in all required fields');
-      return;
-    }
+    if (!form.fullName) { toast.error('Please enter your full name'); return; }
+    if (!form.phone) { toast.error('Please enter your phone number'); return; }
+    if (!form.address_line) { toast.error('Please enter your street address'); return; }
+    if (!form.city) { toast.error('Please enter your city or town'); return; }
+    if (!form.state) { toast.error('Please select a state'); return; }
+    // lga is recommended but not blocking — fall back to state in handleSaveAddress
     onSave(form);
   };
 
@@ -232,10 +234,27 @@ const CheckoutPage = () => {
   const handleSaveAddress = async (formData) => {
     setAddressSaving(true);
     try {
-      const res = await Axios({ ...SummaryApi.createAddress, data: { ...formData, status: true } });
+      // Map checkout form field names to what the server's addAddressController expects.
+      // The inline form uses: fullName, phone, address_line, city, state, lga, label
+      // The server requires:  address_line, city, state, lga, mobile
+      const payload = {
+        address_line: formData.address_line,
+        address_line_2: formData.address_line_2 || '',
+        city: formData.city,
+        state: formData.state,
+        lga: formData.lga || formData.state, // fall back to state name if LGA not selected
+        mobile: formData.phone,              // server field is "mobile", form field is "phone"
+        address_type: 'home',
+        status: true,
+      };
+
+      const res = await Axios({ ...SummaryApi.createAddress, data: payload });
       if (res.data.success) {
         toast.success('Address saved');
         const newAddr = res.data.data;
+        // Attach display fields locally so the review step can show them
+        newAddr.fullName = formData.fullName;
+        newAddr.phone = formData.phone;
         setAddressList((p) => [...p, newAddr]);
         setSelectedAddressId(newAddr._id);
         setShowAddressForm(false);
