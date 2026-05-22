@@ -11,6 +11,8 @@ const initialValue = {
   categoryStructure: [],
   loadingCategoryStructure: false,
   coffeeRoastAreas: [],
+  compatibleSystemStructure: [],
+  loadingCompatibleStructure: false,
 };
 
 const productSlice = createSlice({
@@ -44,6 +46,12 @@ const productSlice = createSlice({
     setCoffeeRoastAreas: (state, action) => {
       state.coffeeRoastAreas = action.payload;
     },
+    setCompatibleSystemStructure: (state, action) => {
+      state.compatibleSystemStructure = action.payload;
+    },
+    setLoadingCompatibleStructure: (state, action) => {
+      state.loadingCompatibleStructure = action.payload;
+    },
   },
 });
 
@@ -57,6 +65,8 @@ export const {
   setCategoryStructure,
   setLoadingCategoryStructure,
   setCoffeeRoastAreas,
+  setCompatibleSystemStructure,
+  setLoadingCompatibleStructure,
 } = productSlice.actions;
 
 export default productSlice.reducer;

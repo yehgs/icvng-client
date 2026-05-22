@@ -12,8 +12,12 @@ import ShopFilter from "../components/EnhancedShopFilter";
 import { FaSearch, FaChevronRight } from "react-icons/fa";
 import { useFilterState } from "../hooks/useFilterState.js";
 import { useUrlFilters } from "../hooks/useUrlFilters.js";
+import { useDispatch } from "react-redux";
+import { setCompatibleSystemFilter, setCategoryFilter, setBrandFilter } from "../store/filterSlice";
 
 const EnhancedShopPage = () => {
+  const dispatch = useDispatch();
+
   // Products data state
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +52,48 @@ const EnhancedShopPage = () => {
     const searchText = searchParams.get("q") || "";
     setSearchInput(searchText);
     updateSearchTerm(searchText);
+  }, [searchParams]);
+
+  // Read compatible system (+ optional category + brand) from URL query params.
+  // Runs on every URL change. Dispatches to Redux AND directly triggers a fetch
+  // with the resolved values so we bypass the Redux→state timing race.
+  useEffect(() => {
+    const csId = searchParams.get("compatibleSystem") || "";
+    const csName = searchParams.get("compatibleSystemName") || "";
+    const catId = searchParams.get("category") || "";
+    const catName = searchParams.get("categoryName") || "";
+    const brandId = searchParams.get("brand") || "";
+    const brandName = searchParams.get("brandName") || "";
+
+    // Sync into Redux for the sidebar filter to reflect correctly
+    dispatch(setCompatibleSystemFilter({
+      compatibleSystemId: csId,
+      compatibleSystemName: csName,
+      compatibleSystemSlug: "",
+    }));
+
+    dispatch(setCategoryFilter({
+      categoryId: catId,
+      categoryName: catName,
+      categorySlug: "",
+    }));
+
+    dispatch(setBrandFilter({
+      brandId,
+      brandName,
+      brandSlug: "",
+      replace: true,
+    }));
+
+    // If any compatible-system param is present, fetch immediately with
+    // the raw URL values — don't wait for Redux to propagate.
+    if (csId || catId || brandId) {
+      fetchProducts(true, null, {
+        compatibleSystem: csId || undefined,
+        category: catId || undefined,
+        brand: brandId ? [brandId] : undefined,
+      });
+    }
   }, [searchParams]);
 
   // Fetch products when component mounts
@@ -127,6 +173,7 @@ const EnhancedShopPage = () => {
     activeFilters.roastLevel,
     activeFilters.intensity,
     activeFilters.blend,
+    activeFilters.compatibleSystem,
     urlState.isLoading,
     isProcessingUrl,
   ]);
@@ -139,8 +186,8 @@ const EnhancedShopPage = () => {
   }, [page]);
 
   // Fetch products with current filters
-  // urlSearchOverride: pass directly from URL on mount to bypass Redux timing lag
-  const fetchProducts = async (resetPage = false, urlSearchOverride = null) => {
+  // filterOverrides: pass URL-resolved values directly to bypass Redux timing lag
+  const fetchProducts = async (resetPage = false, urlSearchOverride = null, filterOverrides = null) => {
     try {
       setLoading(true);
       const currentPage = resetPage ? 1 : page;
@@ -149,50 +196,43 @@ const EnhancedShopPage = () => {
         setPage(1);
       }
 
-      // Convert the sort values to API values
       let sortValue = activeFilters.sort;
       if (sortValue === "newest") {
-        // The API uses createdAt: -1 by default
         sortValue = "";
       }
 
-      // Use URL override on initial load to avoid Redux race condition
       const searchTerm = urlSearchOverride !== null ? urlSearchOverride : activeFilters.search;
 
-      console.log("Fetching products with filters:", {
-        search: searchTerm,
+      // Merge Redux state with any direct overrides (overrides win — no timing lag)
+      const merged = {
         category: activeFilters.category,
         subCategory: activeFilters.subCategory,
         brand: activeFilters.brand,
+        compatibleSystem: activeFilters.compatibleSystem,
         productType: activeFilters.productType,
-        page: currentPage,
-      });
+        roastLevel: activeFilters.roastLevel,
+        intensity: activeFilters.intensity,
+        blend: activeFilters.blend,
+        minPrice: activeFilters.minPrice,
+        maxPrice: activeFilters.maxPrice,
+        ...(filterOverrides || {}),
+      };
 
       const response = await Axios({
         ...SummaryApi.searchProduct,
         data: {
           search: searchTerm,
           page: currentPage,
-          productType:
-            activeFilters.productType.length > 0
-              ? activeFilters.productType
-              : undefined,
-          category: activeFilters.category || undefined,
-          subCategory: activeFilters.subCategory || undefined,
-          brand:
-            activeFilters.brand.length > 0 ? activeFilters.brand : undefined,
-          roastLevel:
-            activeFilters.roastLevel.length > 0
-              ? activeFilters.roastLevel
-              : undefined,
-          intensity:
-            activeFilters.intensity.length > 0
-              ? activeFilters.intensity
-              : undefined,
-          blend:
-            activeFilters.blend.length > 0 ? activeFilters.blend : undefined,
-          minPrice: activeFilters.minPrice || undefined,
-          maxPrice: activeFilters.maxPrice || undefined,
+          productType: merged.productType?.length > 0 ? merged.productType : undefined,
+          category: merged.category || undefined,
+          subCategory: merged.subCategory || undefined,
+          brand: merged.brand?.length > 0 ? merged.brand : undefined,
+          compatibleSystem: merged.compatibleSystem || undefined,
+          roastLevel: merged.roastLevel?.length > 0 ? merged.roastLevel : undefined,
+          intensity: merged.intensity?.length > 0 ? merged.intensity : undefined,
+          blend: merged.blend?.length > 0 ? merged.blend : undefined,
+          minPrice: merged.minPrice || undefined,
+          maxPrice: merged.maxPrice || undefined,
           sort: sortValue,
         },
       });
@@ -223,8 +263,20 @@ const EnhancedShopPage = () => {
 
   // Handle filter changes from the ShopFilter component
   const handleApplyFilters = (filters) => {
-    console.log("Applying new filters from ShopFilter:", filters);
     applyFilters(filters);
+    // Directly fetch with the new filter values — don't wait for Redux to propagate
+    fetchProducts(true, null, {
+      category: filters.category || undefined,
+      subCategory: filters.subCategory || undefined,
+      brand: filters.brand?.length > 0 ? filters.brand : undefined,
+      compatibleSystem: filters.compatibleSystem || undefined,
+      productType: filters.productType?.length > 0 ? filters.productType : undefined,
+      roastLevel: filters.roastLevel?.length > 0 ? filters.roastLevel : undefined,
+      intensity: filters.intensity?.length > 0 ? filters.intensity : undefined,
+      blend: filters.blend?.length > 0 ? filters.blend : undefined,
+      minPrice: filters.minPrice || undefined,
+      maxPrice: filters.maxPrice || undefined,
+    });
   };
 
   // Handle search form submission

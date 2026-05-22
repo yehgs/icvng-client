@@ -146,6 +146,14 @@ const SummaryApi = {
     url: "/api/brand/delete",
     method: "delete",
   },
+  getCompatibleSystemStructure: {
+    url: "/api/compatible/structure",
+    method: "get",
+  },
+  updateCompatibleSystem: {
+    url: "/api/compatible/update-compatible",
+    method: "put",
+  },
   createProduct: {
     url: "/api/product/create",
     method: "post",

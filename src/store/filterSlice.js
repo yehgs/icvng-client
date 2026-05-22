@@ -1,25 +1,28 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   // Selected filters
   activeFilters: {
     productType: [],
-    category: '',
-    categoryName: '',
-    categorySlug: '',
-    subCategory: '',
-    subCategoryName: '',
-    subCategorySlug: '',
+    category: "",
+    categoryName: "",
+    categorySlug: "",
+    subCategory: "",
+    subCategoryName: "",
+    subCategorySlug: "",
     brand: [],
     brandNames: [],
     brandSlugs: [],
+    compatibleSystem: "",
+    compatibleSystemName: "",
+    compatibleSystemSlug: "",
     roastLevel: [],
     intensity: [],
     blend: [],
-    minPrice: '',
-    maxPrice: '',
-    sort: 'newest',
-    search: '',
+    minPrice: "",
+    maxPrice: "",
+    sort: "newest",
+    search: "",
   },
   // Filter data
   filterData: {
@@ -35,13 +38,13 @@ const initialState = {
   urlState: {
     isUrlFilterActive: false,
     isLoading: false,
-    activeUrl: '',
-    sourceUrl: '',
+    activeUrl: "",
+    sourceUrl: "",
     breadcrumbs: [
-      { label: 'Home', url: '/' },
-      { label: 'Shop', url: '/shop' },
+      { label: "Home", url: "/" },
+      { label: "Shop", url: "/shop" },
     ],
-    pageTitle: 'Shop',
+    pageTitle: "Shop",
   },
   // UI state
   uiState: {
@@ -50,6 +53,7 @@ const initialState = {
       category: true,
       subCategory: false,
       brand: false,
+      compatibleSystem: false,
       roastLevel: false,
       intensity: false,
       blend: false,
@@ -60,7 +64,7 @@ const initialState = {
 };
 
 const filterSlice = createSlice({
-  name: 'filter',
+  name: "filter",
   initialState,
   reducers: {
     // Set all active filters at once
@@ -104,11 +108,15 @@ const filterSlice = createSlice({
 
       if (Array.isArray(state.activeFilters[filterType])) {
         state.activeFilters[filterType] = [];
-      } else if (filterType === 'priceRange') {
-        state.activeFilters.minPrice = '';
-        state.activeFilters.maxPrice = '';
+      } else if (filterType === "priceRange") {
+        state.activeFilters.minPrice = "";
+        state.activeFilters.maxPrice = "";
+      } else if (filterType === "compatibleSystem") {
+        state.activeFilters.compatibleSystem = "";
+        state.activeFilters.compatibleSystemName = "";
+        state.activeFilters.compatibleSystemSlug = "";
       } else {
-        state.activeFilters[filterType] = '';
+        state.activeFilters[filterType] = "";
       }
     },
 
@@ -116,25 +124,34 @@ const filterSlice = createSlice({
     resetFilters: (state) => {
       state.activeFilters = {
         ...initialState.activeFilters,
-        search: state.activeFilters.search, // Preserve search term
+        search: state.activeFilters.search,
       };
+    },
+
+    // Set compatible system filter
+    setCompatibleSystemFilter: (state, action) => {
+      const { compatibleSystemId, compatibleSystemName, compatibleSystemSlug } =
+        action.payload;
+      state.activeFilters.compatibleSystem = compatibleSystemId || "";
+      state.activeFilters.compatibleSystemName = compatibleSystemName || "";
+      state.activeFilters.compatibleSystemSlug = compatibleSystemSlug || "";
     },
 
     // Set category and related filters
     setCategoryFilter: (state, action) => {
       const { categoryId, categoryName, categorySlug } = action.payload;
-      state.activeFilters.category = categoryId || '';
-      state.activeFilters.categoryName = categoryName || '';
-      state.activeFilters.categorySlug = categorySlug || '';
+      state.activeFilters.category = categoryId || "";
+      state.activeFilters.categoryName = categoryName || "";
+      state.activeFilters.categorySlug = categorySlug || "";
 
       // Clear subcategory when category changes
       if (
         state.activeFilters.subCategory &&
         state.activeFilters.category !== categoryId
       ) {
-        state.activeFilters.subCategory = '';
-        state.activeFilters.subCategoryName = '';
-        state.activeFilters.subCategorySlug = '';
+        state.activeFilters.subCategory = "";
+        state.activeFilters.subCategoryName = "";
+        state.activeFilters.subCategorySlug = "";
       }
 
       // Set URL filter active state if category is selected
@@ -146,9 +163,9 @@ const filterSlice = createSlice({
     setSubCategoryFilter: (state, action) => {
       const { subCategoryId, subCategoryName, subCategorySlug } =
         action.payload;
-      state.activeFilters.subCategory = subCategoryId || '';
-      state.activeFilters.subCategoryName = subCategoryName || '';
-      state.activeFilters.subCategorySlug = subCategorySlug || '';
+      state.activeFilters.subCategory = subCategoryId || "";
+      state.activeFilters.subCategoryName = subCategoryName || "";
+      state.activeFilters.subCategorySlug = subCategorySlug || "";
 
       // Set URL filter active state if subcategory is selected
       state.urlState.isUrlFilterActive =
@@ -288,28 +305,28 @@ const filterSlice = createSlice({
 
       // Update filter values without triggering navigation
       if (urlFilters.category !== undefined) {
-        state.activeFilters.category = urlFilters.category || '';
+        state.activeFilters.category = urlFilters.category || "";
       }
 
       if (urlFilters.categorySlug !== undefined) {
-        state.activeFilters.categorySlug = urlFilters.categorySlug || '';
+        state.activeFilters.categorySlug = urlFilters.categorySlug || "";
       }
 
       if (displayNames.categoryName !== undefined) {
-        state.activeFilters.categoryName = displayNames.categoryName || '';
+        state.activeFilters.categoryName = displayNames.categoryName || "";
       }
 
       if (urlFilters.subCategory !== undefined) {
-        state.activeFilters.subCategory = urlFilters.subCategory || '';
+        state.activeFilters.subCategory = urlFilters.subCategory || "";
       }
 
       if (urlFilters.subcategorySlug !== undefined) {
-        state.activeFilters.subCategorySlug = urlFilters.subcategorySlug || '';
+        state.activeFilters.subCategorySlug = urlFilters.subcategorySlug || "";
       }
 
       if (displayNames.subcategoryName !== undefined) {
         state.activeFilters.subCategoryName =
-          displayNames.subcategoryName || '';
+          displayNames.subcategoryName || "";
       }
 
       // Handle brand as an array
@@ -356,6 +373,7 @@ export const {
   resetFilters,
   setCategoryFilter,
   setSubCategoryFilter,
+  setCompatibleSystemFilter,
   setBrandFilter,
   removeBrandFilter,
   setPriceRange,

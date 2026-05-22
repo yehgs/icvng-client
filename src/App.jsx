@@ -16,6 +16,8 @@ import {
   setCategoryStructure,
   setLoadingCategoryStructure,
   setCoffeeRoastAreas,
+  setCompatibleSystemStructure,
+  setLoadingCompatibleStructure,
 } from "./store/productSlice";
 import { useDispatch } from "react-redux";
 import Axios from "./utils/Axios";
@@ -217,6 +219,34 @@ function App() {
     }
   };
 
+  const fetchCompatibleSystemStructure = async () => {
+    const CACHE_KEY = "icvng_compatibleStructure";
+    const cached = getCached(CACHE_KEY);
+    if (cached && cached.length > 0) {
+      dispatch(setCompatibleSystemStructure(cached));
+      // Background refresh
+      Axios({ ...SummaryApi.getCompatibleSystemStructure }).then((r) => {
+        if (r.data.success) {
+          dispatch(setCompatibleSystemStructure(r.data.data));
+          setCache(CACHE_KEY, r.data.data);
+        }
+      }).catch(() => {});
+      return;
+    }
+    try {
+      dispatch(setLoadingCompatibleStructure(true));
+      const response = await Axios({ ...SummaryApi.getCompatibleSystemStructure });
+      if (response.data.success) {
+        dispatch(setCompatibleSystemStructure(response.data.data));
+        setCache(CACHE_KEY, response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching compatible system structure:", error);
+    } finally {
+      dispatch(setLoadingCompatibleStructure(false));
+    }
+  };
+
   useEffect(() => {
     fetchUser();
     fetchCategory();
@@ -226,6 +256,7 @@ function App() {
     fetchAttributes();
     fetchCategoryStructure();
     fetchCoffeeRoastAreas();
+    fetchCompatibleSystemStructure();
   }, []);
 
   return (

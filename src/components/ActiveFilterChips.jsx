@@ -1,5 +1,5 @@
-import React from 'react';
-import { FaTimes } from 'react-icons/fa';
+import React from "react";
+import { FaTimes } from "react-icons/fa";
 
 const ActiveFilterChips = ({
   filters,
@@ -7,63 +7,72 @@ const ActiveFilterChips = ({
   categoryMap = {},
   subCategoryMap = {},
   brandMap = {},
+  compatibleSystemMap = {},
 }) => {
   // Convert filter types to readable labels
   const getFilterTypeLabel = (type) => {
     const labels = {
-      productType: 'Type',
-      category: 'Category',
-      subCategory: 'Subcategory',
-      brand: 'Brand',
-      roastLevel: 'Roast',
-      intensity: 'Intensity',
-      blend: 'Blend',
-      priceRange: 'Price Range',
+      productType: "Type",
+      category: "Category",
+      subCategory: "Subcategory",
+      brand: "Brand",
+      compatibleSystem: "Compatible",
+      roastLevel: "Roast",
+      intensity: "Intensity",
+      blend: "Blend",
+      priceRange: "Price Range",
     };
     return labels[type] || type;
   };
 
   // Format filter values for display
   const formatFilterValue = (type, value) => {
-    if (type === 'roastLevel') {
+    if (type === "roastLevel") {
       const labels = {
-        LIGHT: 'Light Roast',
-        MEDIUM: 'Medium Roast',
-        DARK: 'Dark Roast',
+        LIGHT: "Light Roast",
+        MEDIUM: "Medium Roast",
+        DARK: "Dark Roast",
       };
       return labels[value] || value;
     }
 
-    if (type === 'productType') {
+    if (type === "productType") {
       const labels = {
-        COFFEE: 'Coffee',
-        COFFEE_BEANS: 'Coffee Beans',
-        MACHINE: 'Machines',
-        ACCESSORIES: 'Accessories',
-        TEA: 'Tea',
-        DRINKS: 'Drinks',
+        COFFEE: "Coffee",
+        COFFEE_BEANS: "Coffee Beans",
+        MACHINE: "Machines",
+        ACCESSORIES: "Accessories",
+        TEA: "Tea",
+        DRINKS: "Drinks",
       };
       return labels[value] || value;
     }
 
-    if (type === 'intensity') {
-      return `Intensity ${value.split('/')[0]}`;
+    if (type === "intensity") {
+      return `Intensity ${value.split("/")[0]}`;
     }
 
-    if (type === 'category' && categoryMap[value]) {
+    if (type === "category" && categoryMap[value]) {
       return categoryMap[value];
     }
 
-    if (type === 'subCategory' && subCategoryMap[value]) {
+    if (type === "subCategory" && subCategoryMap[value]) {
       return subCategoryMap[value];
     }
 
-    if (type === 'brand' && brandMap[value]) {
+    if (type === "brand" && brandMap[value]) {
       return brandMap[value];
     }
 
+    if (type === "compatibleSystem") {
+      // value here is the name string (stored in filters.compatibleSystemName)
+      return (
+        compatibleSystemMap[value] || filters.compatibleSystemName || value
+      );
+    }
+
     // For price range
-    if (type === 'priceRange') {
+    if (type === "priceRange") {
       const { min, max } = value;
       if (min && max) return `₦${min} - ₦${max}`;
       if (min) return `Min: ₦${min}`;
@@ -78,7 +87,7 @@ const ActiveFilterChips = ({
     const chips = [];
 
     // Add array type filters (checkboxes)
-    ['productType', 'roastLevel', 'intensity', 'blend', 'brand'].forEach(
+    ["productType", "roastLevel", "intensity", "blend", "brand"].forEach(
       (type) => {
         if (filters[type]?.length > 0) {
           filters[type].forEach((value) => {
@@ -89,11 +98,20 @@ const ActiveFilterChips = ({
             });
           });
         }
-      }
+      },
     );
 
+    // Compatible system (single value)
+    if (filters.compatibleSystem) {
+      chips.push({
+        type: "compatibleSystem",
+        value: filters.compatibleSystem,
+        label: filters.compatibleSystemName || filters.compatibleSystem,
+      });
+    }
+
     // Add single-value filters
-    ['category', 'subCategory'].forEach((type) => {
+    ["category", "subCategory"].forEach((type) => {
       if (filters[type]) {
         chips.push({
           type,
@@ -106,10 +124,10 @@ const ActiveFilterChips = ({
     // Add price range filter
     if (filters.minPrice || filters.maxPrice) {
       chips.push({
-        type: 'priceRange',
+        type: "priceRange",
         value: { min: filters.minPrice, max: filters.maxPrice },
-        label: `Price: ${filters.minPrice ? '₦' + filters.minPrice : '₦0'} - ${
-          filters.maxPrice ? '₦' + filters.maxPrice : 'Any'
+        label: `Price: ${filters.minPrice ? "₦" + filters.minPrice : "₦0"} - ${
+          filters.maxPrice ? "₦" + filters.maxPrice : "Any"
         }`,
       });
     }
@@ -145,7 +163,7 @@ const ActiveFilterChips = ({
 
       {activeChips.length > 0 && (
         <button
-          onClick={() => onRemoveFilter('all')}
+          onClick={() => onRemoveFilter("all")}
           className="text-blue-600 hover:text-blue-800 text-xs underline"
         >
           Clear All

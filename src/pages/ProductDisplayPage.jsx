@@ -121,6 +121,11 @@ const ProductDisplayPage = () => {
 
   const effectiveStock = getEffectiveStock(data);
   const onlineStock = data.warehouseStock?.onlineStock || 0;
+  const isPartnerProduct = data.partnerStock?.enabled === true;
+  const partnerQty = data.partnerStock?.quantity || 0;
+  // Has purchasable stock: warehouse OR partner supplier
+  const hasAvailableStock =
+    onlineStock > 0 || (isPartnerProduct && partnerQty > 0);
 
   // ── Category-based delivery pricing mode ─────────────────────────────────
   // Capsule Machine & Coffee Maker → show 5-week delivery price
@@ -213,11 +218,10 @@ const ProductDisplayPage = () => {
   //                               3-week (all other categories)
   // Computed fresh each render so it always reflects latest data + category
   const priceOptions = [
-    // Option 1 — Regular price — shown whenever btcPrice (or price) is set.
-    // btcPrice is the canonical regular price; product.price is the fallback.
-    // Stock availability affects the description label but does NOT hide the price —
-    // hiding it would show the "Pricing Unavailable" block even for priced products.
-    ...(getPrimaryPrice(data) > 0
+    // Option 1 — Regular price — only shown when stock is actually available
+    // (warehouse onlineStock > 0 OR partner product with quantity)
+    // Hiding it when no stock prevents customers seeing a price they can't order at standard speed
+    ...(getPrimaryPrice(data) > 0 && hasAvailableStock
       ? [
           {
             key: "regular",
@@ -227,10 +231,11 @@ const ProductDisplayPage = () => {
             color: "text-green-600",
             bgColor: "bg-green-50",
             borderColor: "border-green-200",
-            description: onlineStock > 0
-              ? `Standard delivery (1-3 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`
-              : "Available on special order — contact us for stock availability",
-            delivery: onlineStock > 0 ? "Fast Delivery" : "Special Order",
+            description:
+              onlineStock > 0
+                ? `Standard delivery (1-3 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`
+                : "Available via partner supplier",
+            delivery: onlineStock > 0 ? "Fast Delivery" : "Partner Stock",
           },
         ]
       : []),
@@ -584,10 +589,14 @@ const ProductDisplayPage = () => {
                 <div className="flex items-center justify-between">
                   <h3 className="text-lg font-semibold text-gray-800">
                     {/* Only say "Choose" if there are multiple delivery options */}
-                    {priceOptions.length > 1 ? "Choose Delivery Option" : "Pricing"}
+                    {priceOptions.length > 1
+                      ? "Choose Delivery Option"
+                      : "Pricing"}
                   </h3>
                   {/* Delivery mode badge — only shown when a delivery variant actually exists */}
-                  {priceOptions.some((o) => o.key === "3weeks" || o.key === "5weeks") && (
+                  {priceOptions.some(
+                    (o) => o.key === "3weeks" || o.key === "5weeks",
+                  ) && (
                     <span
                       className={`text-xs font-medium px-3 py-1 rounded-full flex items-center gap-1 ${
                         showFiveWeekDelivery
@@ -717,7 +726,7 @@ const ProductDisplayPage = () => {
                   </button>
                 )}
 
-                {/* Stock status */}
+                {/* Stock status — only shown to user when in stock; no message when out of stock */}
                 <div className="flex items-center text-sm">
                   {onlineStock > 0 ? (
                     <>
@@ -727,11 +736,9 @@ const ProductDisplayPage = () => {
                         available)
                       </span>
                     </>
-                  ) : (
-                    <span className="text-orange-600">
-                      Available on special order
-                    </span>
-                  )}
+                  ) : isPartnerProduct && partnerQty > 0 ? (
+                    <span className="text-green-600">In Stock</span>
+                  ) : null}
                 </div>
 
                 {data.discount > 0 && (

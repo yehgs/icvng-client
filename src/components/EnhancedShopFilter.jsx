@@ -8,8 +8,8 @@ import ActiveFilterChips from "./ActiveFilterChips";
 const ShopFilter = ({
   onApplyFilters,
   initialFilters = {},
-  onRemoveFilter, // New prop for removing filters
-  onResetFilters, // New prop for resetting all filters
+  onRemoveFilter,
+  onResetFilters,
 }) => {
   // Filter states
   const [filters, setFilters] = useState({
@@ -17,6 +17,8 @@ const ShopFilter = ({
     category: "",
     subCategory: "",
     brand: [],
+    compatibleSystem: "",
+    compatibleSystemName: "",
     roastLevel: [],
     intensity: [],
     blend: [],
@@ -33,6 +35,7 @@ const ShopFilter = ({
     category: true,
     subCategory: false,
     brand: false,
+    compatibleSystem: false,
     roastLevel: false,
     intensity: false,
     blend: false,
@@ -47,6 +50,7 @@ const ShopFilter = ({
   const [categories, setCategories] = useState([]);
   const [subCategories, setSubCategories] = useState([]);
   const [brands, setBrands] = useState([]);
+  const [compatibleBrands, setCompatibleBrands] = useState([]);
   const [loading, setLoading] = useState(false);
   const [categoryMap, setCategoryMap] = useState({});
   const [subCategoryMap, setSubCategoryMap] = useState({});
@@ -173,6 +177,16 @@ const ShopFilter = ({
           setBrandMap(bMap);
         }
 
+        // Fetch compatible system brands (brands with compatibleSystem: true)
+        try {
+          const compatResponse = await Axios({
+            ...SummaryApi.getCompatibleSystemStructure,
+          });
+          if (compatResponse.data.success) {
+            setCompatibleBrands(compatResponse.data.data || []);
+          }
+        } catch (_) {}
+
         // If category is already selected, fetch subcategories
         if (filters.category) {
           fetchSubCategories(filters.category);
@@ -248,7 +262,7 @@ const ShopFilter = ({
           return {
             ...prevFilters,
             [filterType]: prevFilters[filterType].filter(
-              (item) => item !== value
+              (item) => item !== value,
             ),
           };
         } else {
@@ -298,14 +312,15 @@ const ShopFilter = ({
   // Reset filters - use the prop if provided
   const handleResetFilters = () => {
     if (onResetFilters) {
-      onResetFilters(true); // Pass true to signal navigation to shop
+      onResetFilters(true);
     } else {
-      // Legacy behavior
       const defaultFilters = {
         productType: [],
         category: "",
         subCategory: "",
         brand: [],
+        compatibleSystem: "",
+        compatibleSystemName: "",
         roastLevel: [],
         intensity: [],
         blend: [],
@@ -321,14 +336,13 @@ const ShopFilter = ({
     }
   };
 
-  // Handle removing a single filter - use the prop if provided
+  // Handle removing a single filter
   const handleRemoveFilter = (type, value) => {
     if (onRemoveFilter) {
       onRemoveFilter(type, value);
       return;
     }
 
-    // Legacy behavior
     if (type === "all") {
       handleResetFilters();
       return;
@@ -336,45 +350,31 @@ const ShopFilter = ({
 
     if (type === "priceRange") {
       setPriceRange({ min: "", max: "" });
-      setFilters((prev) => ({
-        ...prev,
-        minPrice: "",
-        maxPrice: "",
-      }));
-
-      onApplyFilters({
-        ...filters,
-        minPrice: "",
-        maxPrice: "",
-      });
-
+      setFilters((prev) => ({ ...prev, minPrice: "", maxPrice: "" }));
+      onApplyFilters({ ...filters, minPrice: "", maxPrice: "" });
       return;
     }
 
-    // Handle array filters (checkboxes)
+    if (type === "compatibleSystem") {
+      const updated = {
+        ...filters,
+        compatibleSystem: "",
+        compatibleSystemName: "",
+      };
+      setFilters(updated);
+      onApplyFilters(updated);
+      return;
+    }
+
     if (Array.isArray(filters[type])) {
-      setFilters((prev) => ({
-        ...prev,
-        [type]: prev[type].filter((item) => item !== value),
-      }));
-
-      onApplyFilters({
-        ...filters,
-        [type]: filters[type].filter((item) => item !== value),
-      });
+      const updated = filters[type].filter((item) => item !== value);
+      setFilters((prev) => ({ ...prev, [type]: updated }));
+      onApplyFilters({ ...filters, [type]: updated });
       return;
     }
 
-    // Handle single value filters
-    setFilters((prev) => ({
-      ...prev,
-      [type]: "",
-    }));
-
-    onApplyFilters({
-      ...filters,
-      [type]: "",
-    });
+    setFilters((prev) => ({ ...prev, [type]: "" }));
+    onApplyFilters({ ...filters, [type]: "" });
   };
 
   // Count active filters
@@ -384,6 +384,7 @@ const ShopFilter = ({
     if (filters.category) count += 1;
     if (filters.subCategory) count += 1;
     if (filters.brand?.length) count += filters.brand.length;
+    if (filters.compatibleSystem) count += 1;
     if (filters.roastLevel?.length) count += filters.roastLevel.length;
     if (filters.intensity?.length) count += filters.intensity.length;
     if (filters.blend?.length) count += filters.blend.length;
@@ -475,40 +476,111 @@ const ShopFilter = ({
             </select>
           </div>
 
+          {/* Brands */}
           <div className="mb-4 border-t pt-4">
             <div
               className="flex justify-between items-center cursor-pointer mb-2"
-              onClick={() => toggleSection("productType")}
+              onClick={() => toggleSection("brand")}
             >
-              <h3 className="font-medium">Product Type</h3>
-              {expandedSections.productType ? (
-                <FaChevronUp />
-              ) : (
-                <FaChevronDown />
-              )}
+              <h3 className="font-medium">Brands</h3>
+              {expandedSections.brand ? <FaChevronUp /> : <FaChevronDown />}
             </div>
 
-            {expandedSections.productType && (
-              <div className="space-y-2">
-                {productTypeOptions.map((option) => (
-                  <div key={option.value} className="flex items-center">
+            {expandedSections.brand && (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {brands.map((brand) => (
+                  <div key={brand._id} className="flex items-center">
                     <input
                       type="checkbox"
-                      id={`type-${option.value}`}
-                      checked={filters.productType?.includes(option.value)}
-                      onChange={() =>
-                        handleFilterChange("productType", option.value)
-                      }
+                      id={`brand-${brand._id}`}
+                      checked={filters.brand?.includes(brand._id)}
+                      onChange={() => handleFilterChange("brand", brand._id)}
                       className="mr-2"
                     />
-                    <label htmlFor={`type-${option.value}`} className="text-sm">
-                      {option.label}
+                    <label htmlFor={`brand-${brand._id}`} className="text-sm">
+                      {brand.name}
                     </label>
                   </div>
                 ))}
+
+                {loading && (
+                  <div className="text-sm text-gray-500">Loading brands...</div>
+                )}
+                {!loading && brands.length === 0 && (
+                  <div className="text-sm text-gray-500">
+                    No brands available
+                  </div>
+                )}
               </div>
             )}
           </div>
+
+          {/* Compatible System */}
+          {compatibleBrands.length > 0 && (
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection("compatibleSystem")}
+              >
+                <h3 className="font-medium">Compatible System</h3>
+                {expandedSections.compatibleSystem ? (
+                  <FaChevronUp />
+                ) : (
+                  <FaChevronDown />
+                )}
+              </div>
+
+              {expandedSections.compatibleSystem && (
+                <div className="space-y-2">
+                  <div className="flex items-center mb-1">
+                    <input
+                      type="radio"
+                      id="compat-all"
+                      name="compatibleSystem"
+                      checked={!filters.compatibleSystem}
+                      onChange={() =>
+                        handleFilterChange("compatibleSystem", "")
+                      }
+                      className="mr-2"
+                    />
+                    <label htmlFor="compat-all" className="text-sm">
+                      All Systems
+                    </label>
+                  </div>
+                  {compatibleBrands.map((cs) => (
+                    <div key={cs._id} className="flex items-center gap-2">
+                      <input
+                        type="radio"
+                        id={`compat-${cs._id}`}
+                        name="compatibleSystem"
+                        checked={filters.compatibleSystem === cs._id}
+                        onChange={() =>
+                          handleFilterChange("compatibleSystem", cs._id)
+                        }
+                        className="mr-1 flex-shrink-0"
+                      />
+                      {cs.image && (
+                        <img
+                          src={cs.image}
+                          alt={cs.name}
+                          className="w-10 h-5 object-contain flex-shrink-0"
+                          onError={(e) => {
+                            e.target.style.display = "none";
+                          }}
+                        />
+                      )}
+                      <label
+                        htmlFor={`compat-${cs._id}`}
+                        className="text-sm cursor-pointer"
+                      >
+                        {cs.name}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Category */}
           <div className="mb-4 border-t pt-4">
@@ -620,41 +692,38 @@ const ShopFilter = ({
             </div>
           )}
 
-          {/* Brands */}
+          {/* Product Type */}
           <div className="mb-4 border-t pt-4">
             <div
               className="flex justify-between items-center cursor-pointer mb-2"
-              onClick={() => toggleSection("brand")}
+              onClick={() => toggleSection("productType")}
             >
-              <h3 className="font-medium">Brands</h3>
-              {expandedSections.brand ? <FaChevronUp /> : <FaChevronDown />}
+              <h3 className="font-medium">Product Type</h3>
+              {expandedSections.productType ? (
+                <FaChevronUp />
+              ) : (
+                <FaChevronDown />
+              )}
             </div>
 
-            {expandedSections.brand && (
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {brands.map((brand) => (
-                  <div key={brand._id} className="flex items-center">
+            {expandedSections.productType && (
+              <div className="space-y-2">
+                {productTypeOptions.map((option) => (
+                  <div key={option.value} className="flex items-center">
                     <input
                       type="checkbox"
-                      id={`brand-${brand._id}`}
-                      checked={filters.brand?.includes(brand._id)}
-                      onChange={() => handleFilterChange("brand", brand._id)}
+                      id={`type-${option.value}`}
+                      checked={filters.productType?.includes(option.value)}
+                      onChange={() =>
+                        handleFilterChange("productType", option.value)
+                      }
                       className="mr-2"
                     />
-                    <label htmlFor={`brand-${brand._id}`} className="text-sm">
-                      {brand.name}
+                    <label htmlFor={`type-${option.value}`} className="text-sm">
+                      {option.label}
                     </label>
                   </div>
                 ))}
-
-                {loading && (
-                  <div className="text-sm text-gray-500">Loading brands...</div>
-                )}
-                {!loading && brands.length === 0 && (
-                  <div className="text-sm text-gray-500">
-                    No brands available
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -889,7 +958,113 @@ const ShopFilter = ({
               </select>
             </div>
 
-            {/* Mobile filters - similar to desktop but with simplified layout */}
+            {/* Brands */}
+            <div className="mb-4 border-t pt-4">
+              <div
+                className="flex justify-between items-center cursor-pointer mb-2"
+                onClick={() => toggleSection("brand")}
+              >
+                <h3 className="font-medium">Brands</h3>
+                {expandedSections.brand ? <FaChevronUp /> : <FaChevronDown />}
+              </div>
+              {expandedSections.brand && (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {brands.map((brand) => (
+                    <div key={brand._id} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        id={`mob2-brand-${brand._id}`}
+                        checked={filters.brand?.includes(brand._id)}
+                        onChange={() => handleFilterChange("brand", brand._id)}
+                        className="mr-2"
+                      />
+                      <label
+                        htmlFor={`mob2-brand-${brand._id}`}
+                        className="text-sm"
+                      >
+                        {brand.name}
+                      </label>
+                    </div>
+                  ))}
+                  {loading && (
+                    <div className="text-sm text-gray-500">Loading...</div>
+                  )}
+                  {!loading && brands.length === 0 && (
+                    <div className="text-sm text-gray-500">
+                      No brands available
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Compatible System */}
+            {compatibleBrands.length > 0 && (
+              <div className="mb-4 border-t pt-4">
+                <div
+                  className="flex justify-between items-center cursor-pointer mb-2"
+                  onClick={() => toggleSection("compatibleSystem")}
+                >
+                  <h3 className="font-medium">Compatible System</h3>
+                  {expandedSections.compatibleSystem ? (
+                    <FaChevronUp />
+                  ) : (
+                    <FaChevronDown />
+                  )}
+                </div>
+                {expandedSections.compatibleSystem && (
+                  <div className="space-y-2">
+                    <div className="flex items-center mb-1">
+                      <input
+                        type="radio"
+                        id="mob2-compat-all"
+                        name="mob2-compatibleSystem"
+                        checked={!filters.compatibleSystem}
+                        onChange={() =>
+                          handleFilterChange("compatibleSystem", "")
+                        }
+                        className="mr-2"
+                      />
+                      <label htmlFor="mob2-compat-all" className="text-sm">
+                        All Systems
+                      </label>
+                    </div>
+                    {compatibleBrands.map((cs) => (
+                      <div key={cs._id} className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          id={`mob2-compat-${cs._id}`}
+                          name="mob2-compatibleSystem"
+                          checked={filters.compatibleSystem === cs._id}
+                          onChange={() =>
+                            handleFilterChange("compatibleSystem", cs._id)
+                          }
+                          className="mr-1 flex-shrink-0"
+                        />
+                        {cs.image && (
+                          <img
+                            src={cs.image}
+                            alt={cs.name}
+                            className="w-10 h-5 object-contain flex-shrink-0"
+                            onError={(e) => {
+                              e.target.style.display = "none";
+                            }}
+                          />
+                        )}
+                        <label
+                          htmlFor={`mob2-compat-${cs._id}`}
+                          className="text-sm cursor-pointer"
+                        >
+                          {cs.name}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mobile filters - Product Type */}
             {/* Product Type */}
             <div className="mb-4 border-t pt-4">
               <div
@@ -1045,55 +1220,6 @@ const ShopFilter = ({
                 )}
               </div>
             )}
-
-            {/* Brands */}
-            <div className="mb-4 border-t pt-4">
-              <div
-                className="flex justify-between items-center cursor-pointer mb-2"
-                onClick={() => toggleSection("brand")}
-              >
-                <h3 className="font-medium">Brands</h3>
-                {expandedSections.brand ? <FaChevronUp /> : <FaChevronDown />}
-              </div>
-
-              {expandedSections.brand && (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {brands.map((brand) => (
-                    <div key={brand._id} className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`mobile-brand-${brand._id}`}
-                        checked={filters.brand?.includes(brand._id)}
-                        onChange={() => handleFilterChange("brand", brand._id)}
-                        className="mr-2"
-                      />
-                      <label
-                        htmlFor={`mobile-brand-${brand._id}`}
-                        className="text-sm"
-                      >
-                        {brand.name}
-                      </label>
-                      <img
-                        src={brand.image}
-                        alt={brand.name}
-                        className="size-5"
-                      />
-                    </div>
-                  ))}
-
-                  {loading && (
-                    <div className="text-sm text-gray-500">
-                      Loading brands...
-                    </div>
-                  )}
-                  {!loading && brands.length === 0 && (
-                    <div className="text-sm text-gray-500">
-                      No brands available
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
 
             {/* Show coffee-specific filters only for coffee products */}
             {(filters.productType.includes("COFFEE") ||

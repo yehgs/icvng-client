@@ -1,62 +1,62 @@
-import React, { useState, useEffect } from 'react';
-import { FaCloudUploadAlt } from 'react-icons/fa';
-import uploadImage from '../utils/UploadImage';
-import Loading from '../components/Loading';
-import ViewImage from '../components/ViewImage';
-import { MdDelete } from 'react-icons/md';
-import { useSelector } from 'react-redux';
-import { IoClose } from 'react-icons/io5';
-import AddFieldComponent from '../components/AddFieldComponent';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import AxiosToastError from '../utils/AxiosToastError';
-import successAlert from '../utils/SuccessAlert';
-import RichTextEditor from './RichTextEditor';
+import React, { useState, useEffect } from "react";
+import { FaCloudUploadAlt } from "react-icons/fa";
+import uploadImage from "../utils/UploadImage";
+import Loading from "../components/Loading";
+import ViewImage from "../components/ViewImage";
+import { MdDelete } from "react-icons/md";
+import { useSelector } from "react-redux";
+import { IoClose } from "react-icons/io5";
+import AddFieldComponent from "../components/AddFieldComponent";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import AxiosToastError from "../utils/AxiosToastError";
+import successAlert from "../utils/SuccessAlert";
+import RichTextEditor from "./RichTextEditor";
 
 const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   const [data, setData] = useState({
     _id: propsData._id,
-    name: propsData.name || '',
+    name: propsData.name || "",
     image: propsData.image || [],
-    weight: propsData.weight || '',
+    weight: propsData.weight || "",
     brand: propsData.brand || [],
     compatibleSystem: propsData.compatibleSystem || null,
     producer: propsData.producer || null,
     productType: propsData.productType || null,
     roastLevel: propsData.roastLevel || null,
-    roastOrigin: propsData.roastOrigin || '',
+    roastOrigin: propsData.roastOrigin || "",
     blend: propsData.blend || null,
     featured: propsData.featured || false,
-    aromaticProfile: propsData.aromaticProfile || '',
-    alcoholLevel: propsData.alcoholLevel || '',
-    coffeeOrigin: propsData.coffeeOrigin || '',
+    aromaticProfile: propsData.aromaticProfile || "",
+    alcoholLevel: propsData.alcoholLevel || "",
+    coffeeOrigin: propsData.coffeeOrigin || "",
     intensity: propsData.intensity || null,
     coffeeRoastAreas: propsData.coffeeRoastAreas || null,
     category: propsData.category || null,
     subCategory: propsData.subCategory || null,
     tags: propsData.tags || [],
     attributes: propsData.attributes || [],
-    unit: propsData.unit || '',
-    packaging: propsData.packaging || '',
+    unit: propsData.unit || "",
+    packaging: propsData.packaging || "",
     productAvailability:
       propsData.productAvailability !== undefined
         ? propsData.productAvailability
         : true,
     discount: propsData.discount || 0,
-    sku: propsData.sku || '',
-    description: propsData.description || '',
-    shortDescription: propsData.shortDescription || '',
-    additionalInfo: propsData.additionalInfo || '',
+    sku: propsData.sku || "",
+    description: propsData.description || "",
+    shortDescription: propsData.shortDescription || "",
+    additionalInfo: propsData.additionalInfo || "",
     more_details: propsData.more_details || {},
-    seoTitle: propsData.seoTitle || '',
-    seoDescription: propsData.seoDescription || '',
-    publish: propsData.publish || 'PENDING',
+    seoTitle: propsData.seoTitle || "",
+    seoDescription: propsData.seoDescription || "",
+    publish: propsData.publish || "PENDING",
     relatedProducts: propsData.relatedProducts || [],
-    slug: propsData.slug || '',
+    slug: propsData.slug || "",
   });
 
   const [imageLoading, setImageLoading] = useState(false);
-  const [ViewImageURL, setViewImageURL] = useState('');
+  const [ViewImageURL, setViewImageURL] = useState("");
   const allCategory = useSelector((state) => state.product.allCategory);
   const allSubCategory = useSelector((state) => state.product.allSubCategory);
   const allBrands = useSelector((state) => state.product.allBrands) || [];
@@ -68,7 +68,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
 
   const [filteredSubCategories, setFilteredSubCategories] = useState([]);
   const [openAddField, setOpenAddField] = useState(false);
-  const [fieldName, setFieldName] = useState('');
+  const [fieldName, setFieldName] = useState("");
 
   // Initialize filtered subcategories based on the initial category
   useEffect(() => {
@@ -77,7 +77,8 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
       const filtered = allSubCategory.filter(
         (subCat) =>
           subCat.category &&
-          (subCat.category._id === categoryId || subCat.category === categoryId)
+          (subCat.category._id === categoryId ||
+            subCat.category === categoryId),
       );
       setFilteredSubCategories(filtered);
     } else {
@@ -91,7 +92,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
     setData((prev) => {
       return {
         ...prev,
-        [name]: type === 'checkbox' ? checked : value,
+        [name]: type === "checkbox" ? checked : value,
       };
     });
   };
@@ -126,12 +127,12 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
   };
 
   const handleArrayChange = (field, value, action) => {
-    if (action === 'add') {
+    if (action === "add") {
       setData((prev) => ({
         ...prev,
         [field]: Array.isArray(prev[field]) ? [...prev[field], value] : [value],
       }));
-    } else if (action === 'remove') {
+    } else if (action === "remove") {
       const updatedItems = Array.isArray(data[field]) ? [...data[field]] : [];
       updatedItems.splice(value, 1);
       setData((prev) => ({
@@ -149,11 +150,11 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
         ...prev,
         more_details: {
           ...prev.more_details,
-          [fieldName]: '',
+          [fieldName]: "",
         },
       };
     });
-    setFieldName('');
+    setFieldName("");
     setOpenAddField(false);
   };
 
@@ -181,8 +182,8 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
 
   // Helper function to get ID regardless of object or string format
   const getEntityId = (entity) => {
-    if (!entity) return '';
-    return typeof entity === 'object' ? entity._id : entity;
+    if (!entity) return "";
+    return typeof entity === "object" ? entity._id : entity;
   };
 
   return (
@@ -554,7 +555,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   value={
                     data.coffeeRoastAreas
                       ? getEntityId(data.coffeeRoastAreas)
-                      : ''
+                      : ""
                   }
                   onChange={(e) => {
                     const value = e.target.value;
@@ -567,7 +568,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                     }
 
                     const coffeeRoastArea = allCoffeeRoastAreas.find(
-                      (el) => el._id === value
+                      (el) => el._id === value,
                     );
                     setData((prev) => ({
                       ...prev,
@@ -575,7 +576,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                     }));
                   }}
                 >
-                  <option value={''}>Select Coffee Roast Area</option>
+                  <option value={""}>Select Coffee Roast Area</option>
                   {allCoffeeRoastAreas.map((b) => (
                     <option key={b._id} value={b._id}>
                       <div className="flex gap-1">
@@ -600,7 +601,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   value={getEntityId(data.category)}
                   onChange={(e) => {
                     const selectedCategory = allCategory.find(
-                      (cat) => cat._id === e.target.value
+                      (cat) => cat._id === e.target.value,
                     );
                     setData((prev) => ({
                       ...prev,
@@ -631,7 +632,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   value={getEntityId(data.subCategory)}
                   onChange={(e) => {
                     const selectedSubCategory = allSubCategory.find(
-                      (sub) => sub._id === e.target.value
+                      (sub) => sub._id === e.target.value,
                     );
                     setData((prev) => ({
                       ...prev,
@@ -719,15 +720,15 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   onChange={(e) => {
                     if (!e.target.value) return;
                     const selectedBrand = allBrands.find(
-                      (b) => b._id === e.target.value
+                      (b) => b._id === e.target.value,
                     );
                     if (
                       selectedBrand &&
                       !data.brand.some(
-                        (b) => getEntityId(b) === selectedBrand._id
+                        (b) => getEntityId(b) === selectedBrand._id,
                       )
                     ) {
-                      handleArrayChange('brand', selectedBrand, 'add');
+                      handleArrayChange("brand", selectedBrand, "add");
                     }
                   }}
                 >
@@ -749,7 +750,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                         <div
                           className="hover:text-red-500 cursor-pointer"
                           onClick={() =>
-                            handleArrayChange('brand', index, 'remove')
+                            handleArrayChange("brand", index, "remove")
                           }
                         >
                           <IoClose size={20} />
@@ -768,13 +769,13 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   onChange={(e) => {
                     if (!e.target.value) return;
                     const selectedTag = allTags.find(
-                      (t) => t._id === e.target.value
+                      (t) => t._id === e.target.value,
                     );
                     if (
                       selectedTag &&
                       !data.tags.some((t) => getEntityId(t) === selectedTag._id)
                     ) {
-                      handleArrayChange('tags', selectedTag, 'add');
+                      handleArrayChange("tags", selectedTag, "add");
                     }
                   }}
                 >
@@ -796,7 +797,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                         <div
                           className="hover:text-red-500 cursor-pointer"
                           onClick={() =>
-                            handleArrayChange('tags', index, 'remove')
+                            handleArrayChange("tags", index, "remove")
                           }
                         >
                           <IoClose size={20} />
@@ -815,15 +816,15 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   onChange={(e) => {
                     if (!e.target.value) return;
                     const selectedAttr = allAttributes.find(
-                      (a) => a._id === e.target.value
+                      (a) => a._id === e.target.value,
                     );
                     if (
                       selectedAttr &&
                       !data.attributes.some(
-                        (a) => getEntityId(a) === selectedAttr._id
+                        (a) => getEntityId(a) === selectedAttr._id,
                       )
                     ) {
-                      handleArrayChange('attributes', selectedAttr, 'add');
+                      handleArrayChange("attributes", selectedAttr, "add");
                     }
                   }}
                 >
@@ -845,7 +846,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                         <div
                           className="hover:text-red-500 cursor-pointer"
                           onClick={() =>
-                            handleArrayChange('attributes', index, 'remove')
+                            handleArrayChange("attributes", index, "remove")
                           }
                         >
                           <IoClose size={20} />
@@ -863,24 +864,13 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   value={getEntityId(data.compatibleSystem)}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (!value) {
-                      setData((prev) => ({
-                        ...prev,
-                        compatibleSystem: null,
-                      }));
-                      return;
-                    }
-
-                    const compatibleSystem = allBrands.find(
-                      (el) => el._id === value
-                    );
                     setData((prev) => ({
                       ...prev,
-                      compatibleSystem: compatibleSystem,
+                      compatibleSystem: value || null,
                     }));
                   }}
                 >
-                  <option value={''}>Select Compatible System</option>
+                  <option value={""}>Select Compatible System</option>
                   {allBrands
                     .filter((brand) => brand.compatibleSystem === true)
                     .map((b) => (
@@ -898,22 +888,13 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                   value={getEntityId(data.producer)}
                   onChange={(e) => {
                     const value = e.target.value;
-                    if (!value) {
-                      setData((prev) => ({
-                        ...prev,
-                        producer: null,
-                      }));
-                      return;
-                    }
-
-                    const producer = allBrands.find((el) => el._id === value);
                     setData((prev) => ({
                       ...prev,
-                      producer: producer,
+                      producer: value || null,
                     }));
                   }}
                 >
-                  <option value={''}>Select Producer</option>
+                  <option value={""}>Select Producer</option>
                   {allBrands.map((b) => (
                     <option key={b._id} value={b._id}>
                       {b.name}
@@ -927,10 +908,10 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
                 <select
                   className="bg-blue-50 border w-full p-2 rounded"
                   name="roastLevel"
-                  value={data.roastLevel || ''}
+                  value={data.roastLevel || ""}
                   onChange={handleChange}
                 >
-                  <option value={''}>Select Roast Level</option>
+                  <option value={""}>Select Roast Level</option>
                   <option value="LIGHT">Light</option>
                   <option value="MEDIUM">Medium</option>
                   <option value="DARK">Dark</option>
@@ -1048,7 +1029,7 @@ const EditProductAdmin = ({ close, data: propsData, fetchProductData }) => {
 
           {/* View Image Modal */}
           {ViewImageURL && (
-            <ViewImage url={ViewImageURL} close={() => setViewImageURL('')} />
+            <ViewImage url={ViewImageURL} close={() => setViewImageURL("")} />
           )}
 
           {/* Add Field Modal */}

@@ -55,7 +55,7 @@ const PopularProductsSection = () => {
         subtitle="Loved by our customers"
         autoplay={true}
         autoplaySpeed={7000}
-        itemsPerSlide={5}
+        itemsPerSlide={4}
       />
     </section>
   );

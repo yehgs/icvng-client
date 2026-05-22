@@ -49,8 +49,8 @@ const NewArrivalsSection = () => {
         title="New Arrivals"
         subtitle="Check out our latest products"
         autoplay={true}
-        autoplaySpeed={6000}
-        itemsPerSlide={5}
+        autoplaySpeed={2000}
+        itemsPerSlide={4}
       />
     </section>
   );

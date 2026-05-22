@@ -57,7 +57,7 @@ const FeaturedProductsSection = () => {
         title="Featured Products"
         subtitle="Our favorite selections for you"
         autoplay={false}
-        itemsPerSlide={6} // Single row: 6 (desktop), 4 (tablet), 2 (mobile)
+        itemsPerSlide={4}
       />
     </section>
   );

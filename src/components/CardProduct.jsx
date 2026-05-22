@@ -6,8 +6,15 @@ import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
 import { useSelector } from "react-redux";
 import {
-  FaShoppingCart, FaStar, FaShippingFast, FaClock,
-  FaCalendarAlt, FaSadTear, FaShare, FaPlus, FaMinus,
+  FaShoppingCart,
+  FaStar,
+  FaShippingFast,
+  FaClock,
+  FaCalendarAlt,
+  FaSadTear,
+  FaShare,
+  FaPlus,
+  FaMinus,
 } from "react-icons/fa";
 import { BsCart4 } from "react-icons/bs";
 import toast from "react-hot-toast";
@@ -28,14 +35,28 @@ const CardProduct = ({ data }) => {
   const [quickCartLoading, setQuickCartLoading] = useState(false);
 
   const [priceOptionQuantities, setPriceOptionQuantities] = useState({
-    regular: 0, "3weeks": 0, "5weeks": 0,
+    regular: 0,
+    "3weeks": 0,
+    "5weeks": 0,
   });
   const [priceOptionCartIds, setPriceOptionCartIds] = useState({
-    regular: null, "3weeks": null, "5weeks": null,
+    regular: null,
+    "3weeks": null,
+    "5weeks": null,
   });
 
   const navigate = useNavigate();
-  const { getEffectiveStock, fetchCartItem, updateCartItem, deleteCartItem, isLoggedIn, guestCart, addToGuestCart, updateGuestCartItem, removeFromGuestCart } = useGlobalContext();
+  const {
+    getEffectiveStock,
+    fetchCartItem,
+    updateCartItem,
+    deleteCartItem,
+    isLoggedIn,
+    guestCart,
+    addToGuestCart,
+    updateGuestCartItem,
+    removeFromGuestCart,
+  } = useGlobalContext();
   const { formatPrice } = useCurrency();
   const cartItem = useSelector((state) => state.cartItem.cart);
 
@@ -77,42 +98,62 @@ const CardProduct = ({ data }) => {
   const getSelectedPrice = (priceOption) => {
     const primaryPrice = getPrimaryPrice(data);
     switch (priceOption) {
-      case "3weeks": return data.price3weeksDelivery > 0 ? data.price3weeksDelivery : primaryPrice;
-      case "5weeks": return data.price5weeksDelivery > 0 ? data.price5weeksDelivery : primaryPrice;
-      default: return primaryPrice;
+      case "3weeks":
+        return data.price3weeksDelivery > 0
+          ? data.price3weeksDelivery
+          : primaryPrice;
+      case "5weeks":
+        return data.price5weeksDelivery > 0
+          ? data.price5weeksDelivery
+          : primaryPrice;
+      default:
+        return primaryPrice;
     }
   };
 
   const getPricingOptions = () => {
     const options = [];
     const primaryPrice = getPrimaryPrice(data);
+    const isPartnerProduct = data.partnerStock?.enabled === true;
+    const partnerQty = data.partnerStock?.quantity || 0;
 
-    // Show the regular price option whenever btcPrice (or price) is set.
-    // onlineStock=0 affects the label but must not suppress the price entirely —
-    // that would wrongly trigger the "Request Information" button for priced products.
-    if (primaryPrice > 0) {
+    // Regular / fast price:
+    // Show if onlineStock > 0 (warehouse) OR if partner product with stock
+    // Hide if no physical stock available — don't reveal internal stock status to users
+    const hasAvailableStock =
+      onlineStock > 0 || (isPartnerProduct && partnerQty > 0);
+
+    if (primaryPrice > 0 && hasAvailableStock) {
       options.push({
         price: primaryPrice,
         label: onlineStock > 0 ? "1 to 3 Days" : "Special Order",
         icon: <FaShippingFast className="w-3 h-3" />,
-        color: "text-green-600", bgColor: "bg-green-50", key: "regular",
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+        key: "regular",
       });
     }
 
     if (showFiveWeekDelivery) {
       if (data.price5weeksDelivery > 0) {
         options.push({
-          price: data.price5weeksDelivery, label: "5 Wks Delivery",
+          price: data.price5weeksDelivery,
+          label: "5 Wks Delivery",
           icon: <FaCalendarAlt className="w-3 h-3" />,
-          color: "text-red-600", bgColor: "bg-red-50", key: "5weeks",
+          color: "text-red-600",
+          bgColor: "bg-red-50",
+          key: "5weeks",
         });
       }
     } else {
       if (data.price3weeksDelivery > 0) {
         options.push({
-          price: data.price3weeksDelivery, label: "3 Wks Delivery",
+          price: data.price3weeksDelivery,
+          label: "3 Wks Delivery",
           icon: <FaClock className="w-3 h-3" />,
-          color: "text-orange-600", bgColor: "bg-orange-50", key: "3weeks",
+          color: "text-orange-600",
+          bgColor: "bg-orange-50",
+          key: "3weeks",
         });
       }
     }
@@ -121,27 +162,46 @@ const CardProduct = ({ data }) => {
 
   useEffect(() => {
     const options = getPricingOptions();
-    if (options.length > 0 && !options.find((opt) => opt.key === selectedPriceOption)) {
+    if (
+      options.length > 0 &&
+      !options.find((opt) => opt.key === selectedPriceOption)
+    ) {
       setSelectedPriceOption(options[0].key);
     }
-  }, [onlineStock, data.price, data.btcPrice, data.price3weeksDelivery, data.price5weeksDelivery, showFiveWeekDelivery]);
+  }, [
+    onlineStock,
+    data.price,
+    data.btcPrice,
+    data.price3weeksDelivery,
+    data.price5weeksDelivery,
+    showFiveWeekDelivery,
+  ]);
 
   const handlePriceOptionSelect = (e, optionKey) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     setSelectedPriceOption(optionKey);
   };
 
   const handleQuickAddToCart = async (e) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
     if (!isLoggedIn) {
       const priceOptionToUse = selectedPriceOption || "regular";
       const selectedPrice = getSelectedPrice(priceOptionToUse);
       addToGuestCart({
-        productId: data._id, quantity: 1, priceOption: priceOptionToUse,
-        price: selectedPrice, selectedPrice, btcPrice: data.btcPrice,
-        discount: data.discount || 0, name: data.name, image: data.image,
-        price3weeksDelivery: data.price3weeksDelivery, price5weeksDelivery: data.price5weeksDelivery,
+        productId: data._id,
+        quantity: 1,
+        priceOption: priceOptionToUse,
+        price: selectedPrice,
+        selectedPrice,
+        btcPrice: data.btcPrice,
+        discount: data.discount || 0,
+        name: data.name,
+        image: data.image,
+        price3weeksDelivery: data.price3weeksDelivery,
+        price5weeksDelivery: data.price5weeksDelivery,
       });
       toast.success("Added to cart");
       window.dispatchEvent(new CustomEvent("cart-updated"));
@@ -153,19 +213,27 @@ const CardProduct = ({ data }) => {
       const priceOptionToUse = selectedPriceOption || "regular";
       const response = await Axios({
         ...SummaryApi.addTocart,
-        data: { productId: data._id, quantity: 1, priceOption: priceOptionToUse },
+        data: {
+          productId: data._id,
+          quantity: 1,
+          priceOption: priceOptionToUse,
+        },
       });
       if (response.data.success) {
         toast.success("Added to cart");
         fetchCartItem();
         window.dispatchEvent(new CustomEvent("cart-updated"));
       }
-    } catch (error) { AxiosToastError(error); }
-    finally { setQuickCartLoading(false); }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setQuickCartLoading(false);
+    }
   };
 
   const handleQuickIncreaseQty = async (e) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     try {
       setQuickCartLoading(true);
       const currentPriceOption = selectedPriceOption || "regular";
@@ -174,16 +242,25 @@ const CardProduct = ({ data }) => {
 
       if (!isLoggedIn) {
         updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
-        toast.success("Quantity updated"); window.dispatchEvent(new CustomEvent("cart-updated")); return;
+        toast.success("Quantity updated");
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+        return;
       }
       const response = await updateCartItem(cartId, currentQty + 1);
-      if (response?.success) { toast.success("Quantity updated"); window.dispatchEvent(new CustomEvent("cart-updated")); }
-    } catch (error) { AxiosToastError(error); }
-    finally { setQuickCartLoading(false); }
+      if (response?.success) {
+        toast.success("Quantity updated");
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+      }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setQuickCartLoading(false);
+    }
   };
 
   const handleQuickDecreaseQty = async (e) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     try {
       setQuickCartLoading(true);
       const currentPriceOption = selectedPriceOption || "regular";
@@ -193,38 +270,60 @@ const CardProduct = ({ data }) => {
       if (!isLoggedIn) {
         if (currentQty === 1) removeFromGuestCart(data._id, currentPriceOption);
         else updateGuestCartItem(data._id, currentQty - 1, currentPriceOption);
-        window.dispatchEvent(new CustomEvent("cart-updated")); return;
+        window.dispatchEvent(new CustomEvent("cart-updated"));
+        return;
       }
-      if (currentQty === 1) { await deleteCartItem(cartId); toast.success("Removed from cart"); }
-      else { const response = await updateCartItem(cartId, currentQty - 1); if (response?.success) toast.success("Quantity updated"); }
+      if (currentQty === 1) {
+        await deleteCartItem(cartId);
+        toast.success("Removed from cart");
+      } else {
+        const response = await updateCartItem(cartId, currentQty - 1);
+        if (response?.success) toast.success("Quantity updated");
+      }
       window.dispatchEvent(new CustomEvent("cart-updated"));
-    } catch (error) { AxiosToastError(error); }
-    finally { setQuickCartLoading(false); }
+    } catch (error) {
+      AxiosToastError(error);
+    } finally {
+      setQuickCartLoading(false);
+    }
   };
 
   const handleShare = async (e) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     const productUrl = window.location.origin + url;
     if (navigator.share) {
-      try { await navigator.share({ title: data.name, text: `Check out: ${data.name}`, url: productUrl }); }
-      catch { copyToClipboard(productUrl); }
-    } else { copyToClipboard(productUrl); }
+      try {
+        await navigator.share({
+          title: data.name,
+          text: `Check out: ${data.name}`,
+          url: productUrl,
+        });
+      } catch {
+        copyToClipboard(productUrl);
+      }
+    } else {
+      copyToClipboard(productUrl);
+    }
   };
 
   const copyToClipboard = (productUrl) => {
-    navigator.clipboard.writeText(productUrl)
+    navigator.clipboard
+      .writeText(productUrl)
       .then(() => toast.success("Product link copied!"))
       .catch(() => toast.error("Failed to copy link"));
   };
 
   const handleQuickCheckout = async (e) => {
-    e.preventDefault(); e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
     if (!isLoggedIn) {
       // Guest: add to cart first, then show auth modal via cart drawer
       const currentPriceOption = selectedPriceOption || "regular";
       const hasItemInCart = priceOptionQuantities[currentPriceOption] > 0;
       if (!hasItemInCart) await handleQuickAddToCart(e);
-      setShowAuthModal(true); return;
+      setShowAuthModal(true);
+      return;
     }
     const currentPriceOption = selectedPriceOption || "regular";
     const hasItemInCart = priceOptionQuantities[currentPriceOption] > 0;
@@ -235,8 +334,10 @@ const CardProduct = ({ data }) => {
   const pricingOptions = getPricingOptions();
   const badges = (() => {
     const b = [];
-    if (data.blend) b.push({ label: data.blend, class: "bg-amber-50 text-amber-800" });
-    if (data.coffeeOrigin) b.push({ label: data.coffeeOrigin, class: "bg-green-50 text-green-800" });
+    if (data.blend)
+      b.push({ label: data.blend, class: "bg-amber-50 text-amber-800" });
+    if (data.coffeeOrigin)
+      b.push({ label: data.coffeeOrigin, class: "bg-green-50 text-green-800" });
     return b.slice(0, 2);
   })();
 
@@ -250,7 +351,10 @@ const CardProduct = ({ data }) => {
 
   const formatProductType = (type) => {
     if (!type) return "";
-    return type.replace("_", " ").toLowerCase().replace(/\b\w/g, (l) => l.toUpperCase());
+    return type
+      .replace("_", " ")
+      .toLowerCase()
+      .replace(/\b\w/g, (l) => l.toUpperCase());
   };
 
   const currentQty = priceOptionQuantities[selectedPriceOption] || 0;
@@ -273,11 +377,23 @@ const CardProduct = ({ data }) => {
 
       {/* Floating Actions */}
       <div className="absolute top-2 right-2 z-10 group">
-        <WishlistButton product={data} className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all" iconOnly={true} />
+        <WishlistButton
+          product={data}
+          className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all"
+          iconOnly={true}
+        />
         <div className="opacity-0 group-hover:opacity-100 transform translate-y-0 group-hover:translate-y-2 transition-all duration-300 ease-in-out">
           <div className="mt-2 space-y-2">
-            <CompareButton product={data} className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all w-10 h-10 flex items-center justify-center" iconOnly={true} />
-            <button onClick={handleShare} className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all w-10 h-10 flex items-center justify-center" title="Share product">
+            <CompareButton
+              product={data}
+              className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all w-10 h-10 flex items-center justify-center"
+              iconOnly={true}
+            />
+            <button
+              onClick={handleShare}
+              className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all w-10 h-10 flex items-center justify-center"
+              title="Share product"
+            >
               <FaShare className="text-gray-500 hover:text-blue-600 transition-colors" />
             </button>
           </div>
@@ -287,18 +403,37 @@ const CardProduct = ({ data }) => {
       {/* Badge Row */}
       <div className="flex justify-between mb-2">
         {data.productType && (
-          <span className="rounded-full text-xs px-2 py-0.5 bg-gray-100 text-gray-600">{formatProductType(data.productType)}</span>
+          <span className="rounded-full text-xs px-2 py-0.5 bg-gray-100 text-gray-600">
+            {formatProductType(data.productType)}
+          </span>
         )}
         <div className="flex gap-1 mr-7">
-          {data.featured && <span className="text-white bg-yellow-500 px-2 py-0.5 text-xs font-medium rounded-full">Featured</span>}
-          {Boolean(data.discount) && <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full">{data.discount}% OFF</span>}
+          {data.featured && (
+            <span className="text-white bg-yellow-500 px-2 py-0.5 text-xs font-medium rounded-full">
+              Featured
+            </span>
+          )}
+          {Boolean(data.discount) && (
+            <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full">
+              {data.discount}% OFF
+            </span>
+          )}
         </div>
       </div>
 
       {/* Product Image */}
-      <Link to={url} className="relative block h-36 w-full mb-3 flex items-center justify-center bg-gray-50 rounded-md overflow-hidden group-hover:opacity-95 transition-opacity">
+      <Link
+        to={url}
+        className="relative block h-36 w-full mb-3 flex items-center justify-center bg-gray-50 rounded-md overflow-hidden group-hover:opacity-95 transition-opacity"
+      >
         {data.image && data.image.length > 0 ? (
-          <img loading="lazy" decoding="async" src={data.image[0]} alt={data.name} className="w-full h-full object-contain mix-blend-multiply p-2" />
+          <img
+            loading="lazy"
+            decoding="async"
+            src={data.image[0]}
+            alt={data.name}
+            className="w-full h-full object-contain mix-blend-multiply p-2"
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
             <span className="text-gray-400">No image</span>
@@ -306,25 +441,37 @@ const CardProduct = ({ data }) => {
         )}
         {onlineStock > 0 && (
           <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
-            {onlineStock <= 5 ? `Only ${onlineStock} left` : `Stock: ${onlineStock}`}
+            Stock: {onlineStock}
           </div>
         )}
       </Link>
 
       {/* Product Name */}
       <Link to={url} className="block">
-        <h3 className="font-medium text-gray-800 line-clamp-2 mb-1 hover:text-green-700 transition-colors">{data.name}</h3>
+        <h3 className="font-medium text-gray-800 line-clamp-2 mb-1 hover:text-green-700 transition-colors">
+          {data.name}
+        </h3>
       </Link>
 
-      {data.sku && <div className="text-xs text-gray-400 mb-1">SKU: {data.sku}</div>}
+      {data.sku && (
+        <div className="text-xs text-gray-400 mb-1">SKU: {data.sku}</div>
+      )}
       {data.producer && (
-        <div className="text-xs text-gray-500 mb-1">by <span className="font-medium">{data.producer.name || "Brand"}</span></div>
+        <div className="text-xs text-gray-500 mb-1">
+          by{" "}
+          <span className="font-medium">{data.producer.name || "Brand"}</span>
+        </div>
       )}
 
       {badges.length > 0 && (
         <div className="flex flex-wrap gap-1 my-1">
           {badges.map((badge, index) => (
-            <span key={index} className={`text-xs px-1.5 py-0.5 rounded-sm ${badge.class}`}>{badge.label}</span>
+            <span
+              key={index}
+              className={`text-xs px-1.5 py-0.5 rounded-sm ${badge.class}`}
+            >
+              {badge.label}
+            </span>
           ))}
         </div>
       )}
@@ -334,9 +481,13 @@ const CardProduct = ({ data }) => {
       {data.averageRating > 0 && (
         <div className="flex items-center mb-2">
           <FaStar className="text-amber-400 mr-1" />
-          <span className="text-sm font-medium">{data.averageRating.toFixed(1)}</span>
+          <span className="text-sm font-medium">
+            {data.averageRating.toFixed(1)}
+          </span>
           {data.ratings && data.ratings.length > 0 && (
-            <span className="text-xs text-gray-400 ml-1">({data.ratings.length})</span>
+            <span className="text-xs text-gray-400 ml-1">
+              ({data.ratings.length})
+            </span>
           )}
         </div>
       )}
@@ -345,13 +496,15 @@ const CardProduct = ({ data }) => {
       {data.productAvailability && pricingOptions.length > 0 ? (
         <div className="space-y-2 mb-3">
           {pricingOptions.map((option) => (
-            <div key={option.key}
+            <div
+              key={option.key}
               className={`flex items-center justify-between text-xs p-2 rounded cursor-pointer transition-colors ${
                 selectedPriceOption === option.key
                   ? `${option.bgColor} ring-2 ring-green-500`
                   : `${option.bgColor} hover:ring-1 hover:ring-gray-300`
               }`}
-              onClick={(e) => handlePriceOptionSelect(e, option.key)}>
+              onClick={(e) => handlePriceOptionSelect(e, option.key)}
+            >
               <div className={`flex items-center gap-1 ${option.color}`}>
                 {option.icon}
                 <span className="font-medium">{option.label}</span>
@@ -359,7 +512,9 @@ const CardProduct = ({ data }) => {
               <div className={`font-bold ${option.color}`}>
                 {formatPrice(pricewithDiscount(option.price, data.discount))}
                 {Boolean(data.discount) && (
-                  <div className="text-xs text-gray-400 line-through">{formatPrice(option.price)}</div>
+                  <div className="text-xs text-gray-400 line-through">
+                    {formatPrice(option.price)}
+                  </div>
                 )}
               </div>
             </div>
@@ -374,39 +529,58 @@ const CardProduct = ({ data }) => {
       {/* Action Buttons */}
       <div className="mt-auto pt-2 border-t space-y-2 text-sm">
         {!data.productAvailability || pricingOptions.length === 0 ? (
-          <button onClick={() => setShowRequestModal(true)}
-            className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-3 rounded-md transition flex items-center justify-center border border-yellow-300">
+          <button
+            onClick={() => setShowRequestModal(true)}
+            className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-3 rounded-md transition flex items-center justify-center border border-yellow-300"
+          >
             <FaSadTear className="mr-2 text-yellow-600" />
             <span className="text-sm">Request Product</span>
           </button>
         ) : (
           <>
             {!isInCart ? (
-              <button onClick={handleQuickAddToCart} disabled={quickCartLoading}
-                className="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center">
-                {quickCartLoading
-                  ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white" />
-                  : <><BsCart4 className="mr-2" /> Add to Cart</>}
+              <button
+                onClick={handleQuickAddToCart}
+                disabled={quickCartLoading}
+                className="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
+              >
+                {quickCartLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white" />
+                ) : (
+                  <>
+                    <BsCart4 className="mr-2" /> Add to Cart
+                  </>
+                )}
               </button>
             ) : (
               <div className="flex items-center bg-green-50 border border-green-200 rounded-md">
-                <button onClick={handleQuickDecreaseQty} disabled={quickCartLoading}
-                  className="bg-green-700 hover:bg-green-800 text-white p-2 rounded-l-md flex items-center justify-center transition">
+                <button
+                  onClick={handleQuickDecreaseQty}
+                  disabled={quickCartLoading}
+                  className="bg-green-700 hover:bg-green-800 text-white p-2 rounded-l-md flex items-center justify-center transition"
+                >
                   <FaMinus className="text-sm" />
                 </button>
                 <div className="flex-1 py-2 px-3 bg-white font-semibold text-center">
-                  {quickCartLoading
-                    ? <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700 mx-auto" />
-                    : currentQty}
+                  {quickCartLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700 mx-auto" />
+                  ) : (
+                    currentQty
+                  )}
                 </div>
-                <button onClick={handleQuickIncreaseQty} disabled={quickCartLoading}
-                  className="bg-green-700 hover:bg-green-800 text-white p-2 rounded-r-md flex items-center justify-center transition">
+                <button
+                  onClick={handleQuickIncreaseQty}
+                  disabled={quickCartLoading}
+                  className="bg-green-700 hover:bg-green-800 text-white p-2 rounded-r-md flex items-center justify-center transition"
+                >
                   <FaPlus className="text-sm" />
                 </button>
               </div>
             )}
-            <button onClick={handleQuickCheckout}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center text-sm">
+            <button
+              onClick={handleQuickCheckout}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center text-sm"
+            >
               <FaShoppingCart className="mr-2" /> Quick Checkout
             </button>
           </>
@@ -414,7 +588,11 @@ const CardProduct = ({ data }) => {
       </div>
 
       {showRequestModal && (
-        <ProductRequestModal product={data} onClose={() => setShowRequestModal(false)} isDiscontinued={!data.productAvailability} />
+        <ProductRequestModal
+          product={data}
+          onClose={() => setShowRequestModal(false)}
+          isDiscontinued={!data.productAvailability}
+        />
       )}
     </div>
   );
