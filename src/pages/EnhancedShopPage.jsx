@@ -55,8 +55,8 @@ const EnhancedShopPage = () => {
   }, [searchParams]);
 
   // Read compatible system (+ optional category + brand) from URL query params.
-  // Runs on every URL change. Dispatches to Redux AND directly triggers a fetch
-  // with the resolved values so we bypass the Redux→state timing race.
+  // Runs on every URL change AFTER initial mount. Dispatches to Redux AND directly
+  // triggers a fetch so the mega menu nav always applies fresh filters immediately.
   useEffect(() => {
     const csId = searchParams.get("compatibleSystem") || "";
     const csName = searchParams.get("compatibleSystemName") || "";
@@ -85,8 +85,12 @@ const EnhancedShopPage = () => {
       replace: true,
     }));
 
-    // If any compatible-system param is present, fetch immediately with
-    // the raw URL values — don't wait for Redux to propagate.
+    // Skip on initial mount — that's handled by the mount useEffect above
+    // to avoid a race condition where both effects fetch simultaneously and
+    // the mount effect (with no overrides) overwrites the filtered results.
+    if (firstLoadRef.current) return;
+
+    // After initial mount: fetch immediately with the URL values as overrides
     if (csId || catId || brandId) {
       fetchProducts(true, null, {
         compatibleSystem: csId || undefined,
@@ -96,16 +100,24 @@ const EnhancedShopPage = () => {
     }
   }, [searchParams]);
 
-  // Fetch products when component mounts
+  // Fetch products when component mounts — reads all URL params immediately
+  // so the very first load is correctly filtered (fixes first-click menu bug)
   useEffect(() => {
     const initialLoad = async () => {
       if (firstLoadRef.current) {
-        // Read search term directly from URL — don't wait for Redux to sync
+        firstLoadRef.current = false; // mark done BEFORE fetching so no second fetch overwrites
+
         const urlSearch = searchParams.get("q") || "";
-        setTimeout(() => {
-          fetchProducts(true, urlSearch);
-          firstLoadRef.current = false;
-        }, 100);
+        const csId = searchParams.get("compatibleSystem") || "";
+        const catId = searchParams.get("category") || "";
+        const brandId = searchParams.get("brand") || "";
+
+        const overrides = {};
+        if (csId) overrides.compatibleSystem = csId;
+        if (catId) overrides.category = catId;
+        if (brandId) overrides.brand = [brandId];
+
+        fetchProducts(true, urlSearch, Object.keys(overrides).length > 0 ? overrides : null);
       }
     };
     initialLoad();
