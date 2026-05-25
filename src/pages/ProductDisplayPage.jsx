@@ -234,7 +234,7 @@ const ProductDisplayPage = () => {
             description:
               onlineStock > 0
                 ? `Standard delivery (1-3 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`
-                : "Available via partner supplier",
+                : "Available",
             delivery: onlineStock > 0 ? "Fast Delivery" : "Partner Stock",
           },
         ]
