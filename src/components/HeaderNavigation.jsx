@@ -9,8 +9,8 @@ const BROWN_LIGHT = "#fdf4ee";
 
 // ─── Categories that get the compatible-system dropdown instead of the standard one
 // Matched against category name (case-insensitive, partial match)
-const COMPAT_CATEGORY_SLUGS = ["coffee-capsule", "e-s-e-pods", "coffee-maker", "capsule-machine"];
-const COMPAT_CATEGORY_NAMES = ["coffee capsule", "ese pods", "e.s.e pods", "coffee maker", "capsule machine"];
+const COMPAT_CATEGORY_SLUGS = ["coffee-capsule", "e-s-e-pods", "capsule-machine"];
+const COMPAT_CATEGORY_NAMES = ["coffee capsule", "ese pods", "e.s.e pods", "capsule machine"];
 
 function isCapsuleOrCompatCategory(cat) {
   const nameLow = (cat?.name || "").toLowerCase();
@@ -214,12 +214,10 @@ function MegaMenu({ category, rect, onClose, onSubcategoryClick, onBrandClick })
       }}
       onMouseLeave={onClose}
     >
-      {/* Category label */}
       <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", color: "#9ca3af", textTransform: "uppercase", marginBottom: 22 }}>
         {category.name}
       </p>
 
-      {/* Subcategories — icon + bold name as header, brand names listed below */}
       {category.subcategories?.length > 0 ? (
         <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start" }}>
           {category.subcategories.map((sub) => (
@@ -228,7 +226,7 @@ function MegaMenu({ category, rect, onClose, onSubcategoryClick, onBrandClick })
               {/* Subcategory header: icon + bold name */}
               <button
                 onClick={(e) => { onSubcategoryClick(sub, category.slug, e); onClose(); }}
-                style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, cursor: "pointer", textAlign: "left", width: "100%", transition: "opacity 0.12s" }}
+                style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, cursor: "pointer", textAlign: "left", width: "100%", transition: "opacity 0.12s" }}
                 onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.7"; }}
                 onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
               >
@@ -245,17 +243,27 @@ function MegaMenu({ category, rect, onClose, onSubcategoryClick, onBrandClick })
                 </span>
               </button>
 
-              {/* Brand list — vertical plain text */}
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, paddingLeft: 4, display: "flex", flexDirection: "column", gap: 5 }}>
+              {/* Brand list — logo + name with hover highlight */}
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 2 }}>
                 {sub.brands?.slice(0, 8).map((brand) => (
                   <li
                     key={brand._id}
                     onClick={(e) => { onBrandClick(brand, category.slug, sub.slug, e); onClose(); }}
-                    style={{ fontSize: 13, color: "#6b7280", cursor: "pointer", lineHeight: 1.4, transition: "color 0.12s" }}
-                    onMouseEnter={(e) => { e.currentTarget.style.color = BROWN; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.color = "#6b7280"; }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "4px 6px", borderRadius: 6, cursor: "pointer", transition: "background 0.12s" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.background = BROWN_LIGHT; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
                   >
-                    {brand.name}
+                    {brand.image ? (
+                      <img src={brand.image} alt={brand.name} loading="lazy"
+                        style={{ width: 36, height: 18, objectFit: "contain", flexShrink: 0, borderRadius: 2 }}
+                        onError={(e) => { e.target.style.display = "none"; }}
+                      />
+                    ) : (
+                      <div style={{ width: 36, height: 18, flexShrink: 0 }} />
+                    )}
+                    <span style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.4, fontWeight: 500 }}>
+                      {brand.name}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -264,15 +272,14 @@ function MegaMenu({ category, rect, onClose, onSubcategoryClick, onBrandClick })
         </div>
 
       ) : category.brands?.length > 0 ? (
-        /* No subcategories — show brands as pill cards with logo */
         <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px" }}>
           {category.brands.map((brand) => (
             <button
               key={brand._id}
               onClick={(e) => { onBrandClick(brand, category.slug, null, e); onClose(); }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, minWidth: 90, padding: "8px 12px", borderRadius: 8, cursor: "pointer", border: "1px solid #f0ebe6", transition: "all 0.12s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = BROWN; e.currentTarget.style.background = BROWN_LIGHT; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#f0ebe6"; e.currentTarget.style.background = "white"; }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, minWidth: 90, padding: "8px 12px", borderRadius: 8, cursor: "pointer", border: "1px solid #f0ebe6", transition: "all 0.15s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = BROWN; e.currentTarget.style.background = BROWN_LIGHT; e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 3px 10px rgba(123,63,28,0.12)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "#f0ebe6"; e.currentTarget.style.background = "white"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
             >
               <img src={brand.image || ""} alt={brand.name} loading="lazy"
                 style={{ width: 64, height: 32, objectFit: "contain" }}
