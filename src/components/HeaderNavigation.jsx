@@ -9,8 +9,8 @@ const BROWN_LIGHT = "#fdf4ee";
 
 // ─── Categories that get the compatible-system dropdown instead of the standard one
 // Matched against category name (case-insensitive, partial match)
-const COMPAT_CATEGORY_SLUGS = ["coffee-capsule", "e-s-e-pods", "coffee-maker"];
-const COMPAT_CATEGORY_NAMES = ["coffee capsule", "ese pods", "e.s.e pods", "coffee maker"];
+const COMPAT_CATEGORY_SLUGS = ["coffee-capsule", "e-s-e-pods", "coffee-maker", "capsule-machine"];
+const COMPAT_CATEGORY_NAMES = ["coffee capsule", "ese pods", "e.s.e pods", "coffee maker", "capsule machine"];
 
 function isCapsuleOrCompatCategory(cat) {
   const nameLow = (cat?.name || "").toLowerCase();
