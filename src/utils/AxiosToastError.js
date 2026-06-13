@@ -15,6 +15,13 @@ const TECHNICAL_ERROR_PATTERNS = [
   /timeout.*after/i,
   /aggregate.*timed/i,
   /find.*timed/i,
+  /connection pool/i,
+  /ssl3?_read_bytes/i,
+  /tlsv1 alert/i,
+  /ssl\/record\/rec_layer/i,
+  /SSL routines/i,
+  /shard-\d+-\d+\..*mongodb\.net/i,
+  /error:0A0\d+:/i, // OpenSSL error codes (e.g. 0A000438)
 ];
 
 const isTechnicalError = (message) =>
