@@ -129,7 +129,7 @@ const ProductDisplayPage = () => {
 
   // ── Category-based delivery pricing mode ─────────────────────────────────
   // Capsule Machine & Coffee Maker → show 5-week delivery price
-  // All other categories           → show 3-week delivery price
+  // All other categories           → show 2-week delivery price
   // To change which categories use 5-week pricing, edit:
   //   src/config/deliveryCategories.js
   const showFiveWeekDelivery = isFiveWeekDeliveryCategory(data.category);
@@ -258,18 +258,18 @@ const ProductDisplayPage = () => {
             },
           ]
         : []
-      : // All other categories: 3-week only
+      : // All other categories: 2-week only
         data.price3weeksDelivery > 0
         ? [
             {
               key: "3weeks",
-              label: "3 Weeks Delivery",
+              label: "2 Weeks Delivery",
               price: data.price3weeksDelivery,
               icon: <FaClock className="text-orange-600" />,
               color: "text-orange-600",
               bgColor: "bg-orange-50",
               borderColor: "border-orange-200",
-              description: "Special order — Delivery in approximately 3 weeks",
+              description: "Special order — Delivery in approximately 2 weeks",
               delivery: "3 Week Special Order",
             },
           ]
@@ -544,6 +544,14 @@ const ProductDisplayPage = () => {
               {data.sku && (
                 <p className="text-sm text-gray-500 mt-1">SKU: {data.sku}</p>
               )}
+              {data.limitedEdition?.isLimitedEdition && (
+                <span
+                  className="inline-flex items-center gap-1 text-white text-xs px-2 py-1 rounded-full mt-2 mr-2 font-medium"
+                  style={{ backgroundColor: data.limitedEdition?.bannerColor || '#c8102e' }}
+                >
+                  ✨ {data.limitedEdition?.bannerText || 'Limited Edition'}
+                </span>
+              )}
               {data.featured && (
                 <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full mt-2">
                   Featured Product
@@ -570,17 +578,17 @@ const ProductDisplayPage = () => {
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                 <FaSadTear className="text-yellow-600 text-3xl mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Not Available
+                  Temporarily Unavailable
                 </h3>
                 <p className="text-yellow-700 mb-4">
-                  This product is currently not available for purchase. You can
-                  request to be notified when it becomes available.
+                  This product is temporarily unavailable for purchase. Submit a request
+                  below and our team will follow up with you directly.
                 </p>
                 <button
                   onClick={() => setShowRequestModal(true)}
                   className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition"
                 >
-                  Request Notification
+                  Submit a Request
                 </button>
               </div>
             ) : priceOptions.length > 0 ? (
@@ -612,7 +620,7 @@ const ProductDisplayPage = () => {
                       ) : (
                         <>
                           <FaClock className="w-3 h-3" />
-                          Up to 3 weeks
+                          Up to 2 weeks
                         </>
                       )}
                     </span>

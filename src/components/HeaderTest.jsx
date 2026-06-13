@@ -66,8 +66,8 @@ export default function Header() {
       {/* ── Top bar — NOT sticky, scrolls away ── */}
       <div className="bg-secondary-200 text-white px-4 py-2">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="text-sm hidden md:block">Free shipping on orders over ₦100,000!</div>
-          <div className="text-xs md:hidden">Free shipping over ₦100k!</div>
+          <div className="text-sm hidden md:block">Free shipping on orders over ₦100,000 within Lagos!</div>
+          <div className="text-xs md:hidden">Free shipping over ₦100k in Lagos!</div>
           <div className="flex items-center space-x-2 md:space-x-4">
             <Link to="/partner-with-us"
               className="text-xs md:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-2 md:px-3 py-1 rounded font-medium whitespace-nowrap">

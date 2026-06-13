@@ -5,7 +5,18 @@ export const DisplayPriceInCurrency = (price, currency = 'NGN') => {
     USD: { locale: 'en-US', currency: 'USD' },
     EUR: { locale: 'en-DE', currency: 'EUR' },
     GBP: { locale: 'en-GB', currency: 'GBP' },
+    XOF: { locale: 'fr-FR', currency: 'XOF' },
   };
+
+  // XOF (CFA Franc) — Intl formats it as "XOF" which looks odd; we override
+  if (currency === 'XOF') {
+    const formatted = new Intl.NumberFormat('fr-FR', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+    return `CFA ${formatted}`;
+  }
 
   const config = currencyConfig[currency] || currencyConfig['NGN'];
 
@@ -28,12 +39,23 @@ export const getCurrencySymbol = (currency) => {
     USD: '$',
     EUR: '€',
     GBP: '£',
+    XOF: 'CFA',
   };
   return symbols[currency] || '₦';
 };
 
 // Helper function to format price with custom options
 export const formatPrice = (price, currency = 'NGN', options = {}) => {
+  // Special handling for CFA Franc
+  if (currency === 'XOF') {
+    const formatted = new Intl.NumberFormat('fr-FR', {
+      style: 'decimal',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
+    return `CFA ${formatted}`;
+  }
+
   const defaultOptions = {
     style: 'currency',
     currency: currency,

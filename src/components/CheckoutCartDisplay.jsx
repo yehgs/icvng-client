@@ -32,7 +32,7 @@ const CheckoutCartDisplay = () => {
   const getPriceOptionLabel = (priceOption) => {
     const labels = {
       regular: 'Regular Delivery',
-      '3weeks': '3 Weeks Delivery',
+      '3weeks': '2 Weeks Delivery',
       '5weeks': '5 Weeks Delivery',
     };
     return labels[priceOption] || 'Regular Delivery';

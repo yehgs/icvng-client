@@ -408,6 +408,14 @@ const CardProduct = ({ data }) => {
           </span>
         )}
         <div className="flex gap-1 mr-7">
+          {data.limitedEdition?.isLimitedEdition && (
+            <span
+              className="text-white px-2 py-0.5 text-xs font-medium rounded-full"
+              style={{ backgroundColor: data.limitedEdition?.bannerColor || '#c8102e' }}
+            >
+              {data.limitedEdition?.bannerText || 'Limited Edition'}
+            </span>
+          )}
           {data.featured && (
             <span className="text-white bg-yellow-500 px-2 py-0.5 text-xs font-medium rounded-full">
               Featured

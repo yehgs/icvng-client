@@ -194,6 +194,10 @@ const SummaryApi = {
     url: "/api/product/get-featured-products",
     method: "post",
   },
+  getLimitedEditionProducts: {
+    url: "/api/product/get-limited-edition-products",
+    method: "post",
+  },
   // Cart endpoints
   addTocart: {
     url: "/api/cart/create",
@@ -610,6 +614,10 @@ const SummaryApi = {
   sendContactForm: {
     url: "/api/send-email",
     method: "post",
+  },
+  getFomoData: {
+    url: "/api/fomo/recent-purchases",
+    method: "get",
   },
 };
 

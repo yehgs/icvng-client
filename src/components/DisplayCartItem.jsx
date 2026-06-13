@@ -143,7 +143,7 @@ const DisplayCartItem = ({ close }) => {
   };
 
   const getPriceOptionLabel = (opt) =>
-    ({ regular: 'Regular Delivery', '3weeks': '3 Weeks Delivery', '5weeks': '5 Weeks Delivery' }[opt] || 'Regular Delivery');
+    ({ regular: 'Regular Delivery', '3weeks': '2 Weeks Delivery', '5weeks': '5 Weeks Delivery' }[opt] || 'Regular Delivery');
 
   const getPriceOptionColor = (opt) =>
     ({ regular: 'bg-green-100 text-green-700 border-green-200', '3weeks': 'bg-orange-100 text-orange-700 border-orange-200', '5weeks': 'bg-red-100 text-red-700 border-red-200' }[opt] || 'bg-gray-100 text-gray-700 border-gray-200');

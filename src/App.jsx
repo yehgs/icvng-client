@@ -26,6 +26,7 @@ import { handleAddItemCart } from "./store/cartProduct";
 import GlobalProvider from "./provider/GlobalProvider";
 import { FaCartShopping } from "react-icons/fa6";
 import CartMobileLink from "./components/CartMobile";
+import FomoWidget from "./components/FomoWidget";
 
 // ─── Cache helpers (module-level so they're always defined) ──────────────────
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -276,6 +277,7 @@ function App() {
         containerStyle={{ zIndex: 99999 }}
       />
       {location.pathname !== "/checkout" && <CartMobileLink />}
+      <FomoWidget />
     </GlobalProvider>
   );
 }

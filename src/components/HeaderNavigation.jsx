@@ -465,16 +465,6 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
         <div className="bg-gray-100 border-b border-gray-200">
           <div className="container mx-auto px-4">
             <div className="flex items-center w-full">
-              {/* Hamburger */}
-              <button
-                className="flex-shrink-0 flex items-center gap-2 mr-3 py-3 text-sm font-medium text-gray-700 hover:text-secondary-200 transition-colors whitespace-nowrap"
-                onClick={() => setVerticalMenuActive(true)}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-              </button>
-
               {/* Scrollable category nav strip */}
               <div className="flex-1" style={{ overflowX: "auto", overflowY: "visible", scrollbarWidth: "none" }}>
                 <div className="flex items-center" style={{ minWidth: "max-content" }}>
@@ -535,77 +525,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
       {/* ── Slide-in vertical menu ── */}
       {verticalMenuActive && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex" style={{ zIndex: 9999 }}>
-          {!isMobile ? (
-            // ── Desktop 3-panel slide-in ──
-            <div ref={menuRef} className="flex h-full shadow-2xl">
-              <div className="w-64 bg-white h-full overflow-y-auto">
-                <div className="p-4 font-bold border-b flex justify-between items-center">
-                  <span>All Categories</span>
-                  <X size={20} className="cursor-pointer text-gray-500 hover:text-gray-900" onClick={() => setVerticalMenuActive(false)} />
-                </div>
-                {categoryStructure.map((cat) => (
-                  <div key={cat._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
-                    onMouseEnter={() => { setVerticalCategory(cat); setVerticalSubcategory(null); }}
-                    onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center" onClick={(e) => handleCategoryClick(cat, e)}>
-                      <img src={cat.image || ""} alt={cat.name} loading="lazy" className="w-8 h-8 mr-2 rounded object-cover" onError={(e) => { e.target.style.display="none"; }} />
-                      <span className="text-sm">{cat.name}</span>
-                    </div>
-                    {(cat.subcategories?.length > 0 || isCompatCat(cat)) && <ChevronRight size={18} className="text-gray-400" />}
-                  </div>
-                ))}
-              </div>
-              {verticalCategory && (
-                <div className="w-80 bg-gray-50 h-full overflow-y-auto border-l">
-                  <div className="p-4 font-bold border-b text-sm">{verticalCategory.name}</div>
-                  {isCompatCat(verticalCategory) ? (
-                    // Compat category: show compatible brands
-                    <MobileCompatCategoryRows
-                      category={verticalCategory}
-                      compatStructure={compatibleSystemStructure}
-                      onNavigate={(path) => navigate(path)}
-                      onClose={() => setVerticalMenuActive(false)}
-                    />
-                  ) : verticalCategory.subcategories?.length > 0 ? (
-                    verticalCategory.subcategories.map((sub) => (
-                      <div key={sub._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer flex justify-between items-center"
-                        onMouseEnter={() => setVerticalSubcategory(sub)} onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center" onClick={(e) => handleSubcategoryClick(sub, verticalCategory.slug, e)}>
-                          <img src={sub.image || ""} alt={sub.name} loading="lazy" className="w-8 h-8 mr-2 rounded object-cover" onError={(e) => { e.target.style.display="none"; }} />
-                          <span className="text-sm">{sub.name}</span>
-                        </div>
-                        {sub.brands?.length > 0 && <ChevronRight size={18} className="text-gray-400" />}
-                      </div>
-                    ))
-                  ) : verticalCategory.brands?.length > 0 ? (
-                    verticalCategory.brands.map((brand) => (
-                      <div key={brand._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer" onClick={(e) => handleBrandClick(brand, verticalCategory.slug, null, e)}>
-                        <div className="flex items-center">
-                          <img src={brand.image || ""} alt={brand.name} loading="lazy" className="w-12 h-6 mr-2 object-contain" onError={(e) => { e.target.style.display="none"; }} />
-                          <span className="text-sm">{brand.name}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : <div className="p-4 text-gray-500 text-sm">No items</div>}
-                </div>
-              )}
-              {verticalSubcategory && !isCompatCat(verticalCategory) && (
-                <div className="w-64 bg-white h-full overflow-y-auto border-l">
-                  <div className="p-4 font-bold border-b text-sm">{verticalSubcategory.name} — Brands</div>
-                  {verticalSubcategory.brands?.length > 0 ? (
-                    verticalSubcategory.brands.map((brand) => (
-                      <div key={brand._id} className="p-4 hover:bg-gray-100 border-b cursor-pointer" onClick={(e) => handleBrandClick(brand, verticalCategory.slug, verticalSubcategory.slug, e)}>
-                        <div className="flex items-center">
-                          <img src={brand.image || ""} alt={brand.name} loading="lazy" className="w-8 h-8 mr-2 rounded object-cover" onError={(e) => { e.target.style.display="none"; }} />
-                          <span className="text-sm">{brand.name}</span>
-                        </div>
-                      </div>
-                    ))
-                  ) : <div className="p-4 text-gray-500 text-sm">No brands available</div>}
-                </div>
-              )}
-            </div>
-          ) : (
+          {(
             /* ── Mobile slide-in panel ── */
             <div ref={menuRef} className="w-4/5 max-w-sm bg-white h-full overflow-y-auto ml-auto shadow-2xl flex flex-col">
               <div className="p-4 font-bold flex justify-between items-center bg-secondary-200 text-white flex-shrink-0">

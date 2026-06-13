@@ -172,7 +172,7 @@ const ComparePage = () => {
         type: "price",
         priceKey: "btcPrice",
       },
-      { key: "price3weeksDelivery", label: "3 Weeks Price", type: "price" },
+      { key: "price3weeksDelivery", label: "2 Weeks Price", type: "price" },
       { key: "price5weeksDelivery", label: "5 Weeks Price", type: "price" },
       { key: "discount", label: "Discount", type: "percentage" },
       { key: "weight", label: "Weight", type: "text" },

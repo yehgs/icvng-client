@@ -7,6 +7,7 @@ import CustomerMarquee from "../components/CustomerMarquee";
 import BrandMarquee from "../components/BrandMarquee";
 import NewArrivalsSection from "../components/NewArrivalsSection";
 import FeaturedProductsSection from "../components/FeaturedProductsSection";
+import LimitedEditionSection from "../components/LimitedEditionSection";
 import CategoryFilterSection from "../components/CategoryFilterSection";
 import BlogSection from "../components/BlogSection";
 import PopularProductsSection from "../components/PopularProductsSection";
@@ -142,6 +143,9 @@ const Home = () => {
 
       {/* New Arrivals Section */}
       <NewArrivalsSection />
+
+      {/* Limited Edition Section */}
+      <LimitedEditionSection />
 
       {/* Category Filter Section */}
       <CategoryFilterSection />

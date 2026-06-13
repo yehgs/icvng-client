@@ -70,7 +70,7 @@ const GlobalProvider = ({ children }) => {
   // Currency
   const [selectedCurrency, setSelectedCurrency] = useState('NGN');
   const [exchangeRates, setExchangeRates] = useState({
-    NGN: 1, USD: 1 / 1550, EUR: 1 / 1650, GBP: 1 / 1950,
+    NGN: 1, USD: 1 / 1550, EUR: 1 / 1650, GBP: 1 / 1950, XOF: 1 / 2.5,
   });
   const [currencyLoading, setCurrencyLoading] = useState(false);
 
@@ -79,6 +79,7 @@ const GlobalProvider = ({ children }) => {
     { code: 'USD', name: 'US Dollar', symbol: '$', isBase: false },
     { code: 'EUR', name: 'Euro', symbol: '€', isBase: false },
     { code: 'GBP', name: 'British Pound', symbol: '£', isBase: false },
+    { code: 'XOF', name: 'CFA Franc', symbol: 'CFA', isBase: false },
   ];
 
   // ─── Login status ───────────────────────────────────────────────────────────
