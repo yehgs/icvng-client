@@ -38,6 +38,7 @@ const HomeSlider = () => {
     return () => clearInterval(interval);
   }, [sliders, currentSlide]);
 
+  // Navigation functions
   const nextSlide = () =>
     setCurrentSlide((prev) => (prev === sliders.length - 1 ? 0 : prev + 1));
   const prevSlide = () =>
