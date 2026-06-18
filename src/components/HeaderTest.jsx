@@ -4,7 +4,13 @@ import logo from "../assets/web-logo.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import {
-  User, ShoppingCart, Heart, Facebook, Twitter, Instagram, Menu,
+  User,
+  ShoppingCart,
+  Heart,
+  Facebook,
+  Twitter,
+  Instagram,
+  Menu,
 } from "lucide-react";
 import { VscGitCompare } from "react-icons/vsc";
 import SearchInput from "./Search";
@@ -43,7 +49,9 @@ export default function Header() {
     }
   };
 
-  useEffect(() => { updateLocalCounts(); }, [isLoggedIn, wishlistCount, compareCount, totalQty, guestCart]);
+  useEffect(() => {
+    updateLocalCounts();
+  }, [isLoggedIn, wishlistCount, compareCount, totalQty, guestCart]);
 
   useEffect(() => {
     const h = () => updateLocalCounts();
@@ -66,21 +74,39 @@ export default function Header() {
       {/* ── Top bar — NOT sticky, scrolls away ── */}
       <div className="bg-secondary-200 text-white px-4 py-2">
         <div className="container mx-auto flex justify-between items-center">
-          <div className="text-sm hidden md:block">Free shipping on orders over ₦100,000 within Lagos!</div>
-          <div className="text-xs md:hidden">Free shipping over ₦100k in Lagos!</div>
+          <div className="text-sm hidden md:block">
+            Free shipping on orders over ₦100,000 within Lagos!
+          </div>
+          <div className="text-xs md:hidden">
+            Free shipping over ₦100k in Lagos!
+          </div>
           <div className="flex items-center space-x-2 md:space-x-4">
-            <Link to="/partner-with-us"
-              className="text-xs md:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-2 md:px-3 py-1 rounded font-medium whitespace-nowrap">
+            <Link
+              to="/partner-with-us"
+              className="text-xs md:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-2 md:px-3 py-1 rounded font-medium whitespace-nowrap"
+            >
               Partner with us
             </Link>
             <div className="hidden md:flex space-x-4">
-              <a href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Facebook size={18} className="hover:opacity-80" />
               </a>
-              <a href="https://twitter.com/italiancoffee_v" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://twitter.com/italiancoffee_v"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Twitter size={18} className="hover:opacity-80" />
               </a>
-              <a href="https://www.instagram.com/italiancofeeventure/" target="_blank" rel="noopener noreferrer">
+              <a
+                href="https://www.instagram.com/italiancofeeventure/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <Instagram size={18} className="hover:opacity-80" />
               </a>
             </div>
@@ -89,8 +115,10 @@ export default function Header() {
       </div>
 
       {/* ── STICKY: Middle bar + Category nav ── */}
-      <div className="bg-white shadow-md" style={{ position: "sticky", top: 0, zIndex: 1000 }}>
-
+      <div
+        className="bg-white shadow-md"
+        style={{ position: "sticky", top: 0, zIndex: 1000 }}
+      >
         {/* ── MOBILE header row ── */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 relative">
           {/* Left: Currency */}
@@ -108,7 +136,7 @@ export default function Header() {
             {/* User */}
             {user?._id ? (
               <div className="relative">
-                <button onClick={() => setOpenUserMenu(p => !p)}>
+                <button onClick={() => setOpenUserMenu((p) => !p)}>
                   <User size={22} className="text-gray-700" />
                 </button>
                 {openUserMenu && (
@@ -124,7 +152,10 @@ export default function Header() {
             )}
 
             {/* Cart */}
-            <button className="relative" onClick={() => setOpenCartSection(true)}>
+            <button
+              className="relative"
+              onClick={() => setOpenCartSection(true)}
+            >
               <ShoppingCart size={22} className="text-gray-700" />
               {localCartCount > 0 && (
                 <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full text-xs w-4 h-4 flex items-center justify-center">
@@ -134,7 +165,12 @@ export default function Header() {
             </button>
 
             {/* Hamburger — opens mobile menu in HeaderNavigation */}
-            <button onClick={() => window.dispatchEvent(new CustomEvent("open-mobile-menu"))} aria-label="Menu">
+            <button
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("open-mobile-menu"))
+              }
+              aria-label="Menu"
+            >
               <Menu size={26} className="text-gray-700" />
             </button>
           </div>
@@ -160,8 +196,10 @@ export default function Header() {
 
             {/* Desktop icons */}
             <div className="flex items-center space-x-4">
-              <Link to="/blogs"
-                className="bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 text-sm font-semibold whitespace-nowrap">
+              <Link
+                to="/blogs"
+                className="bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 text-sm font-semibold whitespace-nowrap"
+              >
                 Coffee Blog
               </Link>
               <CurrencySelector />
@@ -169,7 +207,7 @@ export default function Header() {
               {/* User */}
               {user?._id ? (
                 <div className="relative">
-                  <button onClick={() => setOpenUserMenu(p => !p)}>
+                  <button onClick={() => setOpenUserMenu((p) => !p)}>
                     <User size={24} className="text-gray-700" />
                   </button>
                   {openUserMenu && (
@@ -185,7 +223,10 @@ export default function Header() {
               )}
 
               {/* Wishlist */}
-              <button className="relative" onClick={() => navigate("/wishlist")}>
+              <button
+                className="relative"
+                onClick={() => navigate("/wishlist")}
+              >
                 <Heart size={24} className="text-gray-700" />
                 {localWishlistCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
@@ -205,7 +246,10 @@ export default function Header() {
               </button>
 
               {/* Cart */}
-              <button className="relative" onClick={() => setOpenCartSection(true)}>
+              <button
+                className="relative"
+                onClick={() => setOpenCartSection(true)}
+              >
                 <ShoppingCart size={24} className="text-gray-700" />
                 {localCartCount > 0 && (
                   <span className="absolute -top-2 -right-2 bg-green-500 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center animate-pulse">
@@ -214,8 +258,10 @@ export default function Header() {
                 )}
               </button>
 
-              <button onClick={() => navigate("/shop")}
-                className="bg-secondary-200 hover:bg-secondary-100 text-white rounded px-3 py-2 text-sm font-semibold">
+              <button
+                onClick={() => navigate("/shop")}
+                className="bg-secondary-200 hover:bg-secondary-100 text-white rounded px-3 py-2 text-sm font-semibold"
+              >
                 Shop Now
               </button>
             </div>
