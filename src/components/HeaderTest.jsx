@@ -74,6 +74,7 @@ export default function Header() {
       {/* ── Top bar — NOT sticky, scrolls away ── */}
       <div className="bg-secondary-200 text-white px-4 py-2">
         <div className="container mx-auto flex justify-between items-center">
+          {/* Left: Promo message (responsive text) */}
           <div className="text-sm hidden md:block">
             Free shipping on orders over ₦100,000 within Lagos!
           </div>
