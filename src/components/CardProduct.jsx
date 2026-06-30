@@ -26,8 +26,11 @@ import CompareButton from "./CompareButton";
 import ProductRequestModal from "./ProductRequestModal";
 import AuthModal from "./AuthModel";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
+import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
 
 const CardProduct = ({ data }) => {
+  // Merge server-side translations (FR/IT) over the English source data
+  const translatedData = useEntityTranslation("product", data._id, data);
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -296,7 +299,7 @@ const CardProduct = ({ data }) => {
       try {
         await navigator.share({
           title: data.name,
-          text: `Check out: ${data.name}`,
+          text: `Check out: ${translatedData.name}`,
           url: productUrl,
         });
       } catch {
@@ -411,9 +414,11 @@ const CardProduct = ({ data }) => {
           {data.limitedEdition?.isLimitedEdition && (
             <span
               className="text-white px-2 py-0.5 text-xs font-medium rounded-full"
-              style={{ backgroundColor: data.limitedEdition?.bannerColor || '#c8102e' }}
+              style={{
+                backgroundColor: data.limitedEdition?.bannerColor || "#c8102e",
+              }}
             >
-              {data.limitedEdition?.bannerText || 'Limited Edition'}
+              {data.limitedEdition?.bannerText || "Limited Edition"}
             </span>
           )}
           {data.featured && (
@@ -439,7 +444,7 @@ const CardProduct = ({ data }) => {
             loading="lazy"
             decoding="async"
             src={data.image[0]}
-            alt={data.name}
+            alt={translatedData.name}
             className="w-full h-full object-contain mix-blend-multiply p-2"
           />
         ) : (
@@ -457,7 +462,7 @@ const CardProduct = ({ data }) => {
       {/* Product Name */}
       <Link to={url} className="block">
         <h3 className="font-medium text-gray-800 line-clamp-2 mb-1 hover:text-green-700 transition-colors">
-          {data.name}
+          {translatedData.name}
         </h3>
       </Link>
 

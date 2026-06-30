@@ -20,6 +20,9 @@ import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
 import DisplayCartItem from "./DisplayCartItem";
 import HeaderNavigation from "../components/HeaderNavigation";
 import CurrencySelector from "../components/CurrencySelector";
+// Phase 2
+import LanguageSwitcher from "./country/LanguageSwitcher";
+import CountrySwitcher from "./country/CountrySwitcher";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -122,8 +125,11 @@ export default function Header() {
       >
         {/* ── MOBILE header row ── */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 relative">
-          {/* Left: Currency */}
-          <CurrencySelector />
+          {/* Left: Currency + Language */}
+          <div className="flex items-center gap-1.5">
+            <CurrencySelector />
+            <LanguageSwitcher compact />
+          </div>
 
           {/* Center: Logo — absolutely centered */}
           <div className="absolute left-1/2 -translate-x-1/2">
@@ -204,6 +210,8 @@ export default function Header() {
                 Coffee Blog
               </Link>
               <CurrencySelector />
+              <LanguageSwitcher compact />
+              <CountrySwitcher compact />
 
               {/* User */}
               {user?._id ? (

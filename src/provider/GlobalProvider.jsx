@@ -3,6 +3,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import { useDispatch, useSelector } from 'react-redux';
+// Phase 2: country-aware currency
+import { useCountry } from '../context/CountryContext.jsx';
 import { handleAddItemCart } from '../store/cartProduct';
 import AxiosToastError from '../utils/AxiosToastError';
 import toast from 'react-hot-toast';
@@ -236,13 +238,17 @@ const GlobalProvider = ({ children }) => {
   };
 
   // ─── CURRENCY ─────────────────────────────────────────────────────────────────
+  // Phase 2: pull country config so currency defaults to the active country
+  // useCountry() is safe here because GlobalProvider is always wrapped inside CountryProvider
+  const { country: activeCountry, formatPrice: countryFormatPrice, hasPaystack } = useCountry();
+
   const fetchExchangeRates = async () => {
     try {
       setCurrencyLoading(true);
       const r = await Axios({ ...SummaryApi.getExchangeRates, params: { limit: 100 } });
       if (r.data.success && r.data.data.length > 0) {
         const rateMap = { NGN: 1 };
-        const FIAT = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF'];
+        const FIAT = ['USD', 'EUR', 'GBP', 'JPY', 'CAD', 'AUD', 'CHF', 'XOF'];
         const process = (rate) => {
           const { baseCurrency: base, targetCurrency: target, rate: value } = rate;
           if (base === 'NGN' && FIAT.includes(target)) rateMap[target] = value;
@@ -255,17 +261,26 @@ const GlobalProvider = ({ children }) => {
     } catch {} finally { setCurrencyLoading(false); }
   };
 
-  const convertPrice = (priceInNGN, targetCurrency = selectedCurrency) => {
-    if (targetCurrency === 'NGN') return priceInNGN;
+  // Default selected currency to the active country's native currency
+  const defaultCurrency = activeCountry?.currency?.code || 'NGN';
+
+  const convertPrice = (priceInBase, targetCurrency = selectedCurrency) => {
+    const base = defaultCurrency;
+    if (targetCurrency === base) return priceInBase;
     const rate = exchangeRates[targetCurrency];
-    return rate ? priceInNGN * rate : priceInNGN;
+    return rate ? priceInBase * rate : priceInBase;
   };
 
-  const formatPrice = (price, currency = selectedCurrency) =>
-    new Intl.NumberFormat('en-US', {
+  const formatPrice = (price, currency = selectedCurrency) => {
+    // Use country-native formatting when displaying in the country's default currency
+    if (currency === defaultCurrency) {
+      return countryFormatPrice(price);
+    }
+    return new Intl.NumberFormat('en-US', {
       style: 'currency', currency,
-      minimumFractionDigits: currency === 'NGN' ? 0 : 2,
+      minimumFractionDigits: currency === 'NGN' || currency === 'XOF' ? 0 : 2,
     }).format(convertPrice(price, currency));
+  };
 
   const changeCurrency = (code) => {
     setSelectedCurrency(code);
@@ -273,7 +288,11 @@ const GlobalProvider = ({ children }) => {
     window.dispatchEvent(new CustomEvent('currency-changed', { detail: { currency: code } }));
   };
 
-  const getPaymentMethod = (currency = selectedCurrency) => currency === 'NGN' ? 'paystack' : 'stripe';
+  // Phase 2: derive payment method from country config
+  const getPaymentMethod = (currency = selectedCurrency) => {
+    if (hasPaystack && currency === 'NGN') return 'paystack';
+    return 'stripe';
+  };
 
   // ─── ADDRESS & ORDERS ─────────────────────────────────────────────────────────
   const fetchAddress = async () => {

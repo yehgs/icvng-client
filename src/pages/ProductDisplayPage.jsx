@@ -30,6 +30,8 @@ import IntensityMeter from "../components/IntensityMeter";
 import RatingReviewComponent from "../components/RatingReviewComponent";
 import toast from "react-hot-toast";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
+import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
+import { useCountry } from "../context/CountryContext.jsx";
 
 const ProductDisplayPage = () => {
   const params = useParams();
@@ -79,6 +81,10 @@ const ProductDisplayPage = () => {
   const [image, setImage] = useState(0);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("description");
+
+  // Apply server-stored translations when language is not EN
+  const { language } = useCountry();
+  const translatedData = useEntityTranslation("product", productId, data);
   const [selectedPriceOption, setSelectedPriceOption] = useState("regular");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
@@ -446,7 +452,8 @@ const ProductDisplayPage = () => {
         {/* ── Breadcrumb ── */}
         <div className="flex items-center justify-between mb-6">
           <div className="text-sm text-gray-500">
-            Home / {data.productType?.toLowerCase() || "Products"} / {data.name}
+            Home / {data.productType?.toLowerCase() || "Products"} /{" "}
+            {translatedData.name}
           </div>
           {isAdmin && (
             <button
@@ -471,7 +478,7 @@ const ProductDisplayPage = () => {
               >
                 <img
                   src={data.image[image]}
-                  alt={data.name}
+                  alt={translatedData.name}
                   className="max-h-full object-contain"
                 />
 
@@ -513,7 +520,7 @@ const ProductDisplayPage = () => {
                   >
                     <img
                       src={img}
-                      alt={`${data.name} - view ${index + 1}`}
+                      alt={`${translatedData.name} - view ${index + 1}`}
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -539,7 +546,7 @@ const ProductDisplayPage = () => {
                 </div>
               )}
               <h1 className="text-3xl font-bold text-gray-800 capitalize">
-                {data.name}
+                {translatedData.name}
               </h1>
               {data.sku && (
                 <p className="text-sm text-gray-500 mt-1">SKU: {data.sku}</p>
@@ -547,9 +554,12 @@ const ProductDisplayPage = () => {
               {data.limitedEdition?.isLimitedEdition && (
                 <span
                   className="inline-flex items-center gap-1 text-white text-xs px-2 py-1 rounded-full mt-2 mr-2 font-medium"
-                  style={{ backgroundColor: data.limitedEdition?.bannerColor || '#c8102e' }}
+                  style={{
+                    backgroundColor:
+                      data.limitedEdition?.bannerColor || "#c8102e",
+                  }}
                 >
-                  ✨ {data.limitedEdition?.bannerText || 'Limited Edition'}
+                  ✨ {data.limitedEdition?.bannerText || "Limited Edition"}
                 </span>
               )}
               {data.featured && (
@@ -581,8 +591,8 @@ const ProductDisplayPage = () => {
                   Temporarily Unavailable
                 </h3>
                 <p className="text-yellow-700 mb-4">
-                  This product is temporarily unavailable for purchase. Submit a request
-                  below and our team will follow up with you directly.
+                  This product is temporarily unavailable for purchase. Submit a
+                  request below and our team will follow up with you directly.
                 </p>
                 <button
                   onClick={() => setShowRequestModal(true)}

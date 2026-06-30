@@ -27,6 +27,8 @@ import GlobalProvider from "./provider/GlobalProvider";
 import { FaCartShopping } from "react-icons/fa6";
 import CartMobileLink from "./components/CartMobile";
 import FomoWidget from "./components/FomoWidget";
+// Phase 2
+import CountryRedirectPopup from "./components/country/CountryRedirectPopup";
 
 // ─── Cache helpers (module-level so they're always defined) ──────────────────
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -278,6 +280,8 @@ function App() {
       />
       {location.pathname !== "/checkout" && <CartMobileLink />}
       <FomoWidget />
+      {/* Phase 2: Country redirect suggestion popup */}
+      <CountryRedirectPopup />
     </GlobalProvider>
   );
 }

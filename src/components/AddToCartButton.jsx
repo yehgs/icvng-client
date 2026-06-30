@@ -8,12 +8,14 @@ import { useSelector } from 'react-redux';
 import { FaMinus, FaPlus, FaSadTear } from 'react-icons/fa';
 import { BsCart4 } from 'react-icons/bs';
 import ProductRequestModal from './ProductRequestModal';
+import { useTranslation } from '../hooks/useTranslation';
 
 const AddToCartButton = ({ data, quantity = 1, selectedPriceOption = null }) => {
   const {
     fetchCartItem, updateCartItem, deleteCartItem, getEffectiveStock,
     isLoggedIn, guestCart, addToGuestCart, updateGuestCartItem, removeFromGuestCart,
   } = useGlobalContext();
+  const { t } = useTranslation();
 
   const [loading, setLoading] = useState(false);
   const cartItem = useSelector((state) => state.cartItem.cart);
@@ -43,7 +45,7 @@ const AddToCartButton = ({ data, quantity = 1, selectedPriceOption = null }) => 
         price5weeksDelivery: data.price5weeksDelivery,
       };
       addToGuestCart(cartData);
-      toast.success('Added to cart');
+      toast.success(t('notifications.addedToCart'));
       window.dispatchEvent(new CustomEvent('cart-updated'));
       return;
     }
@@ -131,7 +133,7 @@ const AddToCartButton = ({ data, quantity = 1, selectedPriceOption = null }) => 
           className="w-full bg-green-700 hover:bg-green-800 text-white font-medium py-3 px-6 rounded-md transition flex items-center justify-center">
           {loading
             ? <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white" />
-            : <><BsCart4 className="mr-2" /> Add to Cart</>}
+            : <><BsCart4 className="mr-2" /> {t('product.addToCart')}</>}
         </button>
       )}
       {effectiveStock > 0 && effectiveStock <= 5 && (

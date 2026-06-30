@@ -10,11 +10,15 @@ import router from "./route/index";
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
 import "./styles/editor.css";
+// Phase 2: country / i18n
+import { CountryProvider } from "./context/CountryContext.jsx";
 
 createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <Provider store={store}>
-    <RouterProvider router={router} />
+    <CountryProvider>
+      <RouterProvider router={router} />
+    </CountryProvider>
   </Provider>,
   // </StrictMode>,
 );

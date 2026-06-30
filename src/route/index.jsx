@@ -27,6 +27,8 @@ const CartMobile = lazy(() => import("../pages/CartMobile"));
 const CheckoutPage = lazy(() => import("../pages/CheckoutPage"));
 const Success = lazy(() => import("../pages/Success"));
 const Cancel = lazy(() => import("../pages/Cancel"));
+// Phase 4: Google OAuth callback page
+const GoogleAuthSuccess = lazy(() => import("../pages/GoogleAuthSuccess"));
 const Attributes = lazy(() => import("../components/Attributes"));
 const Tags = lazy(() => import("../components/Tags"));
 const WishlistPage = lazy(() => import("../pages/WishListPage"));
@@ -83,6 +85,11 @@ const router = createBrowserRouter([
       {
         path: "register",
         element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Register  /></Suspense>,
+      },
+      {
+        // Phase 4: Google OAuth callback landing page
+        path: "auth/google/success",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><GoogleAuthSuccess /></Suspense>,
       },
       {
         path: "forgot-password",

@@ -1,15 +1,17 @@
 // client/src/components/FomoWidget.jsx
-import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import { ShoppingBag, X } from 'lucide-react';
-import { DisplayPriceInNaira } from '../utils/DisplayPriceInCurrency';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import { ShoppingBag, X } from "lucide-react";
+import { DisplayPriceInNaira } from "../utils/DisplayPriceInCurrency";
+import { useCountry } from "../context/CountryContext.jsx";
+import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
 
 const POSITION_CLASSES = {
-  'bottom-left':  'bottom-6 left-6',
-  'bottom-right': 'bottom-6 right-6',
-  'top-left':     'top-24 left-6',
-  'top-right':    'top-24 right-6',
+  "bottom-left": "bottom-6 left-6",
+  "bottom-right": "bottom-6 right-6",
+  "top-left": "top-24 left-6",
+  "top-right": "top-24 right-6",
 };
 
 // Human-readable "time ago" — caps out at 11 months (never says "1 year ago")
@@ -17,36 +19,53 @@ const timeAgo = (date) => {
   const diffMs = Date.now() - new Date(date).getTime();
   const seconds = Math.floor(diffMs / 1000);
   const minutes = Math.floor(seconds / 60);
-  const hours   = Math.floor(minutes / 60);
-  const days    = Math.floor(hours / 24);
-  const months  = Math.floor(days / 30);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+  const months = Math.floor(days / 30);
 
-  if (seconds < 60)  return seconds <= 1 ? '1 sec ago' : `${seconds} secs ago`;
-  if (minutes < 60)  return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-  if (hours < 24)    return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-  if (days < 30)     return `${days} day${days === 1 ? '' : 's'} ago`;
+  if (seconds < 60) return seconds <= 1 ? "1 sec ago" : `${seconds} secs ago`;
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
+  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
+  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
 
   const cappedMonths = Math.min(months, 11);
-  return `${cappedMonths} month${cappedMonths === 1 ? '' : 's'} ago`;
+  return `${cappedMonths} month${cappedMonths === 1 ? "" : "s"} ago`;
 };
 
 const FomoWidget = () => {
-  const [config, setConfig]       = useState(null);   // animation settings
-  const [items, setItems]         = useState([]);      // purchase list
-  const [current, setCurrent]     = useState(null);   // item being shown
-  const [visible, setVisible]     = useState(false);  // controls opacity
-  const [dismissed, setDismissed] = useState(false);  // user dismissed
-  const indexRef  = useRef(0);
-  const timerRef  = useRef(null);
+  const [config, setConfig] = useState(null); // animation settings
+  const [items, setItems] = useState([]); // purchase list
+  const [current, setCurrent] = useState(null); // item being shown
+  const [visible, setVisible] = useState(false); // controls opacity
+  const [dismissed, setDismissed] = useState(false); // user dismissed
+  const [fomoSettingsArr, setFomoSettingsArr] = useState([]); // wrap in array for hook
+  const indexRef = useRef(0);
+  const timerRef = useRef(null);
+
+  // Translate fomo notificationMessage for active language
+  const translatedFomoArr = useBulkEntityTranslation("fomo", fomoSettingsArr);
+  const translatedFomo = translatedFomoArr[0];
+  const purchasedLabel =
+    translatedFomo?.notificationMessage ||
+    config?.notificationMessage ||
+    "Just purchased";
 
   // ── Fetch data on mount ────────────────────────────────────────────────────
   useEffect(() => {
     const load = async () => {
       try {
         const res = await Axios({ ...SummaryApi.getFomoData });
-        if (res.data?.success && res.data?.settings?.enabled && (res.data?.data?.length > 0)) {
+        if (
+          res.data?.success &&
+          res.data?.settings?.enabled &&
+          res.data?.data?.length > 0
+        ) {
           setConfig(res.data.settings);
           setItems(res.data.data || []);
+          // Wrap settings in array for translation hook
+          if (res.data.settings?._id) {
+            setFomoSettingsArr([res.data.settings]);
+          }
         }
       } catch {
         // silent — widget is non-critical
@@ -67,7 +86,10 @@ const FomoWidget = () => {
     timerRef.current = setTimeout(() => {
       setVisible(false);
       // Wait for fade-out then schedule next
-      timerRef.current = setTimeout(showNext, (config?.fadeOutMs || 600) + (config?.pauseBetweenMs || 8000));
+      timerRef.current = setTimeout(
+        showNext,
+        (config?.fadeOutMs || 600) + (config?.pauseBetweenMs || 8000),
+      );
     }, config?.displayDurationMs || 5000);
   }, [items, dismissed, config]);
 
@@ -80,22 +102,26 @@ const FomoWidget = () => {
 
   if (!config || !current || dismissed) return null;
 
-  const posClass = POSITION_CLASSES[config.position] || POSITION_CLASSES['bottom-left'];
+  const posClass =
+    POSITION_CLASSES[config.position] || POSITION_CLASSES["bottom-left"];
 
   // CSS transition values from config
-  const fadeIn  = `${config.fadeInMs  || 600}ms`;
+  const fadeIn = `${config.fadeInMs || 600}ms`;
   const fadeOut = `${config.fadeOutMs || 600}ms`;
 
   // Slide offset direction based on position
-  const isLeft  = config.position?.includes('left');
-  const slideOff = config.animationType === 'slide'
-    ? (isLeft ? 'translateX(-120%)' : 'translateX(120%)')
-    : config.animationType === 'bounce'
-    ? 'translateY(100%)'
-    : undefined;
+  const isLeft = config.position?.includes("left");
+  const slideOff =
+    config.animationType === "slide"
+      ? isLeft
+        ? "translateX(-120%)"
+        : "translateX(120%)"
+      : config.animationType === "bounce"
+        ? "translateY(100%)"
+        : undefined;
 
-  const transform = visible ? 'none' : slideOff;
-  const opacity   = visible ? 1 : 0;
+  const transform = visible ? "none" : slideOff;
+  const opacity = visible ? 1 : 0;
 
   const qty = current.quantity || 1;
 
@@ -108,7 +134,7 @@ const FomoWidget = () => {
         transition: visible
           ? `opacity ${fadeIn} ease-out, transform ${fadeIn} ease-out`
           : `opacity ${fadeOut} ease-in, transform ${fadeOut} ease-in`,
-        pointerEvents: visible ? 'auto' : 'none',
+        pointerEvents: visible ? "auto" : "none",
       }}
     >
       <div className="bg-yellow-50 shadow-xl rounded-xl border border-yellow-200 flex items-center gap-3 p-4 relative overflow-hidden">
@@ -118,7 +144,11 @@ const FomoWidget = () => {
         {/* Product image or icon */}
         <div className="w-14 h-14 flex-shrink-0 rounded-lg overflow-hidden bg-white ml-1">
           {current.productImage ? (
-            <img src={current.productImage} alt={current.productName} className="w-full h-full object-cover" />
+            <img
+              src={current.productImage}
+              alt={current.productName}
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <ShoppingBag className="w-6 h-6 text-gray-400" />
@@ -134,7 +164,10 @@ const FomoWidget = () => {
             {current.state}
           </p>
           <p className="text-sm text-gray-700 truncate mt-0.5">
-            purchased{qty > 1 ? ` ${qty}x` : ''} <span className="font-medium text-gray-900">{current.productName}</span>
+            {qty > 1 ? `${purchasedLabel} ${qty}x` : purchasedLabel}{" "}
+            <span className="font-medium text-gray-900">
+              {current.productName}
+            </span>
           </p>
           <div className="flex items-center gap-2 mt-1">
             {current.price > 0 && (
@@ -142,13 +175,18 @@ const FomoWidget = () => {
                 {DisplayPriceInNaira(current.price)}
               </span>
             )}
-            <span className="text-xs text-gray-500">{timeAgo(current.purchasedAt)}</span>
+            <span className="text-xs text-gray-500">
+              {timeAgo(current.purchasedAt)}
+            </span>
           </div>
         </div>
 
         {/* Dismiss */}
         <button
-          onClick={() => { clearTimeout(timerRef.current); setDismissed(true); }}
+          onClick={() => {
+            clearTimeout(timerRef.current);
+            setDismissed(true);
+          }}
           className="absolute top-1.5 right-1.5 text-gray-400 hover:text-gray-600 p-0.5"
           aria-label="Dismiss"
         >

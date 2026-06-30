@@ -619,6 +619,28 @@ const SummaryApi = {
     url: "/api/fomo/recent-purchases",
     method: "get",
   },
+
+  // ── Phase 2: Multi-country ──────────────────────────────────────────────
+  getCountryConfig: {
+    url: "/api/country/config",
+    method: "get",
+  },
+  getAllCountries: {
+    url: "/api/country/all",
+    method: "get",
+  },
+  detectCountry: {
+    url: "/api/country/detect",
+    method: "get",
+  },
+  getEntityTranslation: {
+    url: "/api/translations",   // append /:entityType/:entityId/:language
+    method: "get",
+  },
+  getSeoMeta: {
+    url: "/api/seo/meta",
+    method: "get",
+  },
 };
 
 export default SummaryApi;

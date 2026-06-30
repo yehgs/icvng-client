@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Calendar, User, Clock, Coffee } from "lucide-react";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
+import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
 
 /**
  * Blog section component for homepage featuring latest blog posts
@@ -11,6 +12,9 @@ import SummaryApi from "../common/SummaryApi";
 const BlogSection = () => {
   const [featuredPosts, setFeaturedPosts] = useState([]);
   const [loading, setLoading] = useState(false);
+
+  // Translate post titles/excerpts for the active locale
+  const translatedPosts = useBulkEntityTranslation("blog", featuredPosts);
 
   useEffect(() => {
     fetchFeaturedPosts();
@@ -218,7 +222,7 @@ const BlogSection = () => {
         {featuredPosts.length > 0 && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-              {featuredPosts.map((post, index) => (
+              {translatedPosts.map((post, index) => (
                 <BlogCard key={post._id} post={post} />
               ))}
             </div>
@@ -235,7 +239,7 @@ const BlogSection = () => {
           </>
         )}
 
-        {featuredPosts.length === 0 && !loading && (
+        {translatedPosts.length === 0 && !loading && (
           <div className="text-center py-12">
             <Coffee className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">

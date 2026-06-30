@@ -10,6 +10,8 @@ import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
 import toast from 'react-hot-toast';
 import { nigeriaStatesLgas } from '../data/nigeria-states-lgas';
+// Phase 4: country-aware payment routing
+import { useCountry } from '../context/CountryContext.jsx';
 import {
   MapPin, Truck, CreditCard, FileText, ChevronRight,
   Plus, Loader2, Package, Minus, Trash2, Store,
@@ -148,6 +150,8 @@ function CartAdjuster({ items, onUpdate, onRemove, formatPrice }) {
 const CheckoutPage = () => {
   const { isLoggedIn, fetchCartItem, fetchOrder, updateCartItem, deleteCartItem, isMerging } = useGlobalContext();
   const { selectedCurrency, formatPrice, convertPrice, getPaymentMethod, exchangeRates } = useCurrency();
+  // Phase 4: country-aware payment availability
+  const { hasPaystack, hasStripe, countryCode } = useCountry();
   const cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -160,7 +164,8 @@ const CheckoutPage = () => {
   const [shippingMethods, setShippingMethods] = useState([]);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
-  const [contact, setContact] = useState({ name: '', email: '', phone: '', notes: '', paymentMethod: 'paystack' });
+  // Default payment method: paystack for NG, stripe for others
+  const [contact, setContact] = useState({ name: '', email: '', phone: '', notes: '', paymentMethod: hasPaystack ? 'paystack' : 'stripe' });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -535,23 +540,28 @@ const CheckoutPage = () => {
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-2">Payment Method *</label>
                     <div className="space-y-2">
-                      {selectedCurrency === 'NGN' ? (
-                        <>
-                          <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
-                            <input type="radio" value="paystack" checked={contact.paymentMethod === 'paystack'}
-                              onChange={() => setContact((p) => ({ ...p, paymentMethod: 'paystack' }))} />
-                            <span className="text-sm">💳 Pay Online (Card / Bank via Paystack)</span>
-                          </label>
-                          <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
-                            <input type="radio" value="bank_transfer" checked={contact.paymentMethod === 'bank_transfer'}
-                              onChange={() => setContact((p) => ({ ...p, paymentMethod: 'bank_transfer' }))} />
-                            <span className="text-sm">🏦 Manual Bank Transfer</span>
-                          </label>
-                        </>
-                      ) : (
-                        <label className="flex items-center gap-3 p-3 border border-green-400 rounded-lg bg-green-50">
-                          <input type="radio" checked readOnly />
-                          <span className="text-sm">💳 Pay with Stripe (International)</span>
+                      {/* Phase 4: Show Paystack only if enabled for this country */}
+                      {hasPaystack && (
+                        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
+                          <input type="radio" value="paystack" checked={contact.paymentMethod === 'paystack'}
+                            onChange={() => setContact((p) => ({ ...p, paymentMethod: 'paystack' }))} />
+                          <span className="text-sm">💳 Pay Online (Card / Bank via Paystack)</span>
+                        </label>
+                      )}
+                      {/* Show Stripe for all countries */}
+                      {hasStripe && (
+                        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
+                          <input type="radio" value="stripe" checked={contact.paymentMethod === 'stripe'}
+                            onChange={() => setContact((p) => ({ ...p, paymentMethod: 'stripe' }))} />
+                          <span className="text-sm">💳 {hasPaystack ? 'Pay with Stripe (International Card)' : 'Pay with Card (Stripe)'}</span>
+                        </label>
+                      )}
+                      {/* Bank transfer always available */}
+                      {hasPaystack && (
+                        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
+                          <input type="radio" value="bank_transfer" checked={contact.paymentMethod === 'bank_transfer'}
+                            onChange={() => setContact((p) => ({ ...p, paymentMethod: 'bank_transfer' }))} />
+                          <span className="text-sm">🏦 Manual Bank Transfer</span>
                         </label>
                       )}
                     </div>

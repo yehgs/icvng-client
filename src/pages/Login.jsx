@@ -9,6 +9,8 @@ import fetchUserDetails from '../utils/fetchUserDetails';
 import { useDispatch } from 'react-redux';
 import { setUserDetails } from '../store/userSlice';
 import Loading from '../components/Loading';
+// Phase 4: Google OAuth
+import GoogleLoginButton from '../components/GoogleLoginButton';
 
 const Login = () => {
   const [data, setData] = useState({ email: '', password: '' });
@@ -93,6 +95,17 @@ const Login = () => {
           Don&apos;t have an account?{' '}
           <Link to={`/register${location.search}`} className="text-green-700 hover:text-green-600 font-medium">Register</Link>
         </p>
+
+        {/* Phase 4: Google OAuth */}
+        <div className="relative my-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-xs text-gray-400 uppercase">
+            <span className="bg-white px-3">or</span>
+          </div>
+        </div>
+        <GoogleLoginButton redirect={redirectTo ? `/${redirectTo}` : "/"} />
       </div>
     </section>
   );

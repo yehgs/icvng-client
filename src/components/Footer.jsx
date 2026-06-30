@@ -21,6 +21,10 @@ import foodHygieneRating from "../assets/food-hygiene-rating.webp";
 import kosherFood from "../assets/kosher-food.webp";
 import ifsFood from "../assets/ifs-food.webp";
 import dnvglIso from "../assets/dnvgl-iso9001.webp";
+// Phase 2
+import CountrySwitcher from "./country/CountrySwitcher";
+import LanguageSwitcher from "./country/LanguageSwitcher";
+import { useCountry } from "../context/CountryContext";
 
 const PreFooter = () => {
   const [email, setEmail] = useState("");
@@ -402,9 +406,14 @@ const Footer = () => {
 
           {/* Copyright and Payment Methods */}
           <div className="mt-12 pt-6 border-t border-secondary-100">
-            <div className="flex flex-col md:flex-row justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div className="text-sm mb-4 md:mb-0">
-                © {new Date().getFullYear()} I-Coffee.ng. All rights reserved.
+                © {new Date().getFullYear()} I-Coffee. All rights reserved.
+              </div>
+              {/* Phase 2: Country + Language switchers */}
+              <div className="flex items-center gap-3">
+                <CountrySwitcher compact />
+                <LanguageSwitcher compact />
               </div>
               <div className="flex flex-col items-center">
                 <span className="mr-2 text-sm space-x-2">Payment Methods:</span>
