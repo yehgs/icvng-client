@@ -76,13 +76,42 @@ const GlobalProvider = ({ children }) => {
   });
   const [currencyLoading, setCurrencyLoading] = useState(false);
 
-  const availableCurrencies = [
-    { code: 'NGN', name: 'Nigerian Naira', symbol: '₦', isBase: true },
-    { code: 'USD', name: 'US Dollar', symbol: '$', isBase: false },
-    { code: 'EUR', name: 'Euro', symbol: '€', isBase: false },
-    { code: 'GBP', name: 'British Pound', symbol: '£', isBase: false },
-    { code: 'XOF', name: 'CFA Franc', symbol: 'CFA', isBase: false },
+  // ─── CURRENCY ─────────────────────────────────────────────────────────────────
+  // Phase 2: pull country config so currency defaults to the active country
+  // useCountry() is safe here because GlobalProvider is always wrapped inside CountryProvider
+  const { country: activeCountry, formatPrice: countryFormatPrice, hasPaystack } = useCountry();
+
+  // Default selected currency to the active country's native currency —
+  // i-coffee.ng → NGN, i-coffee.tg → XOF, i-coffee.it → EUR, etc.
+  const defaultCurrency = activeCountry?.currency?.code || 'NGN';
+
+  // Base currency list — "isBase" (shown as the market's native currency in
+  // the selector) now follows the visited domain instead of always being
+  // NGN. If a country's currency isn't in the static list yet, it's added
+  // dynamically from the country config so new markets work with zero code
+  // changes here.
+  const CURRENCY_CATALOG = [
+    { code: 'NGN', name: 'Nigerian Naira', symbol: '₦' },
+    { code: 'USD', name: 'US Dollar', symbol: '$' },
+    { code: 'EUR', name: 'Euro', symbol: '€' },
+    { code: 'GBP', name: 'British Pound', symbol: '£' },
+    { code: 'XOF', name: 'CFA Franc', symbol: 'CFA' },
   ];
+  const knownCodes = CURRENCY_CATALOG.map((c) => c.code);
+  const catalog = knownCodes.includes(defaultCurrency)
+    ? CURRENCY_CATALOG
+    : [
+        {
+          code: defaultCurrency,
+          name: activeCountry?.currency?.name || defaultCurrency,
+          symbol: activeCountry?.currency?.symbol || defaultCurrency,
+        },
+        ...CURRENCY_CATALOG,
+      ];
+  const availableCurrencies = catalog.map((c) => ({
+    ...c,
+    isBase: c.code === defaultCurrency,
+  }));
 
   // ─── Login status ───────────────────────────────────────────────────────────
   useEffect(() => { setIsLoggedIn(Boolean(user?._id)); }, [user?._id]);
@@ -237,11 +266,9 @@ const GlobalProvider = ({ children }) => {
     } catch (e) { AxiosToastError(e); }
   };
 
-  // ─── CURRENCY ─────────────────────────────────────────────────────────────────
-  // Phase 2: pull country config so currency defaults to the active country
-  // useCountry() is safe here because GlobalProvider is always wrapped inside CountryProvider
-  const { country: activeCountry, formatPrice: countryFormatPrice, hasPaystack } = useCountry();
-
+  // ─── CURRENCY (continued) ──────────────────────────────────────────────────
+  // activeCountry / defaultCurrency / availableCurrencies are declared near
+  // the top of the component (needed before this point too).
   const fetchExchangeRates = async () => {
     try {
       setCurrencyLoading(true);
@@ -263,9 +290,6 @@ const GlobalProvider = ({ children }) => {
       }
     } catch {} finally { setCurrencyLoading(false); }
   };
-
-  // Default selected currency to the active country's native currency
-  const defaultCurrency = activeCountry?.currency?.code || 'NGN';
 
   const convertPrice = (priceInBase, targetCurrency = selectedCurrency) => {
     const base = defaultCurrency;
@@ -353,9 +377,19 @@ const GlobalProvider = ({ children }) => {
   // ─── EFFECTS ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     loadWishlist(); loadCompare(); fetchExchangeRates();
-    const saved = localStorage.getItem('selectedCurrency');
-    if (saved && availableCurrencies.some((c) => c.code === saved)) setSelectedCurrency(saved);
   }, []);
+
+  // Keep selectedCurrency following the visited domain's native currency.
+  // localStorage is per-origin, so a choice made on i-coffee.tg never leaks
+  // to i-coffee.ng — if nothing is saved for THIS domain, default to its
+  // native currency (defaultCurrency resolves from "NGN" → the real country
+  // once CountryContext's bootstrap fetch completes, so this re-runs then).
+  // An explicit past selection (via the selector) always wins over the default.
+  useEffect(() => {
+    const saved = localStorage.getItem('selectedCurrency');
+    const savedIsValid = saved && availableCurrencies.some((c) => c.code === saved);
+    setSelectedCurrency(savedIsValid ? saved : defaultCurrency);
+  }, [defaultCurrency]);
 
   useEffect(() => {
     if (isLoggedIn) {
@@ -397,7 +431,7 @@ const GlobalProvider = ({ children }) => {
           isInCompare, addToCompare, removeFromCompare, toggleCompare, clearCompare, fetchCompare,
         }}>
           <CurrencyContext.Provider value={{
-            selectedCurrency, availableCurrencies, exchangeRates, currencyLoading,
+            selectedCurrency, availableCurrencies, exchangeRates, currencyLoading, defaultCurrency,
             convertPrice, formatPrice, changeCurrency, getPaymentMethod, fetchExchangeRates,
           }}>
             {children}

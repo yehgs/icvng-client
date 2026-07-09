@@ -1,16 +1,19 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useCurrency } from '../provider/GlobalProvider';
+import { useCountry } from '../context/CountryContext';
 import { FaChevronDown, FaGlobe } from 'react-icons/fa';
 
 const CurrencySelector = ({ className = '' }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { t } = useCountry();
 
   const {
     selectedCurrency,
     availableCurrencies,
     changeCurrency,
     currencyLoading,
+    defaultCurrency,
   } = useCurrency();
 
   const selectedCurrencyData = availableCurrencies.find(
@@ -96,7 +99,7 @@ const CurrencySelector = ({ className = '' }) => {
                   <div className="flex flex-col items-end">
                     {currency.isBase && (
                       <span className="text-xs text-green-600 font-medium">
-                        Base Currency
+                        {t("header.baseCurrency")}
                       </span>
                     )}
                     {selectedCurrency === currency.code && (
@@ -111,9 +114,9 @@ const CurrencySelector = ({ className = '' }) => {
           <div className="py-2 px-4 bg-gray-50">
             <p className="text-xs text-gray-600">
               {/* Prices are converted using current exchange rates. */}
-              {selectedCurrency !== 'NGN' && (
+              {selectedCurrency !== defaultCurrency && (
                 <span className="block mt-1">
-                  International payments processed via Stripe.
+                  {t("header.internationalPayments")}
                 </span>
               )}
             </p>

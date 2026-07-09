@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { useCountry } from "../context/CountryContext";
 import {
   ChevronDown,
   ChevronRight,
@@ -672,6 +673,7 @@ function MobileCompatCategoryRows({
 // ─── Main HeaderNavigation ────────────────────────────────────────────────────
 const HeaderNavigation = ({ mobileMenuOnly = false }) => {
   const navigate = useNavigate();
+  const { t } = useCountry();
   const [hoveredCategory, setHoveredCategory] = useState(null);
   const [hoveredRect, setHoveredRect] = useState(null);
   const [verticalMenuActive, setVerticalMenuActive] = useState(false);
@@ -882,7 +884,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
               className="w-4/5 max-w-sm bg-white h-full overflow-y-auto ml-auto shadow-2xl flex flex-col"
             >
               <div className="p-4 font-bold flex justify-between items-center bg-secondary-200 text-white flex-shrink-0">
-                <span>Browse</span>
+                <span>{t("header.browse")}</span>
                 <X
                   size={22}
                   className="cursor-pointer"
@@ -897,7 +899,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                 onClick={() => setVerticalMenuActive(false)}
               >
                 <ShoppingBag size={18} className="flex-shrink-0" />
-                Shop All Products
+                {t("header.shopAllProducts")}
               </Link>
 
               {/* Categories */}
@@ -1025,7 +1027,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                     size={16}
                     className="text-secondary-200 flex-shrink-0"
                   />
-                  Coffee Blog
+                  {t("header.coffeeBlog")}
                 </Link>
                 <Link
                   to="/partner-with-us"
@@ -1036,7 +1038,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                     size={16}
                     className="text-secondary-200 flex-shrink-0"
                   />
-                  Partner With Us
+                  {t("footer.partnerWithUs")}
                 </Link>
                 <Link
                   to="/contact-us"
@@ -1047,7 +1049,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                     size={16}
                     className="text-secondary-200 flex-shrink-0"
                   />
-                  Contact Us
+                  {t("footer.contactUs")}
                 </Link>
               </div>
             </div>

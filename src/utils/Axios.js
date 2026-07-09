@@ -22,6 +22,13 @@ Axios.interceptors.request.use(
     if (typeof window !== 'undefined' && window.location?.hostname) {
       config.headers['X-Storefront-Host'] = window.location.host; // includes :port for local dev
     }
+    // Active UI language (kept in sync with i18n's saved preference) — lets
+    // language-aware endpoints (category structure, country config, etc.)
+    // localize their response instead of always returning English.
+    const savedLanguage = localStorage.getItem('icvng_language');
+    if (savedLanguage) {
+      config.headers['X-Language'] = savedLanguage;
+    }
     return config;
   },
   (error) => Promise.reject(error)

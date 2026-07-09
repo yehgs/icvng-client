@@ -10,6 +10,7 @@ import Axios from "../utils/Axios";
 import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
 import { setSearchTerm } from "../store/filterSlice";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
+import { useCountry } from "../context/CountryContext";
 
 const valideURLConvert = (name) => {
   const url = name
@@ -20,10 +21,23 @@ const valideURLConvert = (name) => {
   return url;
 };
 
+const SEARCH_TERMS = [
+  "Nespresso",
+  "Caffitaly",
+  "Dolce Gusto",
+  "Carimalli",
+  "Lavazza",
+  "Coffee Machine",
+  "Barattini",
+  "Ground Coffee",
+  "Instant Coffee",
+];
+
 const SearchInput = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const { t } = useCountry();
   const [isSearchPage, setIsSearchPage] = useState(false);
   const [isMobile] = useMobile();
   const params = new URLSearchParams(location.search);
@@ -157,25 +171,10 @@ const SearchInput = () => {
               {!searchQuery && (
                 <div className="absolute left-12 top-1/2 transform -translate-y-1/2 pointer-events-none opacity-70">
                   <TypeAnimation
-                    sequence={[
-                      "Search Nespresso",
+                    sequence={SEARCH_TERMS.flatMap((term) => [
+                      `${t("header.searchPrefix")} ${term}`,
                       1000,
-                      "Search Caffitaly",
-                      1000,
-                      "Search Dolce Gusto",
-                      1000,
-                      "Search Carimalli",
-                      1000,
-                      "Search Lavazza",
-                      1000,
-                      "Search Coffee Machine",
-                      1000,
-                      "Search Barattini",
-                      1000,
-                      "Search Ground Coffee",
-                      1000,
-                      "Search Instant Coffee",
-                    ]}
+                    ])}
                     wrapper="span"
                     speed={50}
                     repeat={Infinity}

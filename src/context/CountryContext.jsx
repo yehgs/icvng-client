@@ -78,6 +78,11 @@ export function CountryProvider({ children }) {
           // Detect language: saved pref → country default → browser
           const lang = detectLanguage(cfg.language?.default || "en");
           setLanguageState(lang);
+          // Persist immediately (even when merely detected, not chosen) so
+          // every subsequent request's X-Language header — and therefore
+          // server-side localization (category names, country content) —
+          // is consistent with what's rendered on this first load.
+          saveLanguage(lang);
 
           // Set <html lang="…"> for SEO
           document.documentElement.lang = lang;

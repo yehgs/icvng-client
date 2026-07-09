@@ -20,9 +20,13 @@ import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
 import DisplayCartItem from "./DisplayCartItem";
 import HeaderNavigation from "../components/HeaderNavigation";
 import CurrencySelector from "../components/CurrencySelector";
-// Phase 2
-import LanguageSwitcher from "./country/LanguageSwitcher";
-import CountrySwitcher from "./country/CountrySwitcher";
+// Phase 2/6: preheader promo, "Partner with us", "Coffee Blog", "Shop Now"
+// all read from the i18n lib now. Language/country pickers are auto-detected
+// from the visited domain (CountryContext) and no longer offered as manual
+// pickers, but the currency selector is retained — it now defaults to the
+// visited country's native currency (see GlobalProvider) while still
+// letting the shopper switch to another currency if they want to.
+import { useCountry } from "../context/CountryContext";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -31,6 +35,13 @@ export default function Header() {
   const { totalQty, isLoggedIn, guestCart } = useGlobalContext();
   const { formatPrice } = useCurrency();
   const [openCartSection, setOpenCartSection] = useState(false);
+  const { t, country } = useCountry();
+
+  // Preheader promo: content-managed per country (Admin → Settings →
+  // Countries), already localized server-side. Falls back to the i18n
+  // default string when no admin has set one yet for this market.
+  const promoDesktop = country?.content?.preheaderMessage || t("header.promoDesktop");
+  const promoMobile = country?.content?.preheaderMessage || t("header.promoMobile");
 
   const [localWishlistCount, setLocalWishlistCount] = useState(0);
   const [localCompareCount, setLocalCompareCount] = useState(0);
@@ -79,17 +90,17 @@ export default function Header() {
         <div className="container mx-auto flex justify-between items-center">
           {/* Left: Promo message (responsive text) */}
           <div className="text-sm hidden md:block">
-            Free shipping on orders over ₦100,000 within Lagos!
+            {promoDesktop}
           </div>
           <div className="text-xs md:hidden">
-            Free shipping over ₦100k in Lagos!
+            {promoMobile}
           </div>
           <div className="flex items-center space-x-2 md:space-x-4">
             <Link
               to="/partner-with-us"
               className="text-xs md:text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-2 md:px-3 py-1 rounded font-medium whitespace-nowrap"
             >
-              Partner with us
+              {t("header.partnerWithUs")}
             </Link>
             <div className="hidden md:flex space-x-4">
               <a
@@ -125,17 +136,12 @@ export default function Header() {
       >
         {/* ── MOBILE header row ── */}
         <div className="md:hidden flex items-center justify-between px-4 py-3 relative">
-          {/* Left: Currency + Language */}
+          {/* Left: Logo + currency (defaults to this domain's currency, still switchable) */}
           <div className="flex items-center gap-1.5">
-            <CurrencySelector />
-            <LanguageSwitcher compact />
-          </div>
-
-          {/* Center: Logo — absolutely centered */}
-          <div className="absolute left-1/2 -translate-x-1/2">
             <Link to="/">
-              <img src={logo} alt="I-Coffee" className="h-9 w-auto" />
+              <img src={logo} alt="I-Coffee" className="h-8 w-auto" />
             </Link>
+            <CurrencySelector />
           </div>
 
           {/* Right: User + Cart + Hamburger */}
@@ -207,11 +213,9 @@ export default function Header() {
                 to="/blogs"
                 className="bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 text-sm font-semibold whitespace-nowrap"
               >
-                Coffee Blog
+                {t("header.coffeeBlog")}
               </Link>
               <CurrencySelector />
-              <LanguageSwitcher compact />
-              <CountrySwitcher compact />
 
               {/* User */}
               {user?._id ? (
@@ -271,7 +275,7 @@ export default function Header() {
                 onClick={() => navigate("/shop")}
                 className="bg-secondary-200 hover:bg-secondary-100 text-white rounded px-3 py-2 text-sm font-semibold"
               >
-                Shop Now
+                {t("header.shopNow")}
               </button>
             </div>
           </div>
