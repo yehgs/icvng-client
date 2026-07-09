@@ -99,6 +99,14 @@ const en = {
     removedFromCart: "Removed from cart",
     linkCopied: "Product link copied!",
     copyLinkFailed: "Failed to copy link",
+    type: {
+      COFFEE: "Coffee",
+      MACHINE: "Machine",
+      ACCESSORIES: "Accessories",
+      COFFEE_BEANS: "Coffee Beans",
+      TEA: "Tea",
+      DRINKS: "Drinks",
+    },
   },
 
   // ── Cart ─────────────────────────────────────────────────────────────────

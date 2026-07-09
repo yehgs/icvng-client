@@ -45,7 +45,16 @@ const LimitedEditionSection = () => {
 
   // Use the first product's banner settings for the section banner
   const bannerProduct = products[0];
-  const bannerText = bannerProduct?.limitedEdition?.bannerText || t("product.limitedEdition");
+  // A large batch of existing products were created by an older admin form
+  // that pre-filled bannerText with the literal English string "Limited
+  // Edition" as a DEFAULT (not a deliberate admin choice), so it's almost
+  // always set — treat that exact legacy default as unset so the
+  // translated label is used instead.
+  const rawBannerText = bannerProduct?.limitedEdition?.bannerText?.trim();
+  const bannerText =
+    rawBannerText && rawBannerText.toLowerCase() !== "limited edition"
+      ? rawBannerText
+      : t("product.limitedEdition");
   const bannerColor = bannerProduct?.limitedEdition?.bannerColor || "#c8102e";
 
   return (

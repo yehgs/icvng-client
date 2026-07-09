@@ -93,6 +93,14 @@ const it = {
     removedFromCart: "Rimosso dal carrello",
     linkCopied: "Link del prodotto copiato!",
     copyLinkFailed: "Impossibile copiare il link",
+    type: {
+      COFFEE: "Caffè",
+      MACHINE: "Macchina",
+      ACCESSORIES: "Accessori",
+      COFFEE_BEANS: "Chicchi di caffè",
+      TEA: "Tè",
+      DRINKS: "Bevande",
+    },
   },
 
   cart: {

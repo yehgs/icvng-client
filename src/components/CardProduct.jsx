@@ -359,11 +359,27 @@ const CardProduct = ({ data }) => {
 
   const formatProductType = (type) => {
     if (!type) return "";
+    // Known enum values get a real translation; anything unrecognized
+    // falls back to a simple title-cased version of the raw value.
+    const key = `product.type.${type}`;
+    const translated = t(key);
+    if (translated && translated !== key) return translated;
     return type
       .replace("_", " ")
       .toLowerCase()
       .replace(/\b\w/g, (l) => l.toUpperCase());
   };
+
+  // A large batch of existing products were created by an older admin form
+  // that pre-filled this field with the literal English string "Limited
+  // Edition" as a DEFAULT (not a deliberate admin choice) — so it's almost
+  // always set, and the "use the translated label" fallback below never
+  // actually ran. Treat that exact legacy default as if it were unset.
+  const rawBannerText = data.limitedEdition?.bannerText?.trim();
+  const limitedEditionBannerText =
+    rawBannerText && rawBannerText.toLowerCase() !== "limited edition"
+      ? rawBannerText
+      : t("product.limitedEdition");
 
   const currentQty = priceOptionQuantities[selectedPriceOption] || 0;
   const isInCart = currentQty > 0;
@@ -423,7 +439,7 @@ const CardProduct = ({ data }) => {
                 backgroundColor: data.limitedEdition?.bannerColor || "#c8102e",
               }}
             >
-              {data.limitedEdition?.bannerText || t("product.limitedEdition")}
+              {limitedEditionBannerText}
             </span>
           )}
           {data.featured && (
