@@ -37,7 +37,7 @@ const SearchInput = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { t } = useCountry();
+  const { t, language } = useCountry();
   const [isSearchPage, setIsSearchPage] = useState(false);
   const [isMobile] = useMobile();
   const params = new URLSearchParams(location.search);
@@ -171,6 +171,7 @@ const SearchInput = () => {
               {!searchQuery && (
                 <div className="absolute left-12 top-1/2 transform -translate-y-1/2 pointer-events-none opacity-70">
                   <TypeAnimation
+                    key={language}
                     sequence={SEARCH_TERMS.flatMap((term) => [
                       `${t("header.searchPrefix")} ${term}`,
                       1000,

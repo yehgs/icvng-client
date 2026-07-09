@@ -312,6 +312,7 @@ const GlobalProvider = ({ children }) => {
   const changeCurrency = (code) => {
     setSelectedCurrency(code);
     localStorage.setItem('selectedCurrency', code);
+    localStorage.setItem('icvng_active_currency', code);
     window.dispatchEvent(new CustomEvent('currency-changed', { detail: { currency: code } }));
   };
 
@@ -381,14 +382,32 @@ const GlobalProvider = ({ children }) => {
 
   // Keep selectedCurrency following the visited domain's native currency.
   // localStorage is per-origin, so a choice made on i-coffee.tg never leaks
-  // to i-coffee.ng — if nothing is saved for THIS domain, default to its
-  // native currency (defaultCurrency resolves from "NGN" → the real country
-  // once CountryContext's bootstrap fetch completes, so this re-runs then).
-  // An explicit past selection (via the selector) always wins over the default.
+  // to i-coffee.ng — if nothing is EXPLICITLY saved for THIS domain, default
+  // to its native currency (defaultCurrency resolves from "NGN" → the real
+  // country once CountryContext's bootstrap fetch completes, so this
+  // re-runs then). An explicit past selection (via the selector) always
+  // wins over the default.
+  //
+  // IMPORTANT: 'selectedCurrency' in localStorage is ONLY ever written by
+  // changeCurrency() (an explicit user pick) — never by this effect. Writing
+  // the auto-resolved value here too would create a feedback loop: on first
+  // mount defaultCurrency is briefly "NGN" (the synchronous placeholder
+  // before the real country loads), so an early write would get read back
+  // on the very next run as if the shopper had "chosen" NGN, permanently
+  // overriding the real country default once it arrives.
+  //
+  // We still persist the CURRENTLY ACTIVE currency to a separate key
+  // (icvng_active_currency) for legacy price-display call sites (e.g. the
+  // DisplayPriceInNaira shim) that are plain functions outside React and
+  // read localStorage directly instead of this context.
   useEffect(() => {
-    const saved = localStorage.getItem('selectedCurrency');
-    const savedIsValid = saved && availableCurrencies.some((c) => c.code === saved);
-    setSelectedCurrency(savedIsValid ? saved : defaultCurrency);
+    const explicitChoice = localStorage.getItem('selectedCurrency');
+    const explicitChoiceIsValid =
+      explicitChoice && availableCurrencies.some((c) => c.code === explicitChoice);
+    const resolved = explicitChoiceIsValid ? explicitChoice : defaultCurrency;
+    setSelectedCurrency(resolved);
+    try { localStorage.setItem('icvng_active_currency', resolved); } catch {}
+    window.dispatchEvent(new CustomEvent('currency-changed', { detail: { currency: resolved } }));
   }, [defaultCurrency]);
 
   useEffect(() => {

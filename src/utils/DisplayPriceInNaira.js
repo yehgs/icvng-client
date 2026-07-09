@@ -12,10 +12,19 @@
 import { DisplayPriceInCurrency } from './DisplayPriceInCurrency';
 
 // The CurrencyContext persists these to localStorage; we read them so this
-// pure function reflects the visitor's selected currency + live rates.
+// pure function reflects the visitor's active currency + live rates.
+//
+// 'icvng_active_currency' is kept in sync with WHATEVER currency is
+// currently showing (the country's default, or an explicit pick via the
+// selector). 'selectedCurrency' is kept as a fallback for older sessions
+// that only ever wrote that key.
 function activeCurrency() {
   try {
-    return localStorage.getItem('selectedCurrency') || 'NGN';
+    return (
+      localStorage.getItem('icvng_active_currency') ||
+      localStorage.getItem('selectedCurrency') ||
+      'NGN'
+    );
   } catch {
     return 'NGN';
   }
