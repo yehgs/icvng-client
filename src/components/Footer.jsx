@@ -225,10 +225,25 @@ const FooterAccordionItem = ({ title, children }) => {
 const Footer = () => {
   const { t, country } = useCountry();
 
-  // Content-managed per country (Admin → Settings → Countries), already
-  // localized server-side — falls back to i18n's generic default copy until
-  // an admin sets country-specific address/phone/email.
-  const contacts = country?.contacts || {};
+  // Content-managed per country via Admin → Site Content → Footer (falls
+  // back to the legacy Country.contacts, then to hardcoded defaults, until
+  // an admin sets country-specific address/phone/email there).
+  const [footerBlock, setFooterBlock] = useState(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await Axios({ ...SummaryApi.getHomeContentBlocks, params: { type: "footer" } });
+        if (res.data?.success && res.data.data?.[0]) setFooterBlock(res.data.data[0]);
+      } catch {}
+    })();
+  }, []);
+  const legacyContacts = country?.contacts || {};
+  const contacts = {
+    address: footerBlock?.contactAddress || legacyContacts.address,
+    phone: footerBlock?.contactPhone || legacyContacts.phone,
+    email: footerBlock?.contactEmail || legacyContacts.email,
+    whatsapp: footerBlock?.contactWhatsapp || legacyContacts.whatsapp,
+  };
   const companyName = t("footer.companyName");
   const companyTagline = t("footer.companyTagline");
 

@@ -27,6 +27,8 @@ import CurrencySelector from "../components/CurrencySelector";
 // visited country's native currency (see GlobalProvider) while still
 // letting the shopper switch to another currency if they want to.
 import { useCountry } from "../context/CountryContext";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -37,11 +39,22 @@ export default function Header() {
   const [openCartSection, setOpenCartSection] = useState(false);
   const { t, country } = useCountry();
 
-  // Preheader promo: content-managed per country (Admin → Settings →
-  // Countries), already localized server-side. Falls back to the i18n
-  // default string when no admin has set one yet for this market.
-  const promoDesktop = country?.content?.preheaderMessage || t("header.promoDesktop");
-  const promoMobile = country?.content?.preheaderMessage || t("header.promoMobile");
+  // Preheader promo: content-managed per country via Admin → Site Content →
+  // Header (falls back to the legacy Country.content.preheaderMessage, then
+  // to the i18n default string, when no admin has set one for this market).
+  const [headerBlock, setHeaderBlock] = useState(null);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await Axios({ ...SummaryApi.getHomeContentBlocks, params: { type: "header" } });
+        if (res.data?.success && res.data.data?.[0]) setHeaderBlock(res.data.data[0]);
+      } catch {}
+    })();
+  }, []);
+  const preheaderMessage =
+    headerBlock?.message || country?.content?.preheaderMessage;
+  const promoDesktop = preheaderMessage || t("header.promoDesktop");
+  const promoMobile = preheaderMessage || t("header.promoMobile");
 
   const [localWishlistCount, setLocalWishlistCount] = useState(0);
   const [localCompareCount, setLocalCompareCount] = useState(0);

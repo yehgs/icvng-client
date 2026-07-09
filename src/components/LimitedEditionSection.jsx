@@ -5,6 +5,7 @@ import SummaryApi from "../common/SummaryApi";
 import ProductCarousel from "./ProductCarousel";
 import AxiosToastError from "../utils/AxiosToastError";
 import { Sparkles } from "lucide-react";
+import { useCountry } from "../context/CountryContext";
 
 /**
  * Section component for displaying Limited Edition products.
@@ -12,6 +13,7 @@ import { Sparkles } from "lucide-react";
  * followed by a carousel of all limited edition products.
  */
 const LimitedEditionSection = () => {
+  const { t } = useCountry();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -43,7 +45,7 @@ const LimitedEditionSection = () => {
 
   // Use the first product's banner settings for the section banner
   const bannerProduct = products[0];
-  const bannerText = bannerProduct?.limitedEdition?.bannerText || "Limited Edition";
+  const bannerText = bannerProduct?.limitedEdition?.bannerText || t("product.limitedEdition");
   const bannerColor = bannerProduct?.limitedEdition?.bannerColor || "#c8102e";
 
   return (
@@ -62,7 +64,7 @@ const LimitedEditionSection = () => {
               {bannerText}
             </h2>
             <p className="text-white/80 text-sm">
-              Exclusive products — available while stocks last
+              {t("homeSections.limitedEditionSubtitle")}
             </p>
           </div>
         </div>

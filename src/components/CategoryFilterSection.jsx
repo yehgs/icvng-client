@@ -179,7 +179,7 @@ const CategoryFilterSection = () => {
     <section className="py-8 bg-white">
       <div className="container mx-auto px-4 my-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h2 className="text-2xl font-bold text-gray-800">Shop by Category</h2>
+          <h2 className="text-2xl font-bold text-gray-800">{t("homeSections.shopByCategory")}</h2>
 
           {/* Category Filter Buttons - Horizontal scroll on mobile */}
           <div className="w-full md:w-auto overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
@@ -190,9 +190,9 @@ const CategoryFilterSection = () => {
                     ? "bg-green-700 text-white"
                     : "bg-gray-100 hover:bg-gray-200 text-gray-800"
                 } transition-colors`}
-                onClick={() => handleCategoryClick("all", "", "All Products")}
+                onClick={() => handleCategoryClick("all", "", t("homeSections.allProducts"))}
               >
-                All Products
+                {t("homeSections.allProducts")}
               </button>
               {categories &&
                 categories.length > 0 &&

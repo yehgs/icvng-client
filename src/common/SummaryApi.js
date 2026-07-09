@@ -357,6 +357,10 @@ const SummaryApi = {
     url: "/api/banner/active",
     method: "get",
   },
+  getHomeContentBlocks: {
+    url: "/api/home-content/public",
+    method: "get",
+  },
   updateBanner: {
     url: "/api/banner/update",
     method: "put",

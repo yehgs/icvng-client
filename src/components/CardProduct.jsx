@@ -27,10 +27,12 @@ import ProductRequestModal from "./ProductRequestModal";
 import AuthModal from "./AuthModel";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
 import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
+import { useCountry } from "../context/CountryContext";
 
 const CardProduct = ({ data }) => {
   // Merge server-side translations (FR/IT) over the English source data
   const translatedData = useEntityTranslation("product", data._id, data);
+  const { t } = useCountry();
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -129,7 +131,7 @@ const CardProduct = ({ data }) => {
     if (primaryPrice > 0 && hasAvailableStock) {
       options.push({
         price: primaryPrice,
-        label: onlineStock > 0 ? "1 to 3 Days" : "Special Order",
+        label: onlineStock > 0 ? t("product.oneToThreeDays") : t("product.specialOrder"),
         icon: <FaShippingFast className="w-3 h-3" />,
         color: "text-green-600",
         bgColor: "bg-green-50",
@@ -141,7 +143,7 @@ const CardProduct = ({ data }) => {
       if (data.price5weeksDelivery > 0) {
         options.push({
           price: data.price5weeksDelivery,
-          label: "5 Wks Delivery",
+          label: t("product.fiveWeeksDelivery"),
           icon: <FaCalendarAlt className="w-3 h-3" />,
           color: "text-red-600",
           bgColor: "bg-red-50",
@@ -152,7 +154,10 @@ const CardProduct = ({ data }) => {
       if (data.price3weeksDelivery > 0) {
         options.push({
           price: data.price3weeksDelivery,
-          label: "2 Wks Delivery",
+          // NOTE: shown to shoppers as "2 weeks" while the backend field/key
+          // remains price3weeksDelivery/"3weeks" — display label only, the
+          // underlying delivery-window business logic is untouched.
+          label: t("product.twoWeeksDelivery"),
           icon: <FaClock className="w-3 h-3" />,
           color: "text-orange-600",
           bgColor: "bg-orange-50",
@@ -206,7 +211,7 @@ const CardProduct = ({ data }) => {
         price3weeksDelivery: data.price3weeksDelivery,
         price5weeksDelivery: data.price5weeksDelivery,
       });
-      toast.success("Added to cart");
+      toast.success(t("product.addedToCart"));
       window.dispatchEvent(new CustomEvent("cart-updated"));
       return;
     }
@@ -223,7 +228,7 @@ const CardProduct = ({ data }) => {
         },
       });
       if (response.data.success) {
-        toast.success("Added to cart");
+        toast.success(t("product.addedToCart"));
         fetchCartItem();
         window.dispatchEvent(new CustomEvent("cart-updated"));
       }
@@ -245,13 +250,13 @@ const CardProduct = ({ data }) => {
 
       if (!isLoggedIn) {
         updateGuestCartItem(data._id, currentQty + 1, currentPriceOption);
-        toast.success("Quantity updated");
+        toast.success(t("product.quantityUpdated"));
         window.dispatchEvent(new CustomEvent("cart-updated"));
         return;
       }
       const response = await updateCartItem(cartId, currentQty + 1);
       if (response?.success) {
-        toast.success("Quantity updated");
+        toast.success(t("product.quantityUpdated"));
         window.dispatchEvent(new CustomEvent("cart-updated"));
       }
     } catch (error) {
@@ -278,10 +283,10 @@ const CardProduct = ({ data }) => {
       }
       if (currentQty === 1) {
         await deleteCartItem(cartId);
-        toast.success("Removed from cart");
+        toast.success(t("product.removedFromCart"));
       } else {
         const response = await updateCartItem(cartId, currentQty - 1);
-        if (response?.success) toast.success("Quantity updated");
+        if (response?.success) toast.success(t("product.quantityUpdated"));
       }
       window.dispatchEvent(new CustomEvent("cart-updated"));
     } catch (error) {
@@ -313,8 +318,8 @@ const CardProduct = ({ data }) => {
   const copyToClipboard = (productUrl) => {
     navigator.clipboard
       .writeText(productUrl)
-      .then(() => toast.success("Product link copied!"))
-      .catch(() => toast.error("Failed to copy link"));
+      .then(() => toast.success(t("product.linkCopied")))
+      .catch(() => toast.error(t("product.copyLinkFailed")));
   };
 
   const handleQuickCheckout = async (e) => {
@@ -374,7 +379,7 @@ const CardProduct = ({ data }) => {
           fetchCartItem?.();
         }}
         mode="login"
-        title="Sign in to add to cart"
+        title={t("product.signInToAddToCart")}
         message="Create an account or sign in to add products to your cart."
       />
 
@@ -395,7 +400,7 @@ const CardProduct = ({ data }) => {
             <button
               onClick={handleShare}
               className="bg-white rounded-full p-2 shadow-sm hover:shadow-md transition-all w-10 h-10 flex items-center justify-center"
-              title="Share product"
+              title={t("product.shareProduct")}
             >
               <FaShare className="text-gray-500 hover:text-blue-600 transition-colors" />
             </button>
@@ -418,12 +423,12 @@ const CardProduct = ({ data }) => {
                 backgroundColor: data.limitedEdition?.bannerColor || "#c8102e",
               }}
             >
-              {data.limitedEdition?.bannerText || "Limited Edition"}
+              {data.limitedEdition?.bannerText || t("product.limitedEdition")}
             </span>
           )}
           {data.featured && (
             <span className="text-white bg-yellow-500 px-2 py-0.5 text-xs font-medium rounded-full">
-              Featured
+              {t("product.featured")}
             </span>
           )}
           {Boolean(data.discount) && (
@@ -454,7 +459,7 @@ const CardProduct = ({ data }) => {
         )}
         {onlineStock > 0 && (
           <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
-            Stock: {onlineStock}
+            {t("product.stock")}: {onlineStock}
           </div>
         )}
       </Link>
@@ -535,7 +540,7 @@ const CardProduct = ({ data }) => {
         </div>
       ) : (
         <div className="mb-3 p-2 bg-gray-100 rounded text-center">
-          <p className="text-xs text-gray-500">No delivery options available</p>
+          <p className="text-xs text-gray-500">{t("product.noDeliveryOptions")}</p>
         </div>
       )}
 
@@ -547,7 +552,7 @@ const CardProduct = ({ data }) => {
             className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-2 px-3 rounded-md transition flex items-center justify-center border border-yellow-300"
           >
             <FaSadTear className="mr-2 text-yellow-600" />
-            <span className="text-sm">Request Product</span>
+            <span className="text-sm">{t("product.requestProduct")}</span>
           </button>
         ) : (
           <>
@@ -561,7 +566,7 @@ const CardProduct = ({ data }) => {
                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white" />
                 ) : (
                   <>
-                    <BsCart4 className="mr-2" /> Add to Cart
+                    <BsCart4 className="mr-2" /> {t("product.addToCart")}
                   </>
                 )}
               </button>
@@ -594,7 +599,7 @@ const CardProduct = ({ data }) => {
               onClick={handleQuickCheckout}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-3 rounded-md transition flex items-center justify-center text-sm"
             >
-              <FaShoppingCart className="mr-2" /> Quick Checkout
+              <FaShoppingCart className="mr-2" /> {t("product.quickCheckout")}
             </button>
           </>
         )}

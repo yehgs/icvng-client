@@ -5,11 +5,13 @@ import { ArrowRight, Calendar, User, Clock, Coffee } from "lucide-react";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
+import { useCountry } from "../context/CountryContext";
 
 /**
  * Blog section component for homepage featuring latest blog posts
  */
 const BlogSection = () => {
+  const { t } = useCountry();
   const [featuredPosts, setFeaturedPosts] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -210,12 +212,11 @@ const BlogSection = () => {
           <div className="flex items-center justify-center mb-4">
             <Coffee className="w-8 h-8 text-amber-600 mr-3" />
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800">
-              Coffee Stories & Insights
+              {t("homeSections.blogHeading")}
             </h2>
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto text-lg">
-            Dive deep into the world of coffee with expert insights, origin
-            stories, and brewing techniques from our coffee enthusiasts.
+            {t("homeSections.blogSubtitle")}
           </p>
         </div>
 
@@ -232,7 +233,7 @@ const BlogSection = () => {
                 to="/blogs"
                 className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-lg hover:from-amber-700 hover:to-orange-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
               >
-                <span>Explore All Stories</span>
+                <span>{t("homeSections.exploreAllStories")}</span>
                 <ArrowRight size={20} className="ml-2" />
               </Link>
             </div>

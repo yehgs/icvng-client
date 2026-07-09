@@ -13,6 +13,7 @@ import BlogSection from "../components/BlogSection";
 import PopularProductsSection from "../components/PopularProductsSection";
 import CoffeeOriginSection from "../components/CoffeeOriginSection";
 import TestimonialsSection from "../components/TestimonialsSection";
+import TrustBadgesSection from "../components/TrustBadgesSection";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 
@@ -164,83 +165,7 @@ const Home = () => {
       <PopularProductsSection />
 
       {/* Additional Info Banners */}
-      <div className="container mx-auto py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-amber-50 p-6 rounded-lg shadow flex items-center">
-            <div className="mr-4 text-amber-800">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="2" y="4" width="20" height="16" rx="2" />
-                <path d="M7 15h0M2 9.5h20" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-amber-900">Free Shipping</h3>
-              <p className="text-sm text-amber-800">
-                On orders over ₦100,000{" "}
-                <span className="text-xs text-amber-600 font-bold">
-                  (Within Lagos only)
-                </span>
-              </p>
-            </div>
-          </div>
-          <div className="bg-amber-50 p-6 rounded-lg shadow flex items-center">
-            <div className="mr-4 text-amber-800">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2v20M2 12h20" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-amber-900">Coffee Subscription</h3>
-              <p className="text-sm text-amber-800">
-                Fresh beans delivered monthly
-              </p>
-            </div>
-          </div>
-          <div className="bg-amber-50 p-6 rounded-lg shadow flex items-center">
-            <div className="mr-4 text-amber-800">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-            </div>
-            <div>
-              <h3 className="font-bold text-amber-900">Expert Support</h3>
-              <p className="text-sm text-amber-800">Coffee experts available</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <TrustBadgesSection />
 
       {/* Testimonials Section */}
       <TestimonialsSection />

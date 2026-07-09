@@ -380,6 +380,24 @@ const GlobalProvider = ({ children }) => {
     loadWishlist(); loadCompare(); fetchExchangeRates();
   }, []);
 
+  // ONE-TIME MIGRATION: an earlier build had a feedback-loop bug where the
+  // auto-detected default currency got written into localStorage's
+  // 'selectedCurrency' as if it were an explicit user pick — permanently
+  // locking some visitors (mostly outside Nigeria) onto NGN, since every
+  // browser that ever loaded that build has "NGN" sitting in that key.
+  // This fix respects real explicit choices, so a poisoned value from the
+  // old bug looks identical to a genuine one and would never self-correct.
+  // Clear it once per browser (guarded by a marker key) so the currency
+  // effect below falls through to the real country default; any choice a
+  // shopper makes AFTER this runs is untouched.
+  useEffect(() => {
+    const MIGRATION_KEY = 'icvng_currency_migration_v1';
+    if (!localStorage.getItem(MIGRATION_KEY)) {
+      localStorage.removeItem('selectedCurrency');
+      localStorage.setItem(MIGRATION_KEY, '1');
+    }
+  }, []);
+
   // Keep selectedCurrency following the visited domain's native currency.
   // localStorage is per-origin, so a choice made on i-coffee.tg never leaks
   // to i-coffee.ng — if nothing is EXPLICITLY saved for THIS domain, default
