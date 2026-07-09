@@ -1,5 +1,6 @@
 // client/src/pages/AboutUs.jsx
 import React from 'react';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   FaCoffee,
   FaHandshake,
@@ -17,30 +18,31 @@ import {
 import { Link } from 'react-router-dom';
 
 const AboutUs = () => {
+  const { t } = useTranslation();
   const values = [
     {
       icon: <FaHeart className="text-5xl text-amber-600" />,
-      title: 'Quality First',
+      title: t('about.valuesQualityTitle'),
       description:
-        'We ensure every product meets the highest quality standards for our customers.',
+        t('about.valuesQualityDesc'),
     },
     {
       icon: <FaHandshake className="text-5xl text-amber-600" />,
-      title: 'Trust & Integrity',
+      title: t('about.valuesTrustTitle'),
       description:
-        'Building lasting relationships through transparency and ethical practices.',
+        t('about.valuesTrustDesc'),
     },
     {
       icon: <FaLightbulb className="text-5xl text-amber-600" />,
-      title: 'Innovation',
+      title: t('about.valuesInnovationTitle'),
       description:
-        'Continuously improving our platform to serve you better with cutting-edge technology.',
+        t('about.valuesInnovationDesc'),
     },
     {
       icon: <FaUsers className="text-5xl text-amber-600" />,
-      title: 'Community',
+      title: t('about.valuesCommunityTitle'),
       description:
-        'Fostering a vibrant coffee community connecting suppliers and enthusiasts.',
+        t('about.valuesCommunityDesc'),
     },
   ];
 
@@ -48,61 +50,61 @@ const AboutUs = () => {
     {
       icon: <FaUsers className="text-4xl text-amber-600" />,
       number: '797+',
-      label: 'Regular Customers',
+      label: t('about.statCustomers'),
     },
     {
       icon: <FaCoffee className="text-4xl text-amber-600" />,
       number: '858+',
-      label: 'Coffee Products',
+      label: t('about.statProducts'),
     },
     {
       icon: <FaHandshake className="text-4xl text-amber-600" />,
       number: '65+',
-      label: 'Local & International Brands',
+      label: t('about.statBrands'),
     },
     {
       icon: <FaGlobeAfrica className="text-4xl text-amber-600" />,
       number: '36+',
-      label: 'States Presence (Including FCT)',
+      label: t('about.statStates'),
     },
   ];
 
   const whyChooseUs = [
     {
       icon: <FaAward className="text-3xl text-amber-600" />,
-      title: 'Premium Quality',
+      title: t('about.featPremiumTitle'),
       description:
-        'Only the finest coffee products from trusted suppliers make it to our platform.',
+        t('about.featPremiumDesc'),
     },
     {
       icon: <FaTruck className="text-3xl text-amber-600" />,
-      title: 'Fast Delivery',
+      title: t('about.featDeliveryTitle'),
       description:
-        'Multiple delivery options to ensure you get your coffee when you need it.',
+        t('about.featDeliveryDesc'),
     },
     {
       icon: <FaShieldAlt className="text-3xl text-amber-600" />,
-      title: 'Secure Shopping',
+      title: t('about.featSecureTitle'),
       description:
-        'Safe and secure payment methods with buyer protection guarantee.',
+        t('about.featSecureDesc'),
     },
     {
       icon: <FaLeaf className="text-3xl text-amber-600" />,
-      title: 'Sustainability',
+      title: t('about.featSustainTitle'),
       description:
-        'Supporting sustainable and ethical coffee sourcing practices.',
+        t('about.featSustainDesc'),
     },
     {
       icon: <FaStar className="text-3xl text-amber-600" />,
-      title: 'Customer Support',
+      title: t('about.featSupportTitle'),
       description:
         '24/7 dedicated support team ready to assist with your queries.',
     },
     {
       icon: <FaRocket className="text-3xl text-amber-600" />,
-      title: 'Easy to Use',
+      title: t('about.featEasyTitle'),
       description:
-        'User-friendly platform designed for seamless coffee shopping experience.',
+        t('about.featEasyDesc'),
     },
   ];
 
@@ -130,7 +132,7 @@ const AboutUs = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-6">
-            Our Mission
+            {t('about.missionTitle')}
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed mb-8">
             To revolutionize the coffee industry in Nigeria by creating a
@@ -154,7 +156,7 @@ const AboutUs = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Who We Are
+                {t('about.whoWeAreTitle')}
               </h2>
               <p className="text-lg text-gray-600">
                 A passionate team dedicated to the coffee industry
@@ -260,7 +262,7 @@ const AboutUs = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Why Choose I-Coffee?
+            {t('about.whyChooseTitle')}
           </h2>
           <p className="text-lg text-gray-600">
             What makes us Nigeria's preferred coffee marketplace

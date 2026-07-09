@@ -276,7 +276,7 @@ const ProductDisplayPage = () => {
               bgColor: "bg-orange-50",
               borderColor: "border-orange-200",
               description: "Special order — Delivery in approximately 2 weeks",
-              delivery: "3 Week Special Order",
+              delivery: "2 Week Special Order",
             },
           ]
         : []),

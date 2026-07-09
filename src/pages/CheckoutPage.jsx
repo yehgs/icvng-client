@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { nigeriaStatesLgas } from '../data/nigeria-states-lgas';
 // Phase 4: country-aware payment routing
 import { useCountry } from '../context/CountryContext.jsx';
+import { useTranslation } from '../hooks/useTranslation';
 import {
   MapPin, Truck, CreditCard, FileText, ChevronRight,
   Plus, Loader2, Package, Minus, Trash2, Store,
@@ -22,6 +23,7 @@ const STEPS = ['Address', 'Shipping', 'Payment', 'Review'];
 
 // ─── Simple inline address form ──────────────────────────────────────────────
 function AddressForm({ onSave, saving }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState({
     fullName: '', phone: '', address_line: '', address_line_2: '',
     city: '', state: 'Rivers', lga: '', country: 'Nigeria', label: '',
@@ -47,7 +49,7 @@ function AddressForm({ onSave, saving }) {
     <div className="space-y-3 border border-gray-200 p-4 rounded-lg bg-gray-50">
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">Full Name *</label>
-        <input placeholder="e.g. Chidi Okeke" value={form.fullName}
+        <input placeholder={t('checkout.namePlaceholder')} value={form.fullName}
           onChange={(e) => set('fullName', e.target.value)} className={inp} />
       </div>
       <div>
@@ -57,18 +59,18 @@ function AddressForm({ onSave, saving }) {
       </div>
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">Street Address *</label>
-        <input placeholder="House number and street name" value={form.address_line}
+        <input placeholder={t('checkout.streetLabel')} value={form.address_line}
           onChange={(e) => set('address_line', e.target.value)} className={inp} />
       </div>
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">Apartment / Floor (optional)</label>
-        <input placeholder="e.g. Flat 3B, Block A" value={form.address_line_2}
+        <input placeholder={t('checkout.streetPlaceholder')} value={form.address_line_2}
           onChange={(e) => set('address_line_2', e.target.value)} className={inp} />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">City / Town *</label>
-          <input placeholder="e.g. Port Harcourt" value={form.city}
+          <input placeholder={t('checkout.cityPlaceholder')} value={form.city}
             onChange={(e) => set('city', e.target.value)} className={inp} />
         </div>
         <div>
@@ -88,14 +90,14 @@ function AddressForm({ onSave, saving }) {
             LGA <span className="font-normal text-gray-500">— for accurate shipping cost</span>
           </label>
           <select value={form.lga} onChange={(e) => set('lga', e.target.value)} className={inp}>
-            <option value="">Select LGA...</option>
+            <option value="">{t('checkout.selectLGA')}</option>
             {lgas.map((l) => <option key={l} value={l}>{l}</option>)}
           </select>
         </div>
       )}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">Address Label (optional)</label>
-        <input placeholder="e.g. Home, Office" value={form.label}
+        <input placeholder={t('checkout.addressLabelPlaceholder')} value={form.label}
           onChange={(e) => set('label', e.target.value)} className={inp} />
       </div>
       <button type="button" onClick={handleUse} disabled={saving}
@@ -148,6 +150,7 @@ function CartAdjuster({ items, onUpdate, onRemove, formatPrice }) {
 
 // ─── Main Checkout ────────────────────────────────────────────────────────────
 const CheckoutPage = () => {
+  const { t } = useTranslation();
   const { isLoggedIn, fetchCartItem, fetchOrder, updateCartItem, deleteCartItem, isMerging } = useGlobalContext();
   const { selectedCurrency, formatPrice, convertPrice, getPaymentMethod, exchangeRates } = useCurrency();
   // Phase 4: country-aware payment availability
@@ -571,7 +574,7 @@ const CheckoutPage = () => {
                     <label className="block text-xs font-semibold text-gray-700 mb-1">Order Notes (optional)</label>
                     <textarea value={contact.notes} rows={3} className={inp + ' resize-none'}
                       onChange={(e) => setContact((p) => ({ ...p, notes: e.target.value }))}
-                      placeholder="Any special instructions for your order?" />
+                      placeholder={t('checkout.specialInstructions')} />
                   </div>
 
                   <div className="flex gap-3">
@@ -679,14 +682,14 @@ const CheckoutPage = () => {
                 </div>
                 {selectedMethod && (
                   <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
+                    <span>{t('checkout.shipping')}</span>
                     <span>{shippingCost === 0 ? <span className="text-green-600 font-semibold">FREE</span> : formatPrice(shippingCost)}</span>
                   </div>
                 )}
               </div>
               <div className="border-t border-gray-200 pt-3">
                 <div className="flex justify-between font-bold text-gray-900 text-base">
-                  <span>Total</span>
+                  <span>{t('checkout.total')}</span>
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>

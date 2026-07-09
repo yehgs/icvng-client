@@ -1,6 +1,6 @@
 // client/src/utils/Axios.js
-import axios from "axios";
-import SummaryApi, { baseURL } from "../common/SummaryApi";
+import axios from 'axios';
+import SummaryApi, { baseURL } from '../common/SummaryApi';
 
 const Axios = axios.create({
   baseURL: baseURL,
@@ -10,7 +10,7 @@ const Axios = axios.create({
 // Attach access token + storefront hostname to every request
 Axios.interceptors.request.use(
   async (config) => {
-    const accessToken = localStorage.getItem("accesstoken");
+    const accessToken = localStorage.getItem('accesstoken');
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
     }
@@ -19,12 +19,12 @@ Axios.interceptors.request.use(
     // never the storefront's (i-coffee.tg, i-coffee.bj, etc). Without this,
     // countryDetect middleware can never resolve anything but the default
     // country. Send the actual browser hostname so it can.
-    if (typeof window !== "undefined" && window.location?.hostname) {
-      config.headers["X-Storefront-Host"] = window.location.host; // includes :port for local dev
+    if (typeof window !== 'undefined' && window.location?.hostname) {
+      config.headers['X-Storefront-Host'] = window.location.host; // includes :port for local dev
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 // On 401: try to refresh the access token using the stored refresh token
@@ -36,11 +36,11 @@ Axios.interceptors.response.use(
     if (error.response?.status === 401 && !originRequest._retry) {
       originRequest._retry = true;
 
-      const refreshToken = localStorage.getItem("refreshToken");
+      const refreshToken = localStorage.getItem('refreshToken');
       if (refreshToken) {
         const newAccessToken = await refreshAccessToken(refreshToken);
         if (newAccessToken) {
-          localStorage.setItem("accesstoken", newAccessToken);
+          localStorage.setItem('accesstoken', newAccessToken);
           originRequest.headers.Authorization = `Bearer ${newAccessToken}`;
           return Axios(originRequest);
         }
@@ -48,7 +48,7 @@ Axios.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 const refreshAccessToken = async (refreshToken) => {
@@ -62,14 +62,15 @@ const refreshAccessToken = async (refreshToken) => {
 
     // Server returns either data.accessToken or data.accesstoken — handle both
     const token =
-      response.data?.data?.accessToken || response.data?.data?.accesstoken;
+      response.data?.data?.accessToken ||
+      response.data?.data?.accesstoken;
 
     if (token) {
-      localStorage.setItem("accesstoken", token);
+      localStorage.setItem('accesstoken', token);
     }
     return token || null;
   } catch (error) {
-    console.error("Token refresh failed:", error?.response?.status);
+    console.error('Token refresh failed:', error?.response?.status);
     return null;
   }
 };

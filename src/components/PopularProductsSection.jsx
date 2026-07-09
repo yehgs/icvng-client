@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from '../hooks/useTranslation';
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import ProductCarousel from "./ProductCarousel";
@@ -10,6 +11,7 @@ import AxiosToastError from "../utils/AxiosToastError";
  * Products sorted by: 1) Average rating, 2) Review count, 3) Featured status
  */
 const PopularProductsSection = () => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,8 +53,8 @@ const PopularProductsSection = () => {
     <section className="py-8 bg-gray-50">
       <ProductCarousel
         products={products}
-        title="Most Popular Products"
-        subtitle="Loved by our customers"
+        title={t('homeSections.mostPopular')}
+        subtitle={t('homeSections.mostPopularSub')}
         autoplay={true}
         autoplaySpeed={7000}
         itemsPerSlide={4}

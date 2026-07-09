@@ -257,6 +257,9 @@ const GlobalProvider = ({ children }) => {
         r.data.data.filter((x) => x.source !== 'MANUAL').forEach(process);
         r.data.data.filter((x) => x.source === 'MANUAL').forEach(process);
         setExchangeRates(rateMap);
+        // PHASE 6: persist so the DisplayPriceInNaira shim (pure fn, outside
+        // React) can convert legacy call sites to the active currency.
+        try { localStorage.setItem('exchangeRates', JSON.stringify(rateMap)); } catch {}
       }
     } catch {} finally { setCurrencyLoading(false); }
   };

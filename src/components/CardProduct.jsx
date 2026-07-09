@@ -152,7 +152,7 @@ const CardProduct = ({ data }) => {
       if (data.price3weeksDelivery > 0) {
         options.push({
           price: data.price3weeksDelivery,
-          label: "3 Wks Delivery",
+          label: "2 Wks Delivery",
           icon: <FaClock className="w-3 h-3" />,
           color: "text-orange-600",
           bgColor: "bg-orange-50",

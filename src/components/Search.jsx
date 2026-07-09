@@ -9,6 +9,7 @@ import useMobile from "../hooks/useMobile";
 import Axios from "../utils/Axios";
 import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
 import { setSearchTerm } from "../store/filterSlice";
+import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
 
 const valideURLConvert = (name) => {
   const url = name
@@ -157,14 +158,22 @@ const SearchInput = () => {
                 <div className="absolute left-12 top-1/2 transform -translate-y-1/2 pointer-events-none opacity-70">
                   <TypeAnimation
                     sequence={[
-                      "Search Nespresso", 1000,
-                      "Search Caffitaly", 1000,
-                      "Search Dolce Gusto", 1000,
-                      "Search Carimalli", 1000,
-                      "Search Lavazza", 1000,
-                      "Search Coffee Machine", 1000,
-                      "Search Barattini", 1000,
-                      "Search Ground Coffee", 1000,
+                      "Search Nespresso",
+                      1000,
+                      "Search Caffitaly",
+                      1000,
+                      "Search Dolce Gusto",
+                      1000,
+                      "Search Carimalli",
+                      1000,
+                      "Search Lavazza",
+                      1000,
+                      "Search Coffee Machine",
+                      1000,
+                      "Search Barattini",
+                      1000,
+                      "Search Ground Coffee",
+                      1000,
                       "Search Instant Coffee",
                     ]}
                     wrapper="span"
@@ -234,21 +243,69 @@ const SearchInput = () => {
                     />
                   </div>
                   <div className="flex-grow">
-                    <h4 className="font-medium text-gray-800">{product.name}</h4>
+                    <h4 className="font-medium text-gray-800">
+                      {product.name}
+                    </h4>
                     <div className="flex items-center text-sm text-gray-600 mt-1">
                       {product.productType && (
-                        <span className="mr-3">{product.productType.replace("_", " ")}</span>
+                        <span className="mr-3">
+                          {product.productType.replace("_", " ")}
+                        </span>
                       )}
                       {product.brand && product.brand[0] && (
                         <span className="mr-3">{product.brand[0].name}</span>
                       )}
                       {product.roastLevel && (
-                        <span className="mr-3">Roast: {product.roastLevel}</span>
+                        <span className="mr-3">
+                          Roast: {product.roastLevel}
+                        </span>
                       )}
                     </div>
                   </div>
-                  <div className="text-primary-600 font-bold">
-                    {DisplayPriceInNaira(product.btcPrice > 0 ? product.btcPrice : product.price)}
+                  <div className="text-right">
+                    {(() => {
+                      // Same rule as the single product page: category
+                      // decides 5-week vs 3-week delivery, NOT productType.
+                      // productType can be mislabeled (e.g. a capsule
+                      // machine tagged "COFFEE" for its coffee-pod side),
+                      // but category (capsule-machine/coffee-maker) is
+                      // the authoritative signal — see config/deliveryCategories.js
+                      const isMachine = isFiveWeekDeliveryCategory(
+                        product.category,
+                      );
+                      const deliveryPrice = isMachine
+                        ? product.price5weeksDelivery
+                        : product.price3weeksDelivery;
+                      const deliveryLabel = isMachine
+                        ? "5wk delivery"
+                        : "3wk delivery";
+                      const hasBtcPrice = product.btcPrice > 0;
+                      const hasDeliveryPrice = deliveryPrice > 0;
+
+                      if (!hasBtcPrice && !hasDeliveryPrice) return null;
+
+                      return (
+                        <>
+                          {hasBtcPrice && (
+                            <div className="text-primary-600 font-bold">
+                              {DisplayPriceInNaira(product.btcPrice)}
+                            </div>
+                          )}
+                          {hasDeliveryPrice && (
+                            <div
+                              className={
+                                hasBtcPrice
+                                  ? "text-xs text-gray-500"
+                                  : "text-primary-600 font-bold"
+                              }
+                            >
+                              {hasBtcPrice ? `${deliveryLabel}: ` : ""}
+                              {DisplayPriceInNaira(deliveryPrice)}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               ))}
@@ -262,7 +319,9 @@ const SearchInput = () => {
               </div>
             </>
           ) : searchQuery.length > 2 ? (
-            <div className="p-4 text-center text-gray-500">No products found</div>
+            <div className="p-4 text-center text-gray-500">
+              No products found
+            </div>
           ) : (
             <div className="p-4 text-center text-gray-500">
               Type at least 3 characters to search

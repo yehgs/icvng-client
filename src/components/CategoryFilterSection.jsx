@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from '../hooks/useTranslation';
 import { useNavigate } from "react-router-dom";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
@@ -14,6 +15,7 @@ import CardProduct from "./CardProduct";
  * - NOT client-side filtering of pre-loaded products
  */
 const CategoryFilterSection = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -279,14 +281,14 @@ const CategoryFilterSection = () => {
               <button
                 className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 md:-translate-x-4 bg-white shadow rounded-full p-2 hover:bg-gray-100 transition-colors z-10"
                 onClick={prevSlide}
-                aria-label="Previous slide"
+                aria-label={t('homeSections.previousSlide')}
               >
                 <ChevronLeft size={20} className="text-gray-700" />
               </button>
               <button
                 className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1 md:translate-x-4 bg-white shadow rounded-full p-2 hover:bg-gray-100 transition-colors z-10"
                 onClick={nextSlide}
-                aria-label="Next slide"
+                aria-label={t('homeSections.nextSlide')}
               >
                 <ChevronRight size={20} className="text-gray-700" />
               </button>

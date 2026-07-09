@@ -12,6 +12,7 @@ import CategoryFilterSection from "../components/CategoryFilterSection";
 import BlogSection from "../components/BlogSection";
 import PopularProductsSection from "../components/PopularProductsSection";
 import CoffeeOriginSection from "../components/CoffeeOriginSection";
+import TestimonialsSection from "../components/TestimonialsSection";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 
@@ -240,6 +241,9 @@ const Home = () => {
           </div>
         </div>
       </div>
+
+      {/* Testimonials Section */}
+      <TestimonialsSection />
     </section>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from '../hooks/useTranslation';
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import ProductCarousel from "./ProductCarousel";
@@ -9,6 +10,7 @@ import AxiosToastError from "../utils/AxiosToastError";
  * Layout: Single row (6 on desktop, 4 on tablet, 2 on mobile)
  */
 const FeaturedProductsSection = () => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,8 +56,8 @@ const FeaturedProductsSection = () => {
     <section className="py-8 bg-gray-50">
       <ProductCarousel
         products={products}
-        title="Featured Products"
-        subtitle="Our favorite selections for you"
+        title={t('homeSections.featured')}
+        subtitle={t('homeSections.featuredSub')}
         autoplay={false}
         itemsPerSlide={4}
       />

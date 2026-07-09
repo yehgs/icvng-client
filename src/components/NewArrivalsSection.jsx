@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from '../hooks/useTranslation';
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import ProductCarousel from "./ProductCarousel";
@@ -9,6 +10,7 @@ import AxiosToastError from "../utils/AxiosToastError";
  * Layout: 2 rows (5+5 on desktop, 3+3 on tablet, 2+2 on mobile)
  */
 const NewArrivalsSection = () => {
+  const { t } = useTranslation();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,8 +48,8 @@ const NewArrivalsSection = () => {
     <section className="py-8 bg-white">
       <ProductCarousel
         products={products}
-        title="New Arrivals"
-        subtitle="Check out our latest products"
+        title={t('homeSections.newArrivals')}
+        subtitle={t('homeSections.newArrivalsSub')}
         autoplay={true}
         autoplaySpeed={2000}
         itemsPerSlide={4}
