@@ -13,6 +13,7 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
+import { useCountry } from "../context/CountryContext";
 
 const AddressForm = ({
   onSubmit,
@@ -20,6 +21,7 @@ const AddressForm = ({
   initialData = null,
   loading = false,
 }) => {
+  const { t } = useCountry();
   const [nigerianStates, setNigerianStates] = useState([]);
   const [lgas, setLgas] = useState([]);
   const [loadingStates, setLoadingStates] = useState(true);
@@ -100,11 +102,11 @@ const AddressForm = ({
       if (response.data.success) {
         setNigerianStates(response.data.data);
       } else {
-        toast.error("Failed to load Nigerian states");
+        toast.error(t('address.failedLoadStates'));
       }
     } catch (error) {
       console.error("Error fetching states:", error);
-      toast.error("Failed to load Nigerian states");
+      toast.error(t('address.failedLoadStates'));
     } finally {
       setLoadingStates(false);
     }
@@ -125,12 +127,12 @@ const AddressForm = ({
       if (response.data.success) {
         setLgas(response.data.data);
       } else {
-        toast.error("Failed to load LGAs");
+        toast.error(t('address.failedLoadLgas'));
         setLgas([]);
       }
     } catch (error) {
       console.error("Error fetching LGAs:", error);
-      toast.error("Failed to load LGAs");
+      toast.error(t('address.failedLoadLgas'));
       setLgas([]);
     } finally {
       setLoadingLgas(false);
@@ -142,13 +144,13 @@ const AddressForm = ({
       // Validate mobile number format
       const mobileRegex = /^(\+234|0)[789][01]\d{8}$/;
       if (!mobileRegex.test(data.mobile.replace(/\s/g, ""))) {
-        toast.error("Please enter a valid Nigerian mobile number");
+        toast.error(t('address.invalidMobile'));
         return;
       }
 
       // Validate postal code format
       if (!/^\d{6}$/.test(data.postal_code)) {
-        toast.error("Postal code must be exactly 6 digits");
+        toast.error(t('address.invalidPostalCode'));
         return;
       }
 
@@ -180,11 +182,11 @@ const AddressForm = ({
   };
 
   const addressTypes = [
-    { value: "home", label: "Home", icon: "🏠" },
-    { value: "office", label: "Office", icon: "🏢" },
-    { value: "warehouse", label: "Warehouse", icon: "🏭" },
-    { value: "pickup_point", label: "Pickup Point", icon: "📦" },
-    { value: "other", label: "Other", icon: "📍" },
+    { value: "home", label: t('address.typeHome'), icon: "🏠" },
+    { value: "office", label: t('address.typeOffice'), icon: "🏢" },
+    { value: "warehouse", label: t('address.typeWarehouse'), icon: "🏭" },
+    { value: "pickup_point", label: t('address.typePickupPoint'), icon: "📦" },
+    { value: "other", label: t('address.typeOther'), icon: "📍" },
   ];
 
   const getCurrentLocation = () => {
@@ -196,15 +198,15 @@ const AddressForm = ({
             "coordinates.longitude",
             position.coords.longitude.toString()
           );
-          toast.success("Location captured successfully");
+          toast.success(t('address.locationCaptured'));
         },
         (error) => {
           console.error("Error getting location:", error);
-          toast.error("Failed to get current location");
+          toast.error(t('address.locationFailed'));
         }
       );
     } else {
-      toast.error("Geolocation is not supported by this browser");
+      toast.error(t('address.geolocationNotSupported'));
     }
   };
 
@@ -212,10 +214,10 @@ const AddressForm = ({
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm">
       <div className="mb-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          {initialData ? "Edit Address" : "Add New Address"}
+          {initialData ? t('address.editAddress') : t('address.addNewAddress')}
         </h2>
         <p className="text-gray-600">
-          Please provide your complete Nigerian address details
+          {t('address.nigerianAddressPrompt')}
         </p>
       </div>
 
@@ -224,12 +226,12 @@ const AddressForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Address Line 1 *
+              {t('address.addressLine1')} *
             </label>
             <Controller
               name="address_line"
               control={control}
-              rules={{ required: "Address line is required" }}
+              rules={{ required: t('address.addressLineRequired') }}
               render={({ field }) => (
                 <div className="relative">
                   <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -239,7 +241,7 @@ const AddressForm = ({
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                       errors.address_line ? "border-red-300" : "border-gray-300"
                     }`}
-                    placeholder="Enter your street address"
+                    placeholder={t('address.streetAddressPlaceholder')}
                     maxLength={500}
                   />
                 </div>
@@ -255,7 +257,7 @@ const AddressForm = ({
 
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Address Line 2 (Optional)
+              {t('address.addressLine2')}
             </label>
             <Controller
               name="address_line_2"
@@ -267,7 +269,7 @@ const AddressForm = ({
                     {...field}
                     type="text"
                     className="pl-10 pr-4 py-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Apartment, suite, unit, building, floor, etc."
+                    placeholder={t('address.addressLine2Placeholder')}
                     maxLength={200}
                   />
                 </div>
@@ -280,12 +282,12 @@ const AddressForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              State *
+              {t('address.state')} *
             </label>
             <Controller
               name="state"
               control={control}
-              rules={{ required: "State is required" }}
+              rules={{ required: t('address.stateRequired') }}
               render={({ field }) => (
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -296,7 +298,7 @@ const AddressForm = ({
                     }`}
                     disabled={loadingStates}
                   >
-                    <option value="">Select State</option>
+                    <option value="">{t('address.selectState')}</option>
                     {nigerianStates.map((state) => (
                       <option key={state.name} value={state.name}>
                         {state.name} ({state.capital})
@@ -316,12 +318,12 @@ const AddressForm = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Local Government Area (LGA) *
+              {t('address.lga')} *
             </label>
             <Controller
               name="lga"
               control={control}
-              rules={{ required: "LGA is required" }}
+              rules={{ required: t('address.lgaRequired') }}
               render={({ field }) => (
                 <div className="relative">
                   <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -333,7 +335,7 @@ const AddressForm = ({
                     disabled={!watchedState || loadingLgas}
                   >
                     <option value="">
-                      {loadingLgas ? "Loading LGAs..." : "Select LGA"}
+                      {loadingLgas ? t('address.loadingLgas') : t('address.selectLga')}
                     </option>
                     {lgas.map((lga) => (
                       <option key={lga.name} value={lga.name}>
@@ -357,12 +359,12 @@ const AddressForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              City/Town *
+              {t('address.cityTown')} *
             </label>
             <Controller
               name="city"
               control={control}
-              rules={{ required: "City is required" }}
+              rules={{ required: t('address.cityRequired') }}
               render={({ field }) => (
                 <div className="relative">
                   <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -372,7 +374,7 @@ const AddressForm = ({
                     className={`pl-10 pr-4 py-3 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                       errors.city ? "border-red-300" : "border-gray-300"
                     }`}
-                    placeholder="Enter city or town"
+                    placeholder={t('address.cityPlaceholder')}
                   />
                 </div>
               )}
@@ -387,7 +389,7 @@ const AddressForm = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Area/Ward (Optional)
+              {t('address.areaWard')}
             </label>
             <Controller
               name="area"
@@ -399,7 +401,7 @@ const AddressForm = ({
                     {...field}
                     type="text"
                     className="pl-10 pr-4 py-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Enter area or ward"
+                    placeholder={t('address.areaPlaceholder')}
                   />
                 </div>
               )}
@@ -411,7 +413,7 @@ const AddressForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Postal Code (Optional)
+              {t('address.postalCode')}
             </label>
             <Controller
               name="postal_code"
@@ -419,7 +421,7 @@ const AddressForm = ({
               rules={{
                 pattern: {
                   value: /^\d{6}$/,
-                  message: "Postal code must be exactly 6 digits",
+                  message: t('address.invalidPostalCode'),
                 },
               }}
               render={({ field }) => (
@@ -447,16 +449,16 @@ const AddressForm = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Mobile Number *
+              {t('address.mobileNumber')} *
             </label>
             <Controller
               name="mobile"
               control={control}
               rules={{
-                required: "Mobile number is required",
+                required: t('address.mobileRequired'),
                 pattern: {
                   value: /^(\+234|0)[789][01]\d{8}$/,
-                  message: "Please enter a valid Nigerian mobile number",
+                  message: t('address.invalidMobile'),
                 },
               }}
               render={({ field }) => (
@@ -486,7 +488,7 @@ const AddressForm = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Landline (Optional)
+              {t('address.landline')}
             </label>
             <Controller
               name="landline"
@@ -507,7 +509,7 @@ const AddressForm = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Address Type
+              {t('address.addressType')}
             </label>
             <Controller
               name="address_type"
@@ -534,7 +536,7 @@ const AddressForm = ({
         {/* Landmark */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Landmark (Optional)
+            {t('address.landmark')}
           </label>
           <Controller
             name="landmark"
@@ -546,7 +548,7 @@ const AddressForm = ({
                   {...field}
                   type="text"
                   className="pl-10 pr-4 py-3 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Near a notable landmark or building"
+                  placeholder={t('address.landmarkPlaceholder')}
                   maxLength={200}
                 />
               </div>
@@ -557,7 +559,7 @@ const AddressForm = ({
         {/* Delivery Instructions */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Delivery Instructions (Optional)
+            {t('address.deliveryInstructions')}
           </label>
           <Controller
             name="delivery_instructions"
@@ -567,7 +569,7 @@ const AddressForm = ({
                 {...field}
                 rows={3}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                placeholder="Special instructions for delivery (e.g., gate code, security contact, best delivery time)"
+                placeholder={t('address.deliveryInstructionsPlaceholder')}
                 maxLength={500}
               />
             )}
@@ -578,7 +580,7 @@ const AddressForm = ({
         <div className="bg-gray-50 p-4 rounded-lg">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">
-              GPS Coordinates (Optional)
+              {t('address.gpsCoordinates')}
             </h3>
             <button
               type="button"
@@ -586,14 +588,14 @@ const AddressForm = ({
               className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               <Navigation className="h-4 w-4 mr-2" />
-              Get Current Location
+              {t('address.getCurrentLocation')}
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Latitude
+                {t('address.latitude')}
               </label>
               <Controller
                 name="coordinates.latitude"
@@ -612,7 +614,7 @@ const AddressForm = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Longitude
+                {t('address.longitude')}
               </label>
               <Controller
                 name="coordinates.longitude"
@@ -645,7 +647,7 @@ const AddressForm = ({
                   className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                 />
                 <span className="ml-2 text-sm text-gray-700">
-                  Set as primary address
+                  {t('address.setAsPrimary')}
                 </span>
               </label>
             )}
@@ -659,7 +661,7 @@ const AddressForm = ({
             onClick={onCancel}
             className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             type="submit"
@@ -667,10 +669,10 @@ const AddressForm = ({
             className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading
-              ? "Saving..."
+              ? t('common.saving')
               : initialData
-              ? "Update Address"
-              : "Add Address"}
+              ? t('address.updateAddress')
+              : t('address.addAddress')}
           </button>
         </div>
       </form>

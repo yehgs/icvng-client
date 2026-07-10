@@ -11,8 +11,10 @@ import { setUserDetails } from '../store/userSlice';
 import Loading from '../components/Loading';
 // Phase 4: Google OAuth
 import GoogleLoginButton from '../components/GoogleLoginButton';
+import { useCountry } from '../context/CountryContext';
 
 const Login = () => {
+  const { t } = useCountry();
   const [data, setData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -59,41 +61,41 @@ const Login = () => {
       <div className="bg-white my-4 w-full max-w-lg mx-auto rounded p-7">
         {redirectTo === 'checkout' && (
           <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm">
-            🛒 Sign in to complete your order — your cart items will be merged automatically.
+            🛒 {t('auth.checkoutSignInNotice')}
           </div>
         )}
 
-        <h1 className="text-2xl font-semibold text-center mb-6">Welcome Back</h1>
+        <h1 className="text-2xl font-semibold text-center mb-6">{t('auth.welcomeBack')}</h1>
 
         <form className="grid gap-4 mt-6" onSubmit={handleSubmit}>
           <div className="grid gap-1">
-            <label htmlFor="email">Email</label>
+            <label htmlFor="email">{t('auth.email')}</label>
             <input type="email" id="email" name="email" autoFocus
               className="bg-blue-50 p-2 border rounded outline-none focus:border-primary-200"
-              value={data.email} onChange={handleChange} placeholder="Enter your email" />
+              value={data.email} onChange={handleChange} placeholder={t('auth.enterEmail')} />
           </div>
           <div className="grid gap-1">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">{t('auth.password')}</label>
             <div className="bg-blue-50 p-2 border rounded flex items-center focus-within:border-primary-200">
               <input type={showPassword ? 'text' : 'password'} id="password" name="password"
                 className="w-full bg-transparent outline-none"
-                value={data.password} onChange={handleChange} placeholder="Enter your password" />
+                value={data.password} onChange={handleChange} placeholder={t('auth.enterPassword')} />
               <div className="cursor-pointer text-gray-400 hover:text-gray-600" onClick={() => setShowPassword(!showPassword)}>
                 {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
               </div>
             </div>
             <Link to="/forgot-password" className="block ml-auto text-sm text-green-700 hover:text-green-600">
-              Forgot password?
+              {t('auth.forgotPassword')}
             </Link>
           </div>
           <button disabled={!validValue || loading}
             className={`${validValue ? 'bg-green-800 hover:bg-green-700' : 'bg-gray-500 cursor-not-allowed'} text-white py-2 rounded font-semibold tracking-wide mt-2 flex items-center justify-center gap-2 transition`}>
-            {loading ? <><Loading /> Signing in...</> : 'Login'}
+            {loading ? <><Loading /> {t('auth.loggingIn')}</> : t('auth.login')}
           </button>
         </form>
         <p className="my-4 text-center">
-          Don&apos;t have an account?{' '}
-          <Link to={`/register${location.search}`} className="text-green-700 hover:text-green-600 font-medium">Register</Link>
+          {t('auth.noAccount')}{' '}
+          <Link to={`/register${location.search}`} className="text-green-700 hover:text-green-600 font-medium">{t('auth.register')}</Link>
         </p>
 
         {/* Phase 4: Google OAuth */}
@@ -102,7 +104,7 @@ const Login = () => {
             <div className="w-full border-t border-gray-200" />
           </div>
           <div className="relative flex justify-center text-xs text-gray-400 uppercase">
-            <span className="bg-white px-3">or</span>
+            <span className="bg-white px-3">{t('common.or')}</span>
           </div>
         </div>
         <GoogleLoginButton redirect={redirectTo ? `/${redirectTo}` : "/"} />

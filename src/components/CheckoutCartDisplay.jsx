@@ -14,8 +14,10 @@ import { useSelector } from 'react-redux';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
+import { useCountry } from '../context/CountryContext';
 
 const CheckoutCartDisplay = () => {
+  const { t } = useCountry();
   const {
     isLoggedIn,
     updateCartItem,
@@ -31,11 +33,11 @@ const CheckoutCartDisplay = () => {
   // Get price option label
   const getPriceOptionLabel = (priceOption) => {
     const labels = {
-      regular: 'Regular Delivery',
-      '3weeks': '2 Weeks Delivery',
-      '5weeks': '5 Weeks Delivery',
+      regular: t('checkout.regularDelivery'),
+      '3weeks': t('product.twoWeeksDelivery'),
+      '5weeks': t('product.fiveWeeksDelivery'),
     };
-    return labels[priceOption] || 'Regular Delivery';
+    return labels[priceOption] || t('checkout.regularDelivery');
   };
 
   // Get price option color and icon
@@ -62,11 +64,11 @@ const CheckoutCartDisplay = () => {
     try {
       if (newQuantity <= 0) {
         await deleteCartItem(cartItemId);
-        toast.success('Item removed from cart');
+        toast.success(t('checkout.itemRemovedFromCart'));
       } else {
         const response = await updateCartItem(cartItemId, newQuantity);
         if (response.success) {
-          toast.success('Quantity updated');
+          toast.success(t('cart.quantityUpdated'));
         }
       }
       window.dispatchEvent(new CustomEvent('cart-updated'));
@@ -80,14 +82,14 @@ const CheckoutCartDisplay = () => {
     try {
       if (newQuantity <= 0) {
         console.warn('guest cart removed');
-        toast.success('Item removed from cart');
+        toast.success(t('checkout.itemRemovedFromCart'));
       } else {
         console.warn('guest cart updated');
-        toast.success('Quantity updated');
+        toast.success(t('cart.quantityUpdated'));
       }
       window.dispatchEvent(new CustomEvent('cart-updated'));
     } catch (error) {
-      toast.error('Failed to update quantity');
+      toast.error(t('checkout.failedUpdateQuantity'));
     }
   };
 
@@ -96,17 +98,17 @@ const CheckoutCartDisplay = () => {
     try {
       if (isLoggedIn) {
         await deleteCartItem(item._id);
-        toast.success('Item removed from cart');
+        toast.success(t('checkout.itemRemovedFromCart'));
       } else {
         console.warn('guest removed');
-        toast.success('Item removed from cart');
+        toast.success(t('checkout.itemRemovedFromCart'));
       }
       window.dispatchEvent(new CustomEvent('cart-updated'));
     } catch (error) {
       if (isLoggedIn) {
         AxiosToastError(error);
       } else {
-        toast.error('Failed to remove item');
+        toast.error(t('checkout.failedRemoveItem'));
       }
     }
   };
@@ -180,7 +182,7 @@ const CheckoutCartDisplay = () => {
     } else if (!isLoggedIn) {
       return item.name;
     }
-    return 'Unknown Product';
+    return t('checkout.unknownProduct');
   };
 
   // Get item image
@@ -205,16 +207,16 @@ const CheckoutCartDisplay = () => {
       <div className="bg-white rounded-lg shadow-sm p-6 text-center">
         <FaShoppingBag className="mx-auto text-gray-400 text-4xl mb-3" />
         <h3 className="text-lg font-semibold text-gray-600 mb-2">
-          Your cart is empty
+          {t('cart.empty')}
         </h3>
         <p className="text-gray-500 mb-4">
-          Add some items to your cart to continue shopping
+          {t('checkout.addItemsToContinue')}
         </p>
         <Link
           to="/shop"
           className="inline-block bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition"
         >
-          Continue Shopping
+          {t('cart.continueShopping')}
         </Link>
       </div>
     );
@@ -225,8 +227,7 @@ const CheckoutCartDisplay = () => {
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold text-gray-800 flex items-center">
           <FaShoppingBag className="mr-2 text-green-600" />
-          Your Cart ({currentCart.length} item
-          {currentCart.length > 1 ? 's' : ''})
+          {t('checkout.yourCart')} ({t('cart.items', { count: currentCart.length })})
         </h3>
       </div>
 
@@ -282,7 +283,7 @@ const CheckoutCartDisplay = () => {
                             {formatPrice(originalPrice)}
                           </span>
                           <span className="text-xs text-green-600 font-medium">
-                            {discount}% OFF
+                            {discount}% {t('checkout.off')}
                           </span>
                         </>
                       )}
@@ -342,7 +343,7 @@ const CheckoutCartDisplay = () => {
                     <button
                       onClick={() => handleRemoveItem(item)}
                       className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
-                      title="Remove item"
+                      title={t('checkout.removeItem')}
                     >
                       <FaTrash className="text-xs" />
                     </button>
@@ -356,7 +357,7 @@ const CheckoutCartDisplay = () => {
                   </div>
                   {item.quantity > 1 && (
                     <div className="text-xs text-gray-500">
-                      {formatPrice(itemPrice)} each
+                      {formatPrice(itemPrice)} {t('checkout.each')}
                     </div>
                   )}
                 </div>
@@ -372,7 +373,7 @@ const CheckoutCartDisplay = () => {
           to="/shop"
           className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center justify-center"
         >
-          ← Continue Shopping
+          ← {t('cart.continueShopping')}
         </Link>
       </div>
     </div>

@@ -14,8 +14,10 @@ const POSITION_CLASSES = {
   "top-right": "top-24 right-6",
 };
 
-// Human-readable "time ago" — caps out at 11 months (never says "1 year ago")
-const timeAgo = (date) => {
+// Human-readable "time ago" — caps out at 11 months (never says "1 year ago").
+// Takes the i18n t() function so it renders in the active language instead
+// of always being English.
+const timeAgo = (date, t) => {
   const diffMs = Date.now() - new Date(date).getTime();
   const seconds = Math.floor(diffMs / 1000);
   const minutes = Math.floor(seconds / 60);
@@ -23,13 +25,13 @@ const timeAgo = (date) => {
   const days = Math.floor(hours / 24);
   const months = Math.floor(days / 30);
 
-  if (seconds < 60) return seconds <= 1 ? "1 sec ago" : `${seconds} secs ago`;
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
+  if (seconds < 60) return t("fomo.secAgo", { count: Math.max(seconds, 1) });
+  if (minutes < 60) return t("fomo.minuteAgo", { count: minutes });
+  if (hours < 24) return t("fomo.hourAgo", { count: hours });
+  if (days < 30) return t("fomo.dayAgo", { count: days });
 
   const cappedMonths = Math.min(months, 11);
-  return `${cappedMonths} month${cappedMonths === 1 ? "" : "s"} ago`;
+  return t("fomo.monthAgo", { count: cappedMonths });
 };
 
 const FomoWidget = () => {
@@ -43,12 +45,13 @@ const FomoWidget = () => {
   const timerRef = useRef(null);
 
   // Translate fomo notificationMessage for active language
+  const { t } = useCountry();
   const translatedFomoArr = useBulkEntityTranslation("fomo", fomoSettingsArr);
   const translatedFomo = translatedFomoArr[0];
   const purchasedLabel =
     translatedFomo?.notificationMessage ||
     config?.notificationMessage ||
-    "Just purchased";
+    t("fomo.justPurchased");
 
   // ── Fetch data on mount ────────────────────────────────────────────────────
   useEffect(() => {
@@ -176,7 +179,7 @@ const FomoWidget = () => {
               </span>
             )}
             <span className="text-xs text-gray-500">
-              {timeAgo(current.purchasedAt)}
+              {timeAgo(current.purchasedAt, t)}
             </span>
           </div>
         </div>

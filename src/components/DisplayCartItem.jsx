@@ -9,9 +9,11 @@ import { pricewithDiscount } from '../utils/PriceWithDiscount';
 import imageEmpty from '../assets/empty_cart.webp';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
+import { useCountry } from '../context/CountryContext';
 
 // ─── "Almost there!" modal — exactly like the reference app ──────────────────
 function AuthRequiredModal({ onClose, navigate, close }) {
+  const { t } = useCountry();
   const go = (path) => { onClose(); close?.(); navigate(path); };
   return (
     <div className="cart-auth-modal fixed inset-0 bg-black/60 flex items-center justify-center p-4">
@@ -24,22 +26,22 @@ function AuthRequiredModal({ onClose, navigate, close }) {
           <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
             <ShoppingCart className="w-7 h-7 text-green-600" />
           </div>
-          <h2 className="text-lg font-bold text-gray-900">Almost there!</h2>
+          <h2 className="text-lg font-bold text-gray-900">{t('cart.almostThere')}</h2>
           <p className="text-sm text-gray-500 mt-1">
-            Sign in or create an account to complete your order. Your cart items will be saved automatically.
+            {t('cart.signInPrompt')}
           </p>
         </div>
         <div className="px-6 pb-6 space-y-3">
           <button onClick={() => go('/login?redirect=checkout')}
             className="w-full flex items-center justify-center gap-2 py-3 bg-green-600 text-white font-semibold rounded-xl hover:bg-green-700 transition-colors">
-            <LogIn className="w-4 h-4" /> Sign In to Checkout
+            <LogIn className="w-4 h-4" /> {t('cart.signInToCheckout')}
           </button>
           <button onClick={() => go('/register?redirect=checkout')}
             className="w-full flex items-center justify-center gap-2 py-3 border-2 border-green-600 text-green-700 font-semibold rounded-xl hover:bg-green-50 transition-colors">
-            <UserPlus className="w-4 h-4" /> Create Account
+            <UserPlus className="w-4 h-4" /> {t('cart.createAccount')}
           </button>
           <p className="text-center text-xs text-gray-400 pt-1">
-            Your cart items will be waiting for you after sign in
+            {t('cart.cartWaitingNotice')}
           </p>
         </div>
       </div>
@@ -125,6 +127,7 @@ const DisplayCartItem = ({ close }) => {
   } = useGlobalContext();
 
   const { formatPrice } = useCurrency();
+  const { t } = useCountry();
   const cartItem = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
   const [loadingItems, setLoadingItems] = useState({});
@@ -161,7 +164,7 @@ const DisplayCartItem = ({ close }) => {
   const handleGuestDelete = (item) => {
     removeFromGuestCart(item.productId, item.priceOption);
     window.dispatchEvent(new CustomEvent('cart-updated'));
-    toast.success('Item removed');
+    toast.success(t('cart.itemRemoved'));
   };
 
   // ─── Server cart handlers ────────────────────────────────────────────────────
@@ -170,7 +173,7 @@ const DisplayCartItem = ({ close }) => {
     setLoadingItems((p) => ({ ...p, [key]: true }));
     try {
       const r = await updateCartItem(item._id, item.quantity + 1);
-      if (r?.success) { toast.success('Quantity updated'); window.dispatchEvent(new CustomEvent('cart-updated')); }
+      if (r?.success) { toast.success(t('cart.quantityUpdated')); window.dispatchEvent(new CustomEvent('cart-updated')); }
     } catch (e) { AxiosToastError(e); }
     finally { setLoadingItems((p) => ({ ...p, [key]: false })); }
   };
@@ -179,8 +182,8 @@ const DisplayCartItem = ({ close }) => {
     const key = item._id;
     setLoadingItems((p) => ({ ...p, [key]: true }));
     try {
-      if (item.quantity === 1) { await deleteCartItem(item._id); toast.success('Item removed'); }
-      else { const r = await updateCartItem(item._id, item.quantity - 1); if (r?.success) toast.success('Quantity updated'); }
+      if (item.quantity === 1) { await deleteCartItem(item._id); toast.success(t('cart.itemRemoved')); }
+      else { const r = await updateCartItem(item._id, item.quantity - 1); if (r?.success) toast.success(t('cart.quantityUpdated')); }
       window.dispatchEvent(new CustomEvent('cart-updated'));
     } catch (e) { AxiosToastError(e); }
     finally { setLoadingItems((p) => ({ ...p, [key]: false })); }
@@ -189,7 +192,7 @@ const DisplayCartItem = ({ close }) => {
   const handleUserDelete = async (item) => {
     const key = item._id;
     setLoadingItems((p) => ({ ...p, [key]: true }));
-    try { await deleteCartItem(item._id); toast.success('Item removed'); window.dispatchEvent(new CustomEvent('cart-updated')); }
+    try { await deleteCartItem(item._id); toast.success(t('cart.itemRemoved')); window.dispatchEvent(new CustomEvent('cart-updated')); }
     catch (e) { AxiosToastError(e); }
     finally { setLoadingItems((p) => ({ ...p, [key]: false })); }
   };
@@ -299,7 +302,7 @@ const DisplayCartItem = ({ close }) => {
               {/* Savings */}
               {notDiscountTotalPrice > totalPrice && (
                 <div className="flex items-center justify-between px-4 py-3 bg-green-100 text-green-700 rounded-lg border border-green-200">
-                  <p className="font-medium">Total Savings</p>
+                  <p className="font-medium">{t('cart.totalSavings')}</p>
                   <p className="font-bold">{formatPrice(notDiscountTotalPrice - totalPrice)}</p>
                 </div>
               )}
@@ -313,10 +316,10 @@ const DisplayCartItem = ({ close }) => {
 
               {/* Bill Summary */}
               <div className="bg-white p-4 rounded-lg border border-gray-200">
-                <h3 className="font-semibold mb-3 text-gray-800">Bill Summary</h3>
+                <h3 className="font-semibold mb-3 text-gray-800">{t('cart.billSummary')}</h3>
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm">
-                    <p className="text-gray-600">Items total</p>
+                    <p className="text-gray-600">{t('cart.itemsTotal')}</p>
                     <div className="text-right">
                       {notDiscountTotalPrice > totalPrice && (
                         <p className="line-through text-gray-400 text-xs">{formatPrice(notDiscountTotalPrice)}</p>
@@ -325,15 +328,15 @@ const DisplayCartItem = ({ close }) => {
                     </div>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <p className="text-gray-600">Quantity</p>
-                    <p className="font-semibold text-gray-800">{totalQty} item{totalQty > 1 ? 's' : ''}</p>
+                    <p className="text-gray-600">{t('cart.quantity')}</p>
+                    <p className="font-semibold text-gray-800">{t('cart.items', { count: totalQty })}</p>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <p className="text-gray-600">Delivery</p>
-                    <p className="font-semibold text-green-600">Calculated at checkout</p>
+                    <p className="text-gray-600">{t('cart.delivery')}</p>
+                    <p className="font-semibold text-green-600">{t('cart.calculatedAtCheckout')}</p>
                   </div>
                   <div className="border-t pt-3 flex justify-between">
-                    <p className="font-bold text-lg text-gray-800">Total</p>
+                    <p className="font-bold text-lg text-gray-800">{t('cart.total')}</p>
                     <p className="font-bold text-lg text-green-700">{formatPrice(totalPrice)}</p>
                   </div>
                 </div>
@@ -342,9 +345,9 @@ const DisplayCartItem = ({ close }) => {
           ) : (
             <div className="bg-white flex flex-col justify-center items-center p-8 rounded-lg">
               <img src={imageEmpty} className="w-full h-full object-scale-down max-w-xs mb-4" alt="Empty cart" />
-              <p className="text-gray-600 text-lg font-medium mb-4">Your cart is empty</p>
+              <p className="text-gray-600 text-lg font-medium mb-4">{t('cart.empty')}</p>
               <Link onClick={close} to={'/'} className="bg-green-600 hover:bg-green-700 px-6 py-3 text-white rounded-lg font-medium transition">
-                Start Shopping
+                {t('cart.startShopping')}
               </Link>
             </div>
           )}
@@ -357,7 +360,7 @@ const DisplayCartItem = ({ close }) => {
               className="w-full bg-green-700 hover:bg-green-800 text-white px-4 py-4 rounded-lg font-bold text-base flex items-center justify-between transition shadow-md">
               <span>{formatPrice(totalPrice)}</span>
               <span className="flex items-center gap-2">
-                {isLoggedIn ? 'Proceed to Checkout' : 'Checkout'}
+                {isLoggedIn ? t('cart.checkout') : t('cart.checkoutCta')}
                 <FaCaretRight />
               </span>
             </button>

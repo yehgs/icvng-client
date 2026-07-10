@@ -8,8 +8,10 @@ import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useGlobalContext } from '../provider/GlobalProvider';
+import { useCountry } from '../context/CountryContext';
 
 const AddAddress = ({ close }) => {
+  const { t } = useCountry();
   const { fetchAddress } = useGlobalContext();
   const [nigerianStates, setNigerianStates] = useState([]);
   const [lgas, setLgas] = useState([]);
@@ -67,11 +69,11 @@ const AddAddress = ({ close }) => {
       if (response.data.success) {
         setNigerianStates(response.data.data);
       } else {
-        toast.error('Failed to load Nigerian states');
+        toast.error(t('address.failedLoadStates'));
       }
     } catch (error) {
       console.error('Error fetching states:', error);
-      toast.error('Failed to load Nigerian states');
+      toast.error(t('address.failedLoadStates'));
     } finally {
       setLoadingStates(false);
     }
@@ -92,12 +94,12 @@ const AddAddress = ({ close }) => {
       if (response.data.success) {
         setLgas(response.data.data);
       } else {
-        toast.error('Failed to load LGAs');
+        toast.error(t('address.failedLoadLgas'));
         setLgas([]);
       }
     } catch (error) {
       console.error('Error fetching LGAs:', error);
-      toast.error('Failed to load LGAs');
+      toast.error(t('address.failedLoadLgas'));
       setLgas([]);
     } finally {
       setLoadingLgas(false);
@@ -139,18 +141,18 @@ const AddAddress = ({ close }) => {
   };
 
   const addressTypes = [
-    { value: 'home', label: 'Home 🏠' },
-    { value: 'office', label: 'Office 🏢' },
-    { value: 'warehouse', label: 'Warehouse 🏭' },
-    { value: 'pickup_point', label: 'Pickup Point 📦' },
-    { value: 'other', label: 'Other 📍' },
+    { value: 'home', label: `${t('address.typeHome')} 🏠` },
+    { value: 'office', label: `${t('address.typeOffice')} 🏢` },
+    { value: 'warehouse', label: `${t('address.typeWarehouse')} 🏭` },
+    { value: 'pickup_point', label: `${t('address.typePickupPoint')} 📦` },
+    { value: 'other', label: `${t('address.typeOther')} 📍` },
   ];
 
   return (
     <section className="bg-black fixed top-0 left-0 right-0 bottom-0 z-50 bg-opacity-70 h-screen overflow-auto">
       <div className="bg-white p-6 w-full max-w-2xl mt-8 mx-auto rounded-lg shadow-lg">
         <div className="flex justify-between items-center gap-4 mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">Add New Address</h2>
+          <h2 className="text-2xl font-bold text-gray-800">{t('address.addNewAddress')}</h2>
           <button
             onClick={close}
             className="hover:text-red-500 text-gray-600 transition-colors"
@@ -163,12 +165,12 @@ const AddAddress = ({ close }) => {
           {/* Address Line */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address Line *
+              {t('address.addressLine1')} *
             </label>
             <Controller
               name="address_line"
               control={control}
-              rules={{ required: 'Address line is required' }}
+              rules={{ required: t('address.addressLineRequired') }}
               render={({ field }) => (
                 <div className="relative">
                   <FaBuilding className="absolute left-3 top-3 text-gray-400" />
@@ -178,7 +180,7 @@ const AddAddress = ({ close }) => {
                     className={`pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                       errors.address_line ? 'border-red-300' : 'border-gray-300'
                     }`}
-                    placeholder="Enter your street address"
+                    placeholder={t('address.streetAddressPlaceholder')}
                   />
                 </div>
               )}
@@ -194,12 +196,12 @@ const AddAddress = ({ close }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                State *
+                {t('address.state')} *
               </label>
               <Controller
                 name="state"
                 control={control}
-                rules={{ required: 'State is required' }}
+                rules={{ required: t('address.stateRequired') }}
                 render={({ field }) => (
                   <div className="relative">
                     <FaMapMarkerAlt className="absolute left-3 top-3 text-gray-400" />
@@ -210,7 +212,7 @@ const AddAddress = ({ close }) => {
                       }`}
                       disabled={loadingStates}
                     >
-                      <option value="">Select State</option>
+                      <option value="">{t('address.selectState')}</option>
                       {nigerianStates.map((state) => (
                         <option key={state.name} value={state.name}>
                           {state.name} ({state.capital})
@@ -229,12 +231,12 @@ const AddAddress = ({ close }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Local Government Area (LGA) *
+                {t('address.lga')} *
               </label>
               <Controller
                 name="lga"
                 control={control}
-                rules={{ required: 'LGA is required' }}
+                rules={{ required: t('address.lgaRequired') }}
                 render={({ field }) => (
                   <div className="relative">
                     <FaMapMarkerAlt className="absolute left-3 top-3 text-gray-400" />
@@ -246,7 +248,7 @@ const AddAddress = ({ close }) => {
                       disabled={!watchedState || loadingLgas}
                     >
                       <option value="">
-                        {loadingLgas ? 'Loading LGAs...' : 'Select LGA'}
+                        {loadingLgas ? t('address.loadingLgas') : t('address.selectLga')}
                       </option>
                       {lgas.map((lga) => (
                         <option key={lga.name} value={lga.name}>
@@ -269,12 +271,12 @@ const AddAddress = ({ close }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                City/Town *
+                {t('address.cityTown')} *
               </label>
               <Controller
                 name="city"
                 control={control}
-                rules={{ required: 'City is required' }}
+                rules={{ required: t('address.cityRequired') }}
                 render={({ field }) => (
                   <div className="relative">
                     <FaBuilding className="absolute left-3 top-3 text-gray-400" />
@@ -284,7 +286,7 @@ const AddAddress = ({ close }) => {
                       className={`pl-10 pr-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                         errors.city ? 'border-red-300' : 'border-gray-300'
                       }`}
-                      placeholder="Enter city or town"
+                      placeholder={t('address.cityPlaceholder')}
                     />
                   </div>
                 )}
@@ -298,7 +300,7 @@ const AddAddress = ({ close }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Postal Code (Optional)
+                {t('address.postalCode')}
               </label>
               <Controller
                 name="postal_code"
@@ -306,7 +308,7 @@ const AddAddress = ({ close }) => {
                 rules={{
                   pattern: {
                     value: /^\d{6}$/,
-                    message: 'Postal code must be exactly 6 digits',
+                    message: t('address.invalidPostalCode'),
                   },
                 }}
                 render={({ field }) => (
@@ -338,16 +340,16 @@ const AddAddress = ({ close }) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mobile Number *
+                {t('address.mobileNumber')} *
               </label>
               <Controller
                 name="mobile"
                 control={control}
                 rules={{
-                  required: 'Mobile number is required',
+                  required: t('address.mobileRequired'),
                   pattern: {
                     value: /^(\+234|0)[789][01]\d{8}$/,
-                    message: 'Please enter a valid Nigerian mobile number',
+                    message: t('address.invalidMobile'),
                   },
                 }}
                 render={({ field }) => (
@@ -373,7 +375,7 @@ const AddAddress = ({ close }) => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Landline (Optional)
+                {t('address.landline')}
               </label>
               <Controller
                 name="landline"
@@ -396,7 +398,7 @@ const AddAddress = ({ close }) => {
           {/* Address Type */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address Type
+              {t('address.addressType')}
             </label>
             <Controller
               name="address_type"
@@ -422,7 +424,7 @@ const AddAddress = ({ close }) => {
           {/* Landmark */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Landmark (Optional)
+              {t('address.landmark')}
             </label>
             <Controller
               name="landmark"
@@ -434,7 +436,7 @@ const AddAddress = ({ close }) => {
                     {...field}
                     type="text"
                     className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="Near a notable landmark"
+                    placeholder={t('address.landmarkPlaceholder')}
                   />
                 </div>
               )}
@@ -444,7 +446,7 @@ const AddAddress = ({ close }) => {
           {/* Delivery Instructions */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Delivery Instructions (Optional)
+              {t('address.deliveryInstructions')}
             </label>
             <Controller
               name="delivery_instructions"
@@ -454,7 +456,7 @@ const AddAddress = ({ close }) => {
                   {...field}
                   rows={3}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                  placeholder="Special instructions for delivery"
+                  placeholder={t('address.deliveryInstructionsPlaceholder')}
                 />
               )}
             />
@@ -474,7 +476,7 @@ const AddAddress = ({ close }) => {
                     className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                   />
                   <span className="ml-2 text-sm text-gray-700">
-                    Set as primary address
+                    {t('address.setAsPrimary')}
                   </span>
                 </label>
               )}
@@ -491,13 +493,13 @@ const AddAddress = ({ close }) => {
               }}
               className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Add Address
+              {t('address.addAddress')}
             </button>
           </div>
         </form>

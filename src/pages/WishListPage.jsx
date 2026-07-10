@@ -13,12 +13,14 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import Axios from "../utils/Axios";
+import { useCountry } from "../context/CountryContext";
 import SummaryApi from "../common/SummaryApi";
 import toast from "react-hot-toast";
 import AxiosToastError from "../utils/AxiosToastError";
 import Loading from "../components/Loading";
 
 const WishlistPage = () => {
+  const { t } = useCountry();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState({});
@@ -29,7 +31,7 @@ const WishlistPage = () => {
     if (isLoggedIn) {
       fetchWishlist();
     } else {
-      toast.error("Please sign in to add items to your cart");
+      toast.error(t('wishlist.signInToAddToCart'));
     }
   }, [isLoggedIn]);
 
@@ -54,7 +56,7 @@ const WishlistPage = () => {
   // ✅ FIXED: Add to cart handler with automatic removal from wishlist
   const handleAddToCart = async (product) => {
     if (!product.productAvailability) {
-      toast.error("This product is not available");
+      toast.error(t('wishlist.productNotAvailable'));
       return;
     }
 
@@ -74,7 +76,7 @@ const WishlistPage = () => {
         const { data: responseData } = response;
 
         if (responseData.success) {
-          toast.success(responseData.message || "Product added to cart");
+          toast.success(responseData.message || t('wishlist.productAddedToCart'));
 
           // ✅ CRITICAL: Trigger multiple events to update cart everywhere
           window.dispatchEvent(new CustomEvent("cart-updated"));
@@ -86,7 +88,7 @@ const WishlistPage = () => {
           }, 100);
         }
       } else {
-        toast.error("Please sign in to add items to your cart");
+        toast.error(t('wishlist.signInToAddToCart'));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -107,7 +109,7 @@ const WishlistPage = () => {
       );
 
       if (availableItems.length === 0) {
-        toast.error("No available items to add to cart");
+        toast.error(t('wishlist.noAvailableItems'));
         setLoading(false);
         return;
       }
@@ -130,16 +132,16 @@ const WishlistPage = () => {
           }
         }
 
-        toast.success(`Added ${successCount} items to cart`);
+        toast.success(t('wishlist.addedItemsToCart', { count: successCount }));
         window.dispatchEvent(new CustomEvent("cart-updated"));
 
         // ✅ Clear wishlist after adding all to cart
         await handleClearWishlist(true); // Pass true to skip confirmation
       } else {
-        toast.error("Please sign in to add items to your cart");
+        toast.error(t('wishlist.signInToAddToCart'));
       }
     } catch (error) {
-      toast.error("Failed to add all items to cart");
+      toast.error(t('wishlist.failedToAddAll'));
     } finally {
       setLoading(false);
     }
@@ -159,7 +161,7 @@ const WishlistPage = () => {
           setWishlistItems((prev) =>
             prev.filter((item) => item._id !== productId)
           );
-          toast.success("Product removed from wishlist");
+          toast.success(t('wishlist.productRemoved'));
 
           // Update header count using event utils
           updateWishlistCount();
@@ -174,7 +176,7 @@ const WishlistPage = () => {
       );
       setWishlistItems(updatedList);
       localStorage.setItem("wishlist", JSON.stringify(updatedList));
-      toast.success("Product removed from wishlist");
+      toast.success(t('wishlist.productRemoved'));
 
       // Update header count using event utils
       updateWishlistCount();
@@ -200,7 +202,7 @@ const WishlistPage = () => {
         if (responseData.success) {
           setWishlistItems([]);
           if (!skipConfirmation) {
-            toast.success("Wishlist cleared");
+            toast.success(t('wishlist.cleared'));
           }
 
           // Update header count using event utils
@@ -213,7 +215,7 @@ const WishlistPage = () => {
       setWishlistItems([]);
       localStorage.setItem("wishlist", JSON.stringify([]));
       if (!skipConfirmation) {
-        toast.success("Wishlist cleared");
+        toast.success(t('wishlist.cleared'));
       }
 
       // Update header count using event utils
@@ -228,7 +230,7 @@ const WishlistPage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">My Wishlist</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t('wishlist.myWishlist')}</h1>
         <div className="flex space-x-4">
           {wishlistItems.length > 0 && (
             <>
@@ -240,12 +242,12 @@ const WishlistPage = () => {
                 {loading ? (
                   <span className="flex items-center">
                     <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white mr-2"></div>
-                    Adding...
+                    {t('wishlist.adding')}
                   </span>
                 ) : (
                   <>
                     <FaShoppingCart className="mr-2" />
-                    Add All to Cart
+                    {t('wishlist.addAllToCart')}
                   </>
                 )}
               </button>
@@ -255,7 +257,7 @@ const WishlistPage = () => {
                 className="flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
               >
                 <FaTrash className="mr-2" />
-                Clear Wishlist
+                {t('wishlist.clearWishlist')}
               </button>
             </>
           )}
@@ -269,17 +271,16 @@ const WishlistPage = () => {
               <FaRegHeart className="text-gray-400 text-5xl" />
             </div>
             <h2 className="text-xl font-semibold mb-2">
-              Your wishlist is empty
+              {t('wishlist.emptyTitle')}
             </h2>
             <p className="text-gray-600 mb-6">
-              Add products to your wishlist by clicking the heart icon on
-              product cards.
+              {t('wishlist.emptyMessage')}
             </p>
             <Link
               to="/shop"
               className="px-6 py-3 bg-green-700 text-white rounded-md hover:bg-green-800 transition"
             >
-              Continue Shopping
+              {t('wishlist.continueShopping')}
             </Link>
           </div>
         </div>
@@ -291,16 +292,16 @@ const WishlistPage = () => {
                 <thead className="bg-gray-50">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Product
+                      {t('wishlist.product')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Price
+                      {t('wishlist.price')}
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
+                      {t('wishlist.status')}
                     </th>
                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Actions
+                      {t('wishlist.actions')}
                     </th>
                   </tr>
                 </thead>
@@ -339,15 +340,21 @@ const WishlistPage = () => {
                               </Link>
                               {item.sku && (
                                 <p className="text-xs text-gray-500 mt-1">
-                                  SKU: {item.sku}
+                                  {t('productRequest.sku')}: {item.sku}
                                 </p>
                               )}
                               {item.productType && (
                                 <p className="text-xs text-gray-500 mt-1">
-                                  {item.productType
-                                    .replace("_", " ")
-                                    .toLowerCase()
-                                    .replace(/\b\w/g, (l) => l.toUpperCase())}
+                                  {(() => {
+                                    const key = `product.type.${item.productType}`;
+                                    const translated = t(key);
+                                    return translated !== key
+                                      ? translated
+                                      : item.productType
+                                          .replace("_", " ")
+                                          .toLowerCase()
+                                          .replace(/\b\w/g, (l) => l.toUpperCase());
+                                  })()}
                                 </p>
                               )}
                             </div>
@@ -373,7 +380,7 @@ const WishlistPage = () => {
                                 : "bg-red-100 text-red-800"
                             }`}
                           >
-                            {isAvailable ? "Available" : "Discontinued"}
+                            {isAvailable ? t('wishlist.available') : t('wishlist.discontinued')}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right">
@@ -393,7 +400,7 @@ const WishlistPage = () => {
                               ) : (
                                 <>
                                   <FaShoppingCart className="mr-1" />
-                                  Add to Cart
+                                  {t('product.addToCart')}
                                 </>
                               )}
                             </button>
@@ -416,7 +423,7 @@ const WishlistPage = () => {
           {/* Related Products Section - Optional */}
           <div className="mt-12">
             <h2 className="text-xl font-bold text-gray-800 mb-6">
-              You may also like
+              {t('wishlist.youMayAlsoLike')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {/* Recommended products would appear here */}

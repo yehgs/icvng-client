@@ -10,8 +10,10 @@ import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useGlobalContext } from '../provider/GlobalProvider';
+import { useCountry } from '../context/CountryContext';
 
 const Address = () => {
+  const { t } = useCountry();
   const addressList = useSelector((state) => state.addresses.addressList);
   const [openAddress, setOpenAddress] = useState(false);
   const [OpenEdit, setOpenEdit] = useState(false);
@@ -27,7 +29,7 @@ const Address = () => {
         },
       });
       if (response.data.success) {
-        toast.success('Address Remove');
+        toast.success(t('address.removed'));
         if (fetchAddress) {
           fetchAddress();
         }
@@ -39,12 +41,12 @@ const Address = () => {
   return (
     <div className="">
       <div className="bg-white shadow-lg px-2 py-2 flex justify-between gap-4 items-center ">
-        <h2 className="font-semibold text-ellipsis line-clamp-1">Address</h2>
+        <h2 className="font-semibold text-ellipsis line-clamp-1">{t('address.title')}</h2>
         <button
           onClick={() => setOpenAddress(true)}
           className="border border-primary-200 text-primary-200 px-3 hover:bg-primary-200 hover:text-black py-1 rounded-full"
         >
-          Add Address
+          {t('address.addAddress')}
         </button>
       </div>
       <div className="bg-blue-50 p-2 grid gap-4">
@@ -88,7 +90,7 @@ const Address = () => {
           onClick={() => setOpenAddress(true)}
           className="h-16 bg-blue-50 border-2 border-dashed flex justify-center items-center cursor-pointer"
         >
-          Add address
+          {t('address.addAddress')}
         </div>
       </div>
 

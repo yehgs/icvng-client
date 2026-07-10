@@ -5,8 +5,10 @@ import SummaryApi from '../common/SummaryApi';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import Axios from '../utils/Axios';
+import { useCountry } from '../context/CountryContext';
 
 const ResetPassword = () => {
+  const { t } = useCountry();
   const location = useLocation();
   const navigate = useNavigate();
   const [data, setData] = useState({
@@ -52,7 +54,7 @@ const ResetPassword = () => {
 
     ///optional
     if (data.newPassword !== data.confirmPassword) {
-      toast.error('New password and confirm password must be same.');
+      toast.error(t('auth.passwordsMustMatch'));
       return;
     }
 
@@ -83,10 +85,10 @@ const ResetPassword = () => {
   return (
     <section className="w-full container mx-auto px-2">
       <div className="bg-white my-4 w-full max-w-lg mx-auto rounded p-7">
-        <p className="font-semibold text-lg">Enter Your Password </p>
+        <p className="font-semibold text-lg">{t('auth.enterYourPassword')}</p>
         <form className="grid gap-4 py-4" onSubmit={handleSubmit}>
           <div className="grid gap-1">
-            <label htmlFor="newPassword">New Password :</label>
+            <label htmlFor="newPassword">{t('auth.newPassword')} :</label>
             <div className="bg-blue-50 p-2 border rounded flex items-center focus-within:border-primary-200">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -95,7 +97,7 @@ const ResetPassword = () => {
                 name="newPassword"
                 value={data.newPassword}
                 onChange={handleChange}
-                placeholder="Enter your new password"
+                placeholder={t('auth.enterNewPassword')}
               />
               <div
                 onClick={() => setShowPassword((prev) => !prev)}
@@ -107,7 +109,7 @@ const ResetPassword = () => {
           </div>
 
           <div className="grid gap-1">
-            <label htmlFor="confirmPassword">Confirm Password :</label>
+            <label htmlFor="confirmPassword">{t('auth.confirmPassword')} :</label>
             <div className="bg-blue-50 p-2 border rounded flex items-center focus-within:border-primary-200">
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
@@ -116,7 +118,7 @@ const ResetPassword = () => {
                 name="confirmPassword"
                 value={data.confirmPassword}
                 onChange={handleChange}
-                placeholder="Enter your confirm password"
+                placeholder={t('auth.confirmYourPassword')}
               />
               <div
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
@@ -133,17 +135,17 @@ const ResetPassword = () => {
               valideValue ? 'bg-green-800 hover:bg-green-700' : 'bg-gray-500'
             }    text-white py-2 rounded font-semibold my-3 tracking-wide`}
           >
-            Change Password
+            {t('auth.changePassword')}
           </button>
         </form>
 
         <p>
-          Already have account?{' '}
+          {t('auth.hasAccount')}{' '}
           <Link
             to={'/login'}
             className="font-semibold text-green-700 hover:text-green-800"
           >
-            Login
+            {t('auth.login')}
           </Link>
         </p>
       </div>

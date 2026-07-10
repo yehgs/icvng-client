@@ -26,12 +26,14 @@ import CompareButton from "./CompareButton";
 import ProductRequestModal from "./ProductRequestModal";
 import AuthModal from "./AuthModel";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
-import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
+import { useTranslatedProduct } from "../hooks/useTranslatedProduct.js";
 import { useCountry } from "../context/CountryContext";
 
 const CardProduct = ({ data }) => {
-  // Merge server-side translations (FR/IT) over the English source data
-  const translatedData = useEntityTranslation("product", data._id, data);
+  // Merge server-side translations (FR/IT) over the English source data —
+  // covers the product's own fields AND its referenced brand/category/
+  // subCategory/tags/attributes.
+  const translatedData = useTranslatedProduct(data);
   const { t } = useCountry();
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;
   const [showRequestModal, setShowRequestModal] = useState(false);

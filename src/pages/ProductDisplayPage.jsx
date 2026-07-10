@@ -30,7 +30,7 @@ import IntensityMeter from "../components/IntensityMeter";
 import RatingReviewComponent from "../components/RatingReviewComponent";
 import toast from "react-hot-toast";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
-import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
+import { useTranslatedProduct } from "../hooks/useTranslatedProduct.js";
 import { useCountry } from "../context/CountryContext.jsx";
 
 const ProductDisplayPage = () => {
@@ -82,9 +82,11 @@ const ProductDisplayPage = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("description");
 
-  // Apply server-stored translations when language is not EN
+  // Apply server-stored translations when language is not EN — covers the
+  // product's own fields AND its referenced brand/category/subCategory/
+  // tags/attributes, which previously stayed in English regardless.
   const { language } = useCountry();
-  const translatedData = useEntityTranslation("product", productId, data);
+  const translatedData = useTranslatedProduct(data);
   const [selectedPriceOption, setSelectedPriceOption] = useState("regular");
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
@@ -533,15 +535,15 @@ const ProductDisplayPage = () => {
           <div className="space-y-6">
             {/* Brand & Title */}
             <div>
-              {data.brand && data.brand[0] && (
+              {translatedData.brand && translatedData.brand[0] && (
                 <div className="flex items-center mb-1">
                   <p className="text-green-700 text-sm font-medium uppercase mr-2">
-                    {data.brand[0].name}
+                    {translatedData.brand[0].name}
                   </p>
                   <img
-                    src={data.brand[0].image}
+                    src={translatedData.brand[0].image}
                     className="w-12"
-                    alt={data.brand[0].name}
+                    alt={translatedData.brand[0].name}
                   />
                 </div>
               )}
@@ -806,22 +808,22 @@ const ProductDisplayPage = () => {
                     <span className="font-medium">{data.packaging}</span>
                   </div>
                 )}
-                {data.blend && (
+                {translatedData.blend && (
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-sm">Blend</span>
-                    <span className="font-medium">{data.blend}</span>
+                    <span className="font-medium">{translatedData.blend}</span>
                   </div>
                 )}
                 {data.coffeeOrigin && (
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-sm">Origin</span>
-                    <span className="font-medium">{data.coffeeOrigin}</span>
+                    <span className="font-medium">{translatedData.coffeeOrigin}</span>
                   </div>
                 )}
-                {data.roastOrigin && (
+                {translatedData.roastOrigin && (
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-sm">Roast Origin</span>
-                    <span className="font-medium">{data.roastOrigin}</span>
+                    <span className="font-medium">{translatedData.roastOrigin}</span>
                   </div>
                 )}
                 {data.aromaticProfile && (
