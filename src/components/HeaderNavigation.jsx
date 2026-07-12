@@ -17,16 +17,30 @@ const BROWN = "#7B3F1C";
 const BROWN_LIGHT = "#fdf4ee";
 
 // ─── Categories that get the compatible-system dropdown instead of the standard one
-// Matched against category name (case-insensitive, partial match)
+// Matched primarily against the category's slug, which stays stable across
+// languages (unlike cat.name, which is now server-translated per visitor
+// language — matching only the English name here was silently breaking thicd s
+// menu on every non-English domain, e.g. i-coffee.tg). Name matching is kept
+// only as a fallback for categories that happen to be missing a slug, and
+// covers EN/FR/IT so it doesn't regress the same way again.
 const COMPAT_CATEGORY_SLUGS = ["coffee-capsule", "capsule-machine"];
-const COMPAT_CATEGORY_NAMES = ["coffee capsule", "capsule machine"];
+const COMPAT_CATEGORY_NAMES = [
+  "coffee capsule",
+  "capsule machine",
+  "capsule de café",
+  "machine à capsules",
+  "machine a capsules",
+  "capsula caffè",
+  "capsula caffe",
+  "macchina a capsule",
+];
 
 function isCapsuleOrCompatCategory(cat) {
+  const slugLow = (cat?.slug || "").toLowerCase();
+  if (COMPAT_CATEGORY_SLUGS.some((s) => slugLow.includes(s))) return true;
+
   const nameLow = (cat?.name || "").toLowerCase();
-  return (
-    COMPAT_CATEGORY_NAMES.some((n) => nameLow.includes(n)) ||
-    COMPAT_CATEGORY_SLUGS.some((s) => (cat?.slug || "").includes(s))
-  );
+  return COMPAT_CATEGORY_NAMES.some((n) => nameLow.includes(n));
 }
 
 // ─── Compatible-System Dropdown for specific categories ───────────────────────
@@ -41,17 +55,20 @@ function CompatCategoryMegaMenu({
   onClose,
   onNavigate,
 }) {
+  const { t } = useCountry();
   if (!category || !rect || !compatStructure?.length) return null;
 
-  const catNameLow = (category.name || "").toLowerCase();
+  // Match by the category's stable _id (falling back to slug) — matching by
+  // name broke this menu entirely on non-English domains, since category.name
+  // here is the server-translated name (e.g. French on i-coffee.tg) while
+  // compatBrand.categories[].name from /api/compatible/structure is always
+  // English, so the two would never line up once translated.
   const relevantBrands = compatStructure
     .map((compatBrand) => {
       const matchedCat = compatBrand.categories?.find(
         (c) =>
-          (c.name || "").toLowerCase().includes(catNameLow) ||
-          catNameLow.includes(
-            (c.name || "").toLowerCase().replace(/\s+/g, " ").trim(),
-          ),
+          (category._id && c._id && String(c._id) === String(category._id)) ||
+          (category.slug && c.slug && category.slug === c.slug),
       );
       if (!matchedCat) return null;
       return { compatBrand, productBrands: matchedCat.brands || [] };
@@ -119,7 +136,7 @@ function CompatCategoryMegaMenu({
             paddingBottom: 12,
           }}
         >
-          {category.name} — Compatible Systems
+          {category.name} — {t("nav.compatibleSystems")}
         </p>
       </div>
 
@@ -292,7 +309,7 @@ function CompatCategoryMegaMenu({
                   marginTop: 2,
                 }}
               >
-                See all →
+                {t("nav.seeAll")} →
               </button>
             </div>
           </div>
@@ -555,14 +572,14 @@ function MobileCompatCategoryRows({
   onClose,
 }) {
   const [expandedCompat, setExpandedCompat] = useState({});
+  const { t } = useCountry();
 
-  const catNameLow = (category?.name || "").toLowerCase();
   const relevantBrands = (compatStructure || [])
     .map((compatBrand) => {
       const matchedCat = compatBrand.categories?.find(
         (c) =>
-          (c.name || "").toLowerCase().includes(catNameLow) ||
-          catNameLow.includes((c.name || "").toLowerCase().trim()),
+          (category?._id && c._id && String(c._id) === String(category._id)) ||
+          (category?.slug && c.slug && category.slug === c.slug),
       );
       if (!matchedCat) return null;
       return { compatBrand, productBrands: matchedCat.brands || [] };
@@ -576,7 +593,7 @@ function MobileCompatCategoryRows({
   return (
     <div className="bg-amber-50">
       <div className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-amber-800 border-b border-amber-200">
-        Compatible Systems
+        {t("nav.compatibleSystems")}
       </div>
       {relevantBrands.map(({ compatBrand, productBrands }) => (
         <div key={compatBrand._id}>

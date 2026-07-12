@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import { ShoppingBag, X } from "lucide-react";
-import { DisplayPriceInNaira } from "../utils/DisplayPriceInCurrency";
+import { useCurrency } from "../provider/GlobalProvider";
 import { useCountry } from "../context/CountryContext.jsx";
 import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
 
@@ -46,6 +46,23 @@ const FomoWidget = () => {
 
   // Translate fomo notificationMessage for active language
   const { t } = useCountry();
+  const { selectedCurrency, exchangeRates } = useCurrency();
+
+  const formatFomoPrice = (priceInNgn) => {
+    const rate =
+      selectedCurrency === "NGN" ? 1 : exchangeRates[selectedCurrency] || 1;
+    const converted = priceInNgn * rate;
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: selectedCurrency,
+        minimumFractionDigits:
+          selectedCurrency === "NGN" || selectedCurrency === "XOF" ? 0 : 2,
+      }).format(converted);
+    } catch {
+      return `${selectedCurrency} ${Math.round(converted).toLocaleString()}`;
+    }
+  };
   const translatedFomoArr = useBulkEntityTranslation("fomo", fomoSettingsArr);
   const translatedFomo = translatedFomoArr[0];
   const purchasedLabel =
@@ -175,7 +192,7 @@ const FomoWidget = () => {
           <div className="flex items-center gap-2 mt-1">
             {current.price > 0 && (
               <span className="text-sm font-bold text-green-600">
-                {DisplayPriceInNaira(current.price)}
+                {formatFomoPrice(current.price)}
               </span>
             )}
             <span className="text-xs text-gray-500">

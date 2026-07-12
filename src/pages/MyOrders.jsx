@@ -18,8 +18,12 @@ import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import NoData from '../components/NoData';
 import toast from 'react-hot-toast';
+import { useCountry } from '../context/CountryContext';
+import { useCurrency } from '../provider/GlobalProvider';
 
 const MyOrders = () => {
+  const { t } = useCountry();
+  const { formatPrice } = useCurrency();
   const [orderGroups, setOrderGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [expandedGroups, setExpandedGroups] = useState(new Set());
@@ -65,7 +69,7 @@ const MyOrders = () => {
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
-      toast.error('Failed to load orders');
+      toast.error(t('orders.failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -160,6 +164,15 @@ const MyOrders = () => {
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
 
+  // Translated order status label — falls back to the raw enum (spaces
+  // instead of underscores) for any status not in the map, so an unmapped
+  // future status still displays something reasonable.
+  const getStatusLabel = (status) => {
+    const key = `orders.statuses.${status}`;
+    const translated = t(key);
+    return translated !== key ? translated : (status || '').replace(/_/g, ' ');
+  };
+
   const getPaymentStatusColor = (status) => {
     const colors = {
       PAID: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
@@ -171,6 +184,12 @@ const MyOrders = () => {
       REFUNDED: 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+  const getPaymentStatusLabel = (status) => {
+    const key = `orders.paymentStatuses.${status}`;
+    const translated = t(key);
+    return translated !== key ? translated : (status || '').replace(/_/g, ' ');
   };
 
   const getTrackingStatusColor = (status) => {
@@ -189,6 +208,12 @@ const MyOrders = () => {
     return colors[status] || 'text-gray-600 bg-gray-100';
   };
 
+  const getTrackingStatusLabel = (status) => {
+    const key = `orders.trackingStatuses.${status}`;
+    const translated = t(key);
+    return translated !== key ? translated : (status || '').replace(/_/g, ' ');
+  };
+
   const openOrderDetails = (order) => {
     setSelectedOrder(order);
     setShowDetailsModal(true);
@@ -204,7 +229,7 @@ const MyOrders = () => {
       <div className="min-h-screen bg-gray-50 py-8">
         <div className="max-w-5xl mx-auto px-4">
           <div className="bg-white shadow-md p-6 rounded-lg mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{t('orders.myOrders')}</h1>
           </div>
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div>
@@ -222,7 +247,7 @@ const MyOrders = () => {
         <div className="bg-white shadow-md p-6 rounded-lg mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">My Orders</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{t('orders.myOrders')}</h1>
               <p className="text-gray-600 text-sm mt-1">
                 Track and manage your coffee orders
               </p>
@@ -291,7 +316,7 @@ const MyOrders = () => {
                       <div className="flex items-center gap-3 flex-shrink-0">
                         <div className="text-right">
                           <div className="text-lg font-bold text-gray-900">
-                            ₦{group.summary.totals.grandTotal.toLocaleString()}
+                            {formatPrice(group.summary.totals.grandTotal)}
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <span
@@ -299,7 +324,7 @@ const MyOrders = () => {
                                 parentOrder.payment_status
                               )}`}
                             >
-                              {parentOrder.payment_status.replace(/_/g, ' ')}
+                              {getPaymentStatusLabel(parentOrder.payment_status)}
                             </span>
                           </div>
                         </div>
@@ -345,7 +370,7 @@ const MyOrders = () => {
                             group.summary.order_status
                           )}`}
                         >
-                          {group.summary.order_status.replace(/_/g, ' ')}
+                          {getStatusLabel(group.summary.order_status)}
                         </span>
                       </div>
                     )}
@@ -357,7 +382,7 @@ const MyOrders = () => {
                       <div className="p-6">
                         <h4 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
                           <Package className="w-4 h-4" />
-                          Products in this order:
+                          {t('orders.productsInOrder')}
                         </h4>
 
                         <div className="space-y-3">
@@ -385,12 +410,12 @@ const MyOrders = () => {
                                     </h5>
 
                                     <div className="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-2">
-                                      <span>Order ID: {order.orderId}</span>
+                                      <span>{t('orders.orderId')}: {order.orderId}</span>
                                       <span>•</span>
-                                      <span>Qty: {order.quantity}</span>
+                                      <span>{t('checkout.qty')}: {order.quantity}</span>
                                       <span>•</span>
                                       <span className="font-medium text-gray-900">
-                                        ₦{order.totalAmt.toLocaleString()}
+                                        {formatPrice(order.totalAmt)}
                                       </span>
                                     </div>
 
@@ -400,7 +425,7 @@ const MyOrders = () => {
                                           order.order_status
                                         )}`}
                                       >
-                                        {order.order_status.replace(/_/g, ' ')}
+                                        {getStatusLabel(order.order_status)}
                                       </span>
 
                                       {order.tracking_number && (
@@ -419,7 +444,7 @@ const MyOrders = () => {
                                           )}`}
                                         >
                                           <Truck className="w-3 h-3" />
-                                          {tracking.status.replace(/_/g, ' ')}
+                                          {getTrackingStatusLabel(tracking.status)}
                                         </span>
                                       </div>
                                     )}
@@ -434,7 +459,7 @@ const MyOrders = () => {
                                     className="flex items-center gap-1 px-3 py-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg text-sm font-medium transition-colors flex-shrink-0"
                                   >
                                     <Eye className="w-4 h-4" />
-                                    <span>Details</span>
+                                    <span>{t('orders.details')}</span>
                                   </button>
                                 </div>
                               </div>
@@ -447,29 +472,26 @@ const MyOrders = () => {
                           <div className="flex justify-between items-center text-sm">
                             <div className="space-y-1">
                               <div className="flex items-center gap-2 text-gray-600">
-                                <span>Subtotal:</span>
+                                <span>{t('cart.subtotal')}:</span>
                                 <span className="font-medium text-gray-900">
-                                  ₦
-                                  {group.summary.totals.subTotal.toLocaleString()}
+                                  {formatPrice(group.summary.totals.subTotal)}
                                 </span>
                               </div>
                               {group.summary.totals.totalShipping > 0 && (
                                 <div className="flex items-center gap-2 text-gray-600">
-                                  <span>Shipping:</span>
+                                  <span>{t('cart.shipping')}:</span>
                                   <span className="font-medium text-gray-900">
-                                    ₦
-                                    {group.summary.totals.totalShipping.toLocaleString()}
+                                    {formatPrice(group.summary.totals.totalShipping)}
                                   </span>
                                 </div>
                               )}
                             </div>
                             <div className="text-right">
                               <div className="text-xs text-gray-600 mb-1">
-                                Total Amount
+                                {t('orders.totalAmount')}
                               </div>
                               <div className="text-xl font-bold text-green-600">
-                                ₦
-                                {group.summary.totals.grandTotal.toLocaleString()}
+                                {formatPrice(group.summary.totals.grandTotal)}
                               </div>
                             </div>
                           </div>
@@ -492,6 +514,9 @@ const MyOrders = () => {
             getStatusColor={getStatusColor}
             getPaymentStatusColor={getPaymentStatusColor}
             getTrackingStatusColor={getTrackingStatusColor}
+            getStatusLabel={getStatusLabel}
+            getPaymentStatusLabel={getPaymentStatusLabel}
+            getTrackingStatusLabel={getTrackingStatusLabel}
           />
         )}
       </div>
@@ -507,7 +532,12 @@ const OrderDetailsModal = ({
   getStatusColor,
   getPaymentStatusColor,
   getTrackingStatusColor,
+  getStatusLabel,
+  getPaymentStatusLabel,
+  getTrackingStatusLabel,
 }) => {
+  const { t } = useCountry();
+  const { formatPrice } = useCurrency();
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -542,11 +572,11 @@ const OrderDetailsModal = ({
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Order ID</p>
+                <p className="text-xs text-gray-600 mb-1">{t('orders.orderId')}</p>
                 <p className="font-medium text-gray-900">{order.orderId}</p>
               </div>
               <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Date</p>
+                <p className="text-xs text-gray-600 mb-1">{t('orders.date')}</p>
                 <p className="font-medium text-gray-900">
                   {new Date(order.createdAt).toLocaleDateString('en-US', {
                     year: 'numeric',
@@ -556,23 +586,23 @@ const OrderDetailsModal = ({
                 </p>
               </div>
               <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Order Status</p>
+                <p className="text-xs text-gray-600 mb-1">{t('orders.orderStatus')}</p>
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(
                     order.order_status
                   )}`}
                 >
-                  {order.order_status.replace(/_/g, ' ')}
+                  {getStatusLabel(order.order_status)}
                 </span>
               </div>
               <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Payment Status</p>
+                <p className="text-xs text-gray-600 mb-1">{t('orders.paymentStatus')}</p>
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(
                     order.payment_status
                   )}`}
                 >
-                  {order.payment_status.replace(/_/g, ' ')}
+                  {getPaymentStatusLabel(order.payment_status)}
                 </span>
               </div>
             </div>
@@ -596,21 +626,21 @@ const OrderDetailsModal = ({
                 </h4>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Quantity:</span>
+                    <span className="text-gray-600">{t('cart.quantity')}:</span>
                     <span className="font-medium text-gray-900">
                       {order.quantity}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Unit Price:</span>
+                    <span className="text-gray-600">{t('orders.unitPrice')}:</span>
                     <span className="font-medium text-gray-900">
-                      ₦{order.unitPrice.toLocaleString()}
+                      {formatPrice(order.unitPrice)}
                     </span>
                   </div>
                   <div className="flex justify-between pt-2 border-t">
-                    <span className="font-medium text-gray-900">Total:</span>
+                    <span className="font-medium text-gray-900">{t('cart.total')}:</span>
                     <span className="font-bold text-green-600">
-                      ₦{order.totalAmt.toLocaleString()}
+                      {formatPrice(order.totalAmt)}
                     </span>
                   </div>
                 </div>
@@ -646,7 +676,7 @@ const OrderDetailsModal = ({
                         )}`}
                       >
                         <Truck className="w-3 h-3" />
-                        {tracking.status.replace(/_/g, ' ')}
+                        {getTrackingStatusLabel(tracking.status)}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -710,19 +740,19 @@ const OrderDetailsModal = ({
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Payment Method</p>
+                <p className="text-xs text-gray-600 mb-1">{t('orders.paymentMethod')}</p>
                 <p className="font-medium text-gray-900">
                   {order.payment_method}
                 </p>
               </div>
               <div className="bg-gray-50 p-3 rounded-lg">
-                <p className="text-xs text-gray-600 mb-1">Payment Status</p>
+                <p className="text-xs text-gray-600 mb-1">{t('orders.paymentStatus')}</p>
                 <span
                   className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusColor(
                     order.payment_status
                   )}`}
                 >
-                  {order.payment_status.replace(/_/g, ' ')}
+                  {getPaymentStatusLabel(order.payment_status)}
                 </span>
               </div>
             </div>

@@ -5,11 +5,13 @@ import toast from 'react-hot-toast';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import { updateCompareCount } from '../utils/eventUtils';
+import { useCountry } from '../context/CountryContext';
 
 // Module-level cache so each productId is only checked once per page load
 const statusCache = new Map();
 
 const CompareButton = ({ product, className = '', iconOnly = false }) => {
+  const { t } = useCountry();
   const [loading, setLoading] = useState(false);
   const [isInCompare, setIsInCompare] = useState(false);
   const user = useSelector((state) => state.user);
@@ -69,8 +71,8 @@ const CompareButton = ({ product, className = '', iconOnly = false }) => {
             statusCache.set(product._id, added);
             toast.success(
               added
-                ? `${product.name} added to compare list`
-                : `${product.name} removed from compare list`
+                ? t('compare.addedToCompare', { name: product.name })
+                : t('compare.removedFromCompare', { name: product.name })
             );
             updateCompareCount();
           }
@@ -85,20 +87,20 @@ const CompareButton = ({ product, className = '', iconOnly = false }) => {
               JSON.stringify(compareList.filter((i) => i._id !== product._id))
             );
             setIsInCompare(false);
-            toast.success(`${product.name} removed from compare list`);
+            toast.success(t('compare.removedFromCompare', { name: product.name }));
           } else {
             if (compareList.length >= 4) {
-              toast.error('You can only compare up to 4 products');
+              toast.error(t('compare.maxProducts'));
               return;
             }
             localStorage.setItem('compareList', JSON.stringify([...compareList, product]));
             setIsInCompare(true);
-            toast.success(`${product.name} added to compare list`);
+            toast.success(t('compare.addedToCompare', { name: product.name }));
           }
           updateCompareCount();
         }
       } catch (error) {
-        const msg = error?.response?.data?.message || 'Failed to update compare list';
+        const msg = error?.response?.data?.message || t('compare.failedToUpdate');
         toast.error(msg);
       } finally {
         setLoading(false);
@@ -112,8 +114,8 @@ const CompareButton = ({ product, className = '', iconOnly = false }) => {
       <button
         onClick={handleToggleCompare}
         className={`flex items-center justify-center ${className}`}
-        title={isInCompare ? 'Remove from compare' : 'Add to compare'}
-        aria-label={isInCompare ? 'Remove from compare' : 'Add to compare'}
+        title={isInCompare ? t('compare.removeFromCompare') : t('compare.addToCompare')}
+        aria-label={isInCompare ? t('compare.removeFromCompare') : t('compare.addToCompare')}
         disabled={loading}
       >
         {loading ? (
@@ -144,7 +146,7 @@ const CompareButton = ({ product, className = '', iconOnly = false }) => {
               isInCompare ? 'text-secondary-100' : 'text-gray-500 hover:text-secondary-100'
             } transition-colors`}
           />
-          <span>{isInCompare ? 'Remove from Compare' : 'Add to Compare'}</span>
+          <span>{isInCompare ? t('compare.removeFromCompare') : t('compare.addToCompare')}</span>
         </>
       )}
     </button>

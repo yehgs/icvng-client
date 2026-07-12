@@ -314,7 +314,7 @@ const SearchInput = () => {
                   onClick={handleSubmitSearch}
                   className="text-primary-600 hover:underline font-medium"
                 >
-                  See all results for "{searchQuery}"
+                  {t('shop.seeAllResultsFor', { query: searchQuery })}
                 </button>
               </div>
             </>

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import { useFilterState } from './useFilterState';
+import { useCountry } from '../context/CountryContext';
 
 /**
  * Enhanced version of useUrlFilters hook that works with Redux state
@@ -16,6 +17,7 @@ import { useFilterState } from './useFilterState';
  * - /brand/:brandSlug (filter by brand only)
  */
 export const useUrlFilters = () => {
+  const { t } = useCountry();
   const params = useParams();
   const location = useLocation();
   const previousUrl = useRef(location.pathname);
@@ -86,10 +88,10 @@ export const useUrlFilters = () => {
               brandNames: [],
             },
             {
-              pageTitle: 'Shop',
+              pageTitle: t('nav.shop'),
               breadcrumbs: [
-                { label: 'Home', url: '/' },
-                { label: 'Shop', url: '/shop' },
+                { label: t('nav.home'), url: '/' },
+                { label: t('nav.shop'), url: '/shop' },
               ],
             }
           );
@@ -246,7 +248,7 @@ export const useUrlFilters = () => {
       return brandName;
     }
 
-    return 'All Products';
+    return t('homeSections.allProducts');
   };
 
   /**
@@ -255,8 +257,8 @@ export const useUrlFilters = () => {
   const generateBreadcrumbs = (displayNames) => {
     const { categoryName, subcategoryName, brandName } = displayNames;
     const breadcrumbs = [
-      { label: 'Home', url: '/' },
-      { label: 'Shop', url: '/shop' },
+      { label: t('nav.home'), url: '/' },
+      { label: t('nav.shop'), url: '/shop' },
     ];
 
     if (categoryName) {

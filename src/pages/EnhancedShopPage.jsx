@@ -14,8 +14,10 @@ import { useFilterState } from "../hooks/useFilterState.js";
 import { useUrlFilters } from "../hooks/useUrlFilters.js";
 import { useDispatch } from "react-redux";
 import { setCompatibleSystemFilter, setCategoryFilter, setBrandFilter } from "../store/filterSlice";
+import { useCountry } from "../context/CountryContext";
 
 const EnhancedShopPage = () => {
+  const { t } = useCountry();
   const dispatch = useDispatch();
 
   // Products data state
@@ -366,7 +368,7 @@ const EnhancedShopPage = () => {
                 <div>
                   <h1 className="text-xl font-bold">{urlState.pageTitle}</h1>
                   <p className="text-gray-600 text-sm">
-                    Showing {products.length} of {totalCount} products
+                    {t('shop.showingProducts', { count: products.length, total: totalCount })}
                   </p>
                 </div>
 
@@ -380,7 +382,7 @@ const EnhancedShopPage = () => {
                       type="text"
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      placeholder="Search coffee products..."
+                      placeholder={t('shop.searchPlaceholder')}
                       className="w-full md:w-64 pr-10 pl-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                     />
                     <button
@@ -399,7 +401,7 @@ const EnhancedShopPage = () => {
                 hasMore={page < totalPage}
                 loader={
                   <div className="text-center py-4">
-                    Loading more products...
+                    {t('shop.loadingMore')}
                   </div>
                 }
               >
@@ -424,12 +426,12 @@ const EnhancedShopPage = () => {
                 <div className="flex flex-col justify-center items-center w-full mx-auto py-10">
                   <img
                     src={noDataImage}
-                    alt="No results found"
+                    alt={t('shop.noResultsAlt')}
                     className="w-full h-full max-w-xs max-h-xs block"
                   />
-                  <p className="font-semibold my-2">No products found</p>
+                  <p className="font-semibold my-2">{t('shop.noProductsFound')}</p>
                   <p className="text-gray-500 text-center">
-                    Try adjusting your search or filter criteria
+                    {t('shop.adjustFilters')}
                   </p>
                 </div>
               )}

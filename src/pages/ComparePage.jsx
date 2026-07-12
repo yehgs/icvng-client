@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import { valideURLConvert } from "../utils/valideURLConvert";
 import { updateCompareCount } from "../utils/eventUtils";
+import { useCurrency } from "../provider/GlobalProvider";
+import { useCountry } from "../context/CountryContext";
 import {
   FaTimes,
   FaShoppingCart,
@@ -22,6 +23,8 @@ import Loading from "../components/Loading";
 import WishlistButton from "../components/WishlistButton";
 
 const ComparePage = () => {
+  const { t } = useCountry();
+  const { formatPrice } = useCurrency();
   const [compareItems, setCompareItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState({});
@@ -32,7 +35,7 @@ const ComparePage = () => {
     if (isLoggedIn) {
       fetchCompareList();
     } else {
-      toast.error("Please sign in to add items to your cart");
+      toast.error(t('wishlist.signInToAddToCart'));
     }
   }, [isLoggedIn]);
 
@@ -57,7 +60,7 @@ const ComparePage = () => {
   // ✅ FIXED: Add to cart handler with automatic removal from compare list
   const handleAddToCart = async (product) => {
     if (!product.productAvailability) {
-      toast.error("This product is not available");
+      toast.error(t('wishlist.productNotAvailable'));
       return;
     }
 
@@ -77,7 +80,7 @@ const ComparePage = () => {
         const { data: responseData } = response;
 
         if (responseData.success) {
-          toast.success(responseData.message || "Product added to cart");
+          toast.success(responseData.message || t('wishlist.productAddedToCart'));
 
           // ✅ CRITICAL: Trigger multiple events to update cart everywhere
           window.dispatchEvent(new CustomEvent("cart-updated"));
@@ -89,7 +92,7 @@ const ComparePage = () => {
           }, 100);
         }
       } else {
-        toast.error("Please sign in to add items to your cart");
+        toast.error(t('wishlist.signInToAddToCart'));
       }
     } catch (error) {
       AxiosToastError(error);
@@ -111,7 +114,7 @@ const ComparePage = () => {
           setCompareItems((prev) =>
             prev.filter((item) => item._id !== productId)
           );
-          toast.success("Product removed from compare list");
+          toast.success(t('compare.productRemoved'));
 
           // Update header count using event utils
           updateCompareCount();
@@ -124,7 +127,7 @@ const ComparePage = () => {
       const updatedList = compareItems.filter((item) => item._id !== productId);
       setCompareItems(updatedList);
       localStorage.setItem("compareList", JSON.stringify(updatedList));
-      toast.success("Product removed from compare list");
+      toast.success(t('compare.productRemoved'));
 
       // Update header count using event utils
       updateCompareCount();
@@ -132,7 +135,7 @@ const ComparePage = () => {
   };
 
   const clearCompareList = async () => {
-    if (window.confirm("Are you sure you want to clear your compare list?")) {
+    if (window.confirm(t('compare.confirmClear'))) {
       if (isLoggedIn) {
         try {
           const response = await Axios({
@@ -142,7 +145,7 @@ const ComparePage = () => {
           const { data: responseData } = response;
           if (responseData.success) {
             setCompareItems([]);
-            toast.success("Compare list cleared");
+            toast.success(t('compare.cleared'));
 
             // Update header count using event utils
             updateCompareCount();
@@ -153,7 +156,7 @@ const ComparePage = () => {
       } else {
         setCompareItems([]);
         localStorage.setItem("compareList", JSON.stringify([]));
-        toast.success("Compare list cleared");
+        toast.success(t('compare.cleared'));
 
         // Update header count using event utils
         updateCompareCount();
@@ -168,25 +171,25 @@ const ComparePage = () => {
     const attributes = [
       {
         key: "price",
-        label: "Regular Price",
+        label: t('compare.regularPrice'),
         type: "price",
         priceKey: "btcPrice",
       },
-      { key: "price3weeksDelivery", label: "2 Weeks Price", type: "price" },
-      { key: "price5weeksDelivery", label: "5 Weeks Price", type: "price" },
-      { key: "discount", label: "Discount", type: "percentage" },
-      { key: "weight", label: "Weight", type: "text" },
-      { key: "packaging", label: "Packaging", type: "text" },
-      { key: "productType", label: "Product Type", type: "text" },
-      { key: "roastLevel", label: "Roast Level", type: "text" },
-      { key: "intensity", label: "Intensity", type: "text" },
-      { key: "blend", label: "Blend", type: "text" },
-      { key: "coffeeOrigin", label: "Coffee Origin", type: "text" },
-      { key: "aromaticProfile", label: "Aromatic Profile", type: "text" },
-      { key: "averageRating", label: "Rating", type: "rating" },
+      { key: "price3weeksDelivery", label: t('compare.twoWeeksPrice'), type: "price" },
+      { key: "price5weeksDelivery", label: t('compare.fiveWeeksPrice'), type: "price" },
+      { key: "discount", label: t('compare.discount'), type: "percentage" },
+      { key: "weight", label: t('compare.weight'), type: "text" },
+      { key: "packaging", label: t('compare.packaging'), type: "text" },
+      { key: "productType", label: t('compare.productType'), type: "text" },
+      { key: "roastLevel", label: t('compare.roastLevel'), type: "text" },
+      { key: "intensity", label: t('compare.intensity'), type: "text" },
+      { key: "blend", label: t('compare.blend'), type: "text" },
+      { key: "coffeeOrigin", label: t('compare.coffeeOrigin'), type: "text" },
+      { key: "aromaticProfile", label: t('compare.aromaticProfile'), type: "text" },
+      { key: "averageRating", label: t('compare.rating'), type: "rating" },
       {
         key: "productAvailability",
-        label: "Availability",
+        label: t('compare.availability'),
         type: "availability",
       },
     ];
@@ -212,13 +215,13 @@ const ComparePage = () => {
         return (
           <div>
             <div className="font-semibold text-green-600">
-              {DisplayPriceInNaira(
+              {formatPrice(
                 pricewithDiscount(value, item.discount || 0)
               )}
             </div>
             {item.discount > 0 && (
               <div className="text-xs text-gray-500 line-through">
-                {DisplayPriceInNaira(value)}
+                {formatPrice(value)}
               </div>
             )}
           </div>
@@ -239,7 +242,7 @@ const ComparePage = () => {
               value ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
             }`}
           >
-            {value ? "Available" : "Discontinued"}
+            {value ? t('wishlist.available') : t('wishlist.discontinued')}
           </span>
         );
       case "number":
@@ -256,14 +259,14 @@ const ComparePage = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Compare Products</h1>
+        <h1 className="text-2xl font-bold text-gray-800">{t('compare.title')}</h1>
         {compareItems.length > 0 && (
           <button
             onClick={clearCompareList}
             className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition flex items-center"
           >
             <FaTimes className="mr-2" />
-            Clear All
+            {t('compare.clearAll')}
           </button>
         )}
       </div>
@@ -275,17 +278,16 @@ const ComparePage = () => {
               <FaInfoCircle className="text-gray-400 text-5xl" />
             </div>
             <h2 className="text-xl font-semibold mb-2">
-              No products to compare
+              {t('compare.noProducts')}
             </h2>
             <p className="text-gray-600 mb-6">
-              Add products to compare by clicking the compare button on product
-              cards.
+              {t('compare.noProductsMessage')}
             </p>
             <Link
               to="/shop"
               className="px-6 py-3 bg-green-700 text-white rounded-md hover:bg-green-800 transition"
             >
-              Start Shopping
+              {t('wishlist.continueShopping')}
             </Link>
           </div>
         </div>
@@ -296,7 +298,7 @@ const ComparePage = () => {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="p-4 text-left font-medium text-gray-700 w-48">
-                    Products ({compareItems.length}/4)
+                    {t('compare.productsCount', { count: compareItems.length })}
                   </th>
                   {compareItems.map((item) => (
                     <th key={item._id} className="p-4 text-center min-w-64">
@@ -318,7 +320,7 @@ const ComparePage = () => {
                           ) : (
                             <div className="w-24 h-24 bg-gray-100 flex items-center justify-center mx-auto mb-2 rounded">
                               <span className="text-gray-400 text-xs">
-                                No Image
+                                {t('compare.noImage')}
                               </span>
                             </div>
                           )}
@@ -334,7 +336,7 @@ const ComparePage = () => {
 
                           {item.sku && (
                             <p className="text-xs text-gray-500 mt-1">
-                              SKU: {item.sku}
+                              {t('productRequest.sku')}: {item.sku}
                             </p>
                           )}
                         </div>
@@ -363,8 +365,8 @@ const ComparePage = () => {
                               <>
                                 <FaShoppingCart className="mr-1" />
                                 {item.productAvailability
-                                  ? "Add to Cart"
-                                  : "Discontinued"}
+                                  ? t('product.addToCart')
+                                  : t('wishlist.discontinued')}
                               </>
                             )}
                           </button>
@@ -401,13 +403,13 @@ const ComparePage = () => {
             <FaInfoCircle className="text-blue-600 mt-0.5 mr-3 flex-shrink-0" />
             <div>
               <h3 className="font-semibold text-blue-900 mb-2">
-                How to Compare
+                {t('compare.howToCompare')}
               </h3>
               <ul className="text-sm text-blue-800 space-y-1">
-                <li>• You can compare up to 4 products at once</li>
-                <li>• Click the product name to view full details</li>
-                <li>• Use the action buttons to add to cart or wishlist</li>
-                <li>• Remove products you no longer want to compare</li>
+                <li>• {t('compare.tip1')}</li>
+                <li>• {t('compare.tip2')}</li>
+                <li>• {t('compare.tip3')}</li>
+                <li>• {t('compare.tip4')}</li>
               </ul>
             </div>
           </div>
@@ -418,18 +420,17 @@ const ComparePage = () => {
       {compareItems.length > 0 && compareItems.length < 4 && (
         <div className="mt-8">
           <h2 className="text-xl font-bold text-gray-800 mb-4">
-            Add More Products to Compare
+            {t('compare.addMore')}
           </h2>
           <div className="bg-gray-50 rounded-lg p-6 text-center">
             <p className="text-gray-600 mb-4">
-              You can add {4 - compareItems.length} more product
-              {4 - compareItems.length > 1 ? "s" : ""} to your comparison.
+              {t('compare.addMoreMessage', { count: 4 - compareItems.length })}
             </p>
             <Link
               to="/shop"
               className="inline-flex items-center px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-800 transition"
             >
-              Browse Products
+              {t('compare.browseProducts')}
             </Link>
           </div>
         </div>
