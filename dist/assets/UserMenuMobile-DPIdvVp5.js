@@ -1,0 +1,1 @@
+import{j as s,I as e,U as t}from"./index-BydFV5p8.js";const o=()=>s.jsxs("section",{className:"bg-white h-full w-full py-2",children:[s.jsx("button",{onClick:()=>window.history.back(),className:"text-neutral-800 block w-fit ml-auto",children:s.jsx(e,{size:25})}),s.jsx("div",{className:"container mx-auto px-3 pb-8",children:s.jsx(t,{})})]});export{o as default};

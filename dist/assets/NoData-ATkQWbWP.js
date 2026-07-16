@@ -1,0 +1,1 @@
+import{u as a,j as s}from"./index-BydFV5p8.js";import{n as e}from"./nothing here yet-C540yS7h.js";const r=()=>{const{t}=a();return s.jsxs("div",{className:"flex flex-col items-center justify-center p-4 gap-2",children:[s.jsx("img",{src:e,alt:t("shop.noResultsAlt"),className:"w-36"}),s.jsx("p",{className:"text-neutral-500",children:t("shop.noDataFound")})]})};export{r as N};
