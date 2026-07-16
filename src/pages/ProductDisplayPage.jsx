@@ -15,14 +15,12 @@ import {
   FaShippingFast,
   FaCalendarAlt,
   FaSadTear,
-  FaEdit,
   FaPlus,
   FaMinus,
 } from "react-icons/fa";
 import { BsCart4 } from "react-icons/bs";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import ProductRequestModal from "../components/ProductRequestModal";
-import EditProductAdmin from "../components/EditProductAdmin";
 import { useSelector } from "react-redux";
 import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
 import RoastIndicator from "../components/RoastIndicator";
@@ -89,7 +87,6 @@ const ProductDisplayPage = () => {
   const translatedData = useTranslatedProduct(data);
   const [selectedPriceOption, setSelectedPriceOption] = useState("regular");
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const [openEditModal, setOpenEditModal] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
 
   // Image magnifier state
@@ -110,8 +107,6 @@ const ProductDisplayPage = () => {
     "5weeks": null,
   });
 
-  const user = useSelector((state) => state.user);
-  const isAdmin = user?.role === "ADMIN";
   const cartItem = useSelector((state) => state.cartItem.cart);
 
   const { formatPrice, selectedCurrency } = useCurrency();
@@ -457,15 +452,6 @@ const ProductDisplayPage = () => {
             Home / {data.productType?.toLowerCase() || "Products"} /{" "}
             {translatedData.name}
           </div>
-          {isAdmin && (
-            <button
-              onClick={() => setOpenEditModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition flex items-center"
-            >
-              <FaEdit className="mr-2" />
-              Edit Product
-            </button>
-          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -972,14 +958,6 @@ const ProductDisplayPage = () => {
           product={data}
           onClose={() => setShowRequestModal(false)}
           isDiscontinued={!data.productAvailability}
-        />
-      )}
-
-      {openEditModal && isAdmin && (
-        <EditProductAdmin
-          data={data}
-          close={() => setOpenEditModal(false)}
-          fetchProductData={fetchProductDetails}
         />
       )}
     </div>

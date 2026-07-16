@@ -1,5 +1,5 @@
 //client
-import React, { useState } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import Divider from './Divider';
@@ -10,16 +10,12 @@ import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import {
   HiOutlineExternalLink,
-  HiChevronDown,
-  HiChevronRight,
 } from 'react-icons/hi';
-import isAdmin from '../utils/isAdmin';
 
 const UserMenu = ({ close }) => {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [expandedMenus, setExpandedMenus] = useState({});
 
   const handleLogout = async () => {
     try {
@@ -47,50 +43,6 @@ const UserMenu = ({ close }) => {
       close();
     }
   };
-
-  const toggleSubmenu = (menuKey) => {
-    setExpandedMenus((prev) => ({
-      ...prev,
-      [menuKey]: !prev[menuKey],
-    }));
-  };
-
-  const adminMenuItems = [
-    {
-      title: 'Product Management',
-      key: 'products',
-      items: [
-        { path: '/dashboard/upload-product', label: 'Upload Product' },
-        { path: '/dashboard/product', label: 'Products' },
-        { path: '/dashboard/product-request', label: 'Product Requests' },
-      ],
-    },
-    {
-      title: 'Categories & Brands',
-      key: 'categories',
-      items: [
-        { path: '/dashboard/category', label: 'Categories' },
-        { path: '/dashboard/subcategory', label: 'Sub Categories' },
-        { path: '/dashboard/brand', label: 'Brands' },
-        { path: '/dashboard/tags', label: 'Tags' },
-      ],
-    },
-    {
-      title: 'Attributes & Settings',
-      key: 'settings',
-      items: [
-        { path: '/dashboard/attributes', label: 'Attributes' },
-        { path: '/dashboard/roast-areas', label: 'Coffee Roast Areas' },
-        { path: '/dashboard/slider', label: 'Sliders' },
-        { path: '/dashboard/banners', label: 'Banner Settings' },
-      ],
-    },
-    {
-      title: 'User Management',
-      key: 'users',
-      items: [{ path: '/dashboard/ratings', label: 'User Ratings' }],
-    },
-  ];
 
   const userMenuItems = [
     { path: '/dashboard/myorders', label: 'My Orders' },
@@ -122,41 +74,6 @@ const UserMenu = ({ close }) => {
       <Divider />
 
       <div className="text-sm grid gap-1">
-        {/* Admin Submenus */}
-        {isAdmin(user.role) &&
-          adminMenuItems.map((menu) => (
-            <div key={menu.key}>
-              <button
-                onClick={() => toggleSubmenu(menu.key)}
-                className="w-full flex items-center justify-between px-2 hover:bg-orange-200 py-1 text-left"
-              >
-                <span>{menu.title}</span>
-                {expandedMenus[menu.key] ? (
-                  <HiChevronDown size={14} />
-                ) : (
-                  <HiChevronRight size={14} />
-                )}
-              </button>
-
-              {expandedMenus[menu.key] && (
-                <div className="ml-4 border-l border-gray-200 pl-2">
-                  {menu.items.map((item) => (
-                    <Link
-                      key={item.path}
-                      onClick={handleClose}
-                      to={item.path}
-                      className="block px-2 hover:bg-orange-100 py-1 text-gray-600 hover:text-gray-800"
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-
-        {/* User Menu Items */}
-        <Divider />
         <div className="font-medium text-xs text-gray-500 px-2 py-1">
           Personal
         </div>
