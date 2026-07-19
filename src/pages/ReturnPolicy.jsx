@@ -14,90 +14,70 @@ import {
   FaInfoCircle,
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import { useSitePage } from '../hooks/useSitePage';
+
+const ICONS = { clock: FaClock, box: FaBox, shield: FaShieldAlt, money: FaMoneyBillWave };
+
+const DEFAULT_RETURN_CONDITIONS = [
+  { iconKey: 'clock', title: '7-Day Return Window', description: 'Customers must return products within 7 days from the date of purchase.' },
+  { iconKey: 'box', title: 'Original Condition', description: 'Products must be returned in their original condition, unopened and unused with all original packaging.' },
+  { iconKey: 'shield', title: 'Proof of Purchase', description: 'Original receipt or proof of purchase must be provided with the return.' },
+  { iconKey: 'money', title: 'Restocking Fee', description: 'A 20% handling charge per unit and transportation costs will be deducted, except for manufacturing defects.' },
+];
+
+const DEFAULT_RETURN_PROCESS = [
+  { step: '1', title: 'Contact Customer Service', description: 'Reach out to our support team within 7 days of purchase via phone or email.' },
+  { step: '2', title: 'Return Authorization', description: 'Receive a Return Authorization Number and return instructions from our team.' },
+  { step: '3', title: 'Package Your Item', description: 'Carefully package the product in its original condition with all accessories and documentation.' },
+  { step: '4', title: 'Ship the Product', description: 'Send the package to the designated return address. Keep your tracking number.' },
+  { step: '5', title: 'Verification', description: 'Our team will verify the returned product condition upon receipt.' },
+  { step: '6', title: 'Refund Processing', description: 'Refund will be issued after verification, with applicable fees deducted.' },
+];
+
+const DEFAULT_NON_RETURNABLE = [
+  'Products with broken seals or opened packaging', 'Used or damaged products due to customer handling',
+  'Products without original packaging or accessories', 'Expired products purchased knowingly',
+  'Custom or personalized coffee blends', 'Products beyond the 7-day return window',
+];
+
+const DEFAULT_ELIGIBLE_FULL_REFUND = [
+  'Manufacturing defects discovered upon delivery', 'Products damaged during shipping',
+  'Wrong items shipped by the supplier', 'Products significantly different from description',
+  'Products with quality issues reported immediately',
+];
+
+const DEFAULTS = {
+  heroTitle: 'Return & Refund Policy',
+  heroSubtitle: 'Your satisfaction is our priority. Review our return policy to ensure a smooth experience.',
+  supplierNoticeTitle: 'Important Notice for Suppliers',
+  supplierNoticeText: 'Suppliers registered on I-Coffee platform should ensure they understand and comply with this refund policy to maintain a smooth and transparent transaction process with customers.',
+  returnConditions: DEFAULT_RETURN_CONDITIONS,
+  returnProcess: DEFAULT_RETURN_PROCESS,
+  refundTimelineText: 'Refunds will be issued after verifying the returned product and deducting applicable fees. The refund process typically takes 5-10 business days after we receive and verify your return. The refund will be credited to your original payment method.',
+  deductionHandlingFee: '20% of product cost per unit',
+  deductionTransportCost: 'Actual shipping costs',
+  deductionException: 'No deductions for manufacturing defects',
+  eligibleForFullRefund: DEFAULT_ELIGIBLE_FULL_REFUND,
+  nonReturnableItems: DEFAULT_NON_RETURNABLE,
+  additionalInfo: [
+    { label: 'Expired Products', text: 'Expired products must not be delivered to customers. If you receive an expired product, contact us immediately for a full refund.' },
+    { label: 'Supplier Responsibility', text: 'Suppliers are responsible for the quality of products they deliver. Returns due to supplier errors will not incur handling fees for customers.' },
+    { label: 'Return Shipping', text: 'Customers are responsible for return shipping costs unless the return is due to our error or product defect.' },
+    { label: 'Exchange Policy', text: "We currently offer refunds only. If you'd like a different product, please place a new order after receiving your refund." },
+  ],
+  contactPhone: '+234 800 000 0000',
+  contactPhoneHours: 'Mon-Fri: 9AM - 6PM',
+  contactEmail: 'support@i-coffee.ng',
+  contactEmailNote: 'Response within 24 hours',
+};
 
 const ReturnPolicy = () => {
-  const returnConditions = [
-    {
-      icon: <FaClock className="text-3xl text-amber-600" />,
-      title: '7-Day Return Window',
-      description:
-        'Customers must return products within 7 days from the date of purchase.',
-    },
-    {
-      icon: <FaBox className="text-3xl text-amber-600" />,
-      title: 'Original Condition',
-      description:
-        'Products must be returned in their original condition, unopened and unused with all original packaging.',
-    },
-    {
-      icon: <FaShieldAlt className="text-3xl text-amber-600" />,
-      title: 'Proof of Purchase',
-      description:
-        'Original receipt or proof of purchase must be provided with the return.',
-    },
-    {
-      icon: <FaMoneyBillWave className="text-3xl text-amber-600" />,
-      title: 'Restocking Fee',
-      description:
-        'A 20% handling charge per unit and transportation costs will be deducted, except for manufacturing defects.',
-    },
-  ];
-
-  const returnProcess = [
-    {
-      step: '1',
-      title: 'Contact Customer Service',
-      description:
-        'Reach out to our support team within 7 days of purchase via phone or email.',
-    },
-    {
-      step: '2',
-      title: 'Return Authorization',
-      description:
-        'Receive a Return Authorization Number and return instructions from our team.',
-    },
-    {
-      step: '3',
-      title: 'Package Your Item',
-      description:
-        'Carefully package the product in its original condition with all accessories and documentation.',
-    },
-    {
-      step: '4',
-      title: 'Ship the Product',
-      description:
-        'Send the package to the designated return address. Keep your tracking number.',
-    },
-    {
-      step: '5',
-      title: 'Verification',
-      description:
-        'Our team will verify the returned product condition upon receipt.',
-    },
-    {
-      step: '6',
-      title: 'Refund Processing',
-      description:
-        'Refund will be issued after verification, with applicable fees deducted.',
-    },
-  ];
-
-  const nonReturnableItems = [
-    'Products with broken seals or opened packaging',
-    'Used or damaged products due to customer handling',
-    'Products without original packaging or accessories',
-    'Expired products purchased knowingly',
-    'Custom or personalized coffee blends',
-    'Products beyond the 7-day return window',
-  ];
-
-  const eligibleForFullRefund = [
-    'Manufacturing defects discovered upon delivery',
-    'Products damaged during shipping',
-    'Wrong items shipped by the supplier',
-    'Products significantly different from description',
-    'Products with quality issues reported immediately',
-  ];
+  const { get } = useSitePage('return-policy', DEFAULTS);
+  const returnConditions = get('returnConditions', DEFAULT_RETURN_CONDITIONS);
+  const returnProcess = get('returnProcess', DEFAULT_RETURN_PROCESS);
+  const nonReturnableItems = get('nonReturnableItems', DEFAULT_NON_RETURNABLE);
+  const eligibleForFullRefund = get('eligibleForFullRefund', DEFAULT_ELIGIBLE_FULL_REFUND);
+  const additionalInfo = get('additionalInfo', DEFAULTS.additionalInfo);
 
   return (
     <div className="bg-gray-50">
@@ -106,13 +86,8 @@ const ReturnPolicy = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaUndo className="text-6xl mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Return & Refund Policy
-            </h1>
-            <p className="text-xl text-amber-100">
-              Your satisfaction is our priority. Review our return policy to
-              ensure a smooth experience.
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">{get('heroTitle', DEFAULTS.heroTitle)}</h1>
+            <p className="text-xl text-amber-100">{get('heroSubtitle', DEFAULTS.heroSubtitle)}</p>
           </div>
         </div>
       </div>
@@ -124,14 +99,8 @@ const ReturnPolicy = () => {
             <div className="flex items-start">
               <FaExclamationTriangle className="text-yellow-600 text-2xl mr-4 flex-shrink-0 mt-1" />
               <div>
-                <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Important Notice for Suppliers
-                </h3>
-                <p className="text-yellow-700">
-                  Suppliers registered on I-Coffee platform should ensure they
-                  understand and comply with this refund policy to maintain a
-                  smooth and transparent transaction process with customers.
-                </p>
+                <h3 className="text-lg font-semibold text-yellow-800 mb-2">{get('supplierNoticeTitle', DEFAULTS.supplierNoticeTitle)}</h3>
+                <p className="text-yellow-700">{get('supplierNoticeText', DEFAULTS.supplierNoticeText)}</p>
               </div>
             </div>
           </div>
@@ -151,22 +120,27 @@ const ReturnPolicy = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {returnConditions.map((condition, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition"
-              >
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">{condition.icon}</div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                      {condition.title}
-                    </h3>
-                    <p className="text-gray-600">{condition.description}</p>
+            {returnConditions.map((condition, index) => {
+              const Icon = ICONS[condition.iconKey] || FaClock;
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition"
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="flex-shrink-0">
+                      <Icon className="text-3xl text-amber-600" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                        {condition.title}
+                      </h3>
+                      <p className="text-gray-600">{condition.description}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -220,13 +194,7 @@ const ReturnPolicy = () => {
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
                   Refund Timeline
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Refunds will be issued after verifying the returned product
-                  and deducting applicable fees. The refund process typically
-                  takes 5-10 business days after we receive and verify your
-                  return. The refund will be credited to your original payment
-                  method.
-                </p>
+                <p className="text-gray-600 leading-relaxed">{get('refundTimelineText', DEFAULTS.refundTimelineText)}</p>
               </div>
 
               <div>
@@ -237,24 +205,15 @@ const ReturnPolicy = () => {
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-orange-600 mr-2">•</span>
-                      <span>
-                        <strong>Handling Fee:</strong> 20% of product cost per
-                        unit
-                      </span>
+                      <span><strong>Handling Fee:</strong> {get('deductionHandlingFee', DEFAULTS.deductionHandlingFee)}</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-600 mr-2">•</span>
-                      <span>
-                        <strong>Transportation Cost:</strong> Actual shipping
-                        costs
-                      </span>
+                      <span><strong>Transportation Cost:</strong> {get('deductionTransportCost', DEFAULTS.deductionTransportCost)}</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-green-600 mr-2">✓</span>
-                      <span>
-                        <strong>Exception:</strong> No deductions for
-                        manufacturing defects
-                      </span>
+                      <span><strong>Exception:</strong> {get('deductionException', DEFAULTS.deductionException)}</span>
                     </li>
                   </ul>
                 </div>
@@ -269,7 +228,6 @@ const ReturnPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="grid md:grid-cols-2 gap-8">
-              {/* Eligible for Full Refund */}
               <div className="bg-green-50 rounded-xl p-8 border-2 border-green-200">
                 <div className="flex items-center mb-6">
                   <FaCheckCircle className="text-3xl text-green-600 mr-3" />
@@ -287,7 +245,6 @@ const ReturnPolicy = () => {
                 </ul>
               </div>
 
-              {/* Non-Returnable Items */}
               <div className="bg-red-50 rounded-xl p-8 border-2 border-red-200">
                 <div className="flex items-center mb-6">
                   <FaExclamationTriangle className="text-3xl text-red-600 mr-3" />
@@ -321,42 +278,12 @@ const ReturnPolicy = () => {
             </div>
 
             <div className="space-y-4 text-gray-700">
-              <div className="flex items-start">
-                <span className="text-blue-600 mr-2 mt-1">•</span>
-                <p>
-                  <strong>Expired Products:</strong> Expired products must not
-                  be delivered to customers. If you receive an expired product,
-                  contact us immediately for a full refund.
-                </p>
-              </div>
-
-              <div className="flex items-start">
-                <span className="text-blue-600 mr-2 mt-1">•</span>
-                <p>
-                  <strong>Supplier Responsibility:</strong> Suppliers are
-                  responsible for the quality of products they deliver. Returns
-                  due to supplier errors will not incur handling fees for
-                  customers.
-                </p>
-              </div>
-
-              <div className="flex items-start">
-                <span className="text-blue-600 mr-2 mt-1">•</span>
-                <p>
-                  <strong>Return Shipping:</strong> Customers are responsible
-                  for return shipping costs unless the return is due to our
-                  error or product defect.
-                </p>
-              </div>
-
-              <div className="flex items-start">
-                <span className="text-blue-600 mr-2 mt-1">•</span>
-                <p>
-                  <strong>Exchange Policy:</strong> We currently offer refunds
-                  only. If you'd like a different product, please place a new
-                  order after receiving your refund.
-                </p>
-              </div>
+              {additionalInfo.map((info, idx) => (
+                <div key={idx} className="flex items-start">
+                  <span className="text-blue-600 mr-2 mt-1">•</span>
+                  <p><strong>{info.label}:</strong> {info.text}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -377,19 +304,15 @@ const ReturnPolicy = () => {
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaPhone className="text-3xl mx-auto mb-4" />
                 <h3 className="font-semibold mb-2">Call Us</h3>
-                <p className="text-gray-300">+234 800 000 0000</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Mon-Fri: 9AM - 6PM
-                </p>
+                <p className="text-gray-300">{get('contactPhone', DEFAULTS.contactPhone)}</p>
+                <p className="text-sm text-gray-400 mt-2">{get('contactPhoneHours', DEFAULTS.contactPhoneHours)}</p>
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaEnvelope className="text-3xl mx-auto mb-4" />
                 <h3 className="font-semibold mb-2">Email Us</h3>
-                <p className="text-gray-300">support@i-coffee.ng</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  Response within 24 hours
-                </p>
+                <p className="text-gray-300">{get('contactEmail', DEFAULTS.contactEmail)}</p>
+                <p className="text-sm text-gray-400 mt-2">{get('contactEmailNote', DEFAULTS.contactEmailNote)}</p>
               </div>
             </div>
 

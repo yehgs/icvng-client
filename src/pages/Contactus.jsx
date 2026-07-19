@@ -10,34 +10,68 @@ import {
   FaInstagram,
 } from "react-icons/fa";
 import ContactForm from "../components/Contactform";
+import { useSitePage } from "../hooks/useSitePage";
+
+// The page's original copy — Nigeria-authored, since NG was the only market
+// in mind when this page was built. Kept here as the fallback so the page
+// renders identically until/unless the admin CMS (SitePage, slug:
+// "contact-us") has content for the visiting country/language.
+const DEFAULTS = {
+  heroTitle: "Contact Us",
+  heroSubtitle: "We'd love to hear from you. Get in touch with our team!",
+  address: ["3 Kaffi Street, Alausa", "Ikeja, Lagos", "Nigeria"],
+  phone: "+234 805 242 3935",
+  phoneHref: "tel:+2348052423935",
+  email: "customercare@i-coffee.ng",
+  businessHours: [
+    "Monday - Friday: 8:00 AM - 6:00 PM",
+    "Saturday: 9:00 AM - 4:00 PM",
+    "Sunday: Closed",
+  ],
+  mapEmbedUrl:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.2858866938844!2d3.3541295!3d6.6067082!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b923f5e2c6b89%3A0x6b8b9c5f7a3e2d4c!2sKaffi%20Street%2C%20Alausa%2C%20Ikeja%2C%20Lagos!5e0!3m2!1sen!2sng!4v1234567890",
+  gettingHere:
+    "We are conveniently located in the heart of Ikeja, Lagos. Easily accessible by public transportation and private vehicles. Ample parking available.",
+  landmarks: ["Alausa Secretariat", "Lagos State Government Secretariat", "Ikeja City Mall"],
+  facebookUrl: "https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage",
+  twitterUrl: "https://twitter.com/italiancoffee_v",
+  instagramUrl: "https://www.instagram.com/italiancofeeventure/",
+  faqTeaserTitle: "Have Questions?",
+  faqTeaserText: "Check out our FAQ page for quick answers to common questions",
+};
 
 const ContactUs = () => {
+  const { get } = useSitePage("contact-us", DEFAULTS);
+
+  const address = get("address", DEFAULTS.address);
+  const businessHours = get("businessHours", DEFAULTS.businessHours);
+  const landmarks = get("landmarks", DEFAULTS.landmarks);
+  const phone = get("phone", DEFAULTS.phone);
+  const phoneHref = get("phoneHref", `tel:${String(phone).replace(/\s+/g, "")}`);
+  const email = get("email", DEFAULTS.email);
+
   const contactInfo = [
     {
       icon: <FaMapMarkerAlt className="text-3xl text-amber-600" />,
       title: "Visit Us",
-      details: ["3 Kaffi Street, Alausa", "Ikeja, Lagos", "Nigeria"],
+      details: Array.isArray(address) ? address : [address],
     },
     {
       icon: <FaPhone className="text-3xl text-amber-600" />,
       title: "Call Us",
-      details: ["+234 805 242 3935"],
-      link: "tel:+2348052423935",
+      details: [phone],
+      link: phoneHref,
     },
     {
       icon: <FaEnvelope className="text-3xl text-amber-600" />,
       title: "Email Us",
-      details: ["customercare@i-coffee.ng"],
-      link: "mailto:customercare@i-coffee.ng",
+      details: [email],
+      link: `mailto:${email}`,
     },
     {
       icon: <FaClock className="text-3xl text-amber-600" />,
       title: "Business Hours",
-      details: [
-        "Monday - Friday: 8:00 AM - 6:00 PM",
-        "Saturday: 9:00 AM - 4:00 PM",
-        "Sunday: Closed",
-      ],
+      details: Array.isArray(businessHours) ? businessHours : [businessHours],
     },
   ];
 
@@ -48,10 +82,8 @@ const ContactUs = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaEnvelope className="text-6xl mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Contact Us</h1>
-            <p className="text-xl text-amber-100">
-              We'd love to hear from you. Get in touch with our team!
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">{get("heroTitle", DEFAULTS.heroTitle)}</h1>
+            <p className="text-xl text-amber-100">{get("heroSubtitle", DEFAULTS.heroSubtitle)}</p>
           </div>
         </div>
       </div>
@@ -102,7 +134,7 @@ const ContactUs = () => {
               <div className="bg-white rounded-xl shadow-lg p-4">
                 <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
                   <iframe
-                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3963.2858866938844!2d3.3541295!3d6.6067082!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x103b923f5e2c6b89%3A0x6b8b9c5f7a3e2d4c!2sKaffi%20Street%2C%20Alausa%2C%20Ikeja%2C%20Lagos!5e0!3m2!1sen!2sng!4v1234567890"
+                    src={get("mapEmbedUrl", DEFAULTS.mapEmbedUrl)}
                     width="100%"
                     height="400"
                     style={{ border: 0 }}
@@ -118,11 +150,7 @@ const ContactUs = () => {
                     <h3 className="font-semibold text-gray-800 mb-2">
                       Getting Here
                     </h3>
-                    <p className="text-gray-600 text-sm">
-                      We are conveniently located in the heart of Ikeja, Lagos.
-                      Easily accessible by public transportation and private
-                      vehicles. Ample parking available.
-                    </p>
+                    <p className="text-gray-600 text-sm">{get("gettingHere", DEFAULTS.gettingHere)}</p>
                   </div>
 
                   <div>
@@ -130,9 +158,9 @@ const ContactUs = () => {
                       Landmarks Nearby
                     </h3>
                     <ul className="text-gray-600 text-sm space-y-1">
-                      <li>• Alausa Secretariat</li>
-                      <li>• Lagos State Government Secretariat</li>
-                      <li>• Ikeja City Mall</li>
+                      {landmarks.map((lm, idx) => (
+                        <li key={idx}>• {lm}</li>
+                      ))}
                     </ul>
                   </div>
                 </div>
@@ -145,7 +173,7 @@ const ContactUs = () => {
                 </h3>
                 <div className="flex space-x-6">
                   <a
-                    href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                    href={get("facebookUrl", DEFAULTS.facebookUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-blue-600 transition"
@@ -153,7 +181,7 @@ const ContactUs = () => {
                     <FaFacebook className="text-3xl" />
                   </a>
                   <a
-                    href="https://twitter.com/italiancoffee_v"
+                    href={get("twitterUrl", DEFAULTS.twitterUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-blue-400 transition"
@@ -161,7 +189,7 @@ const ContactUs = () => {
                     <FaTwitter className="text-3xl" />
                   </a>
                   <a
-                    href="https://www.instagram.com/italiancofeeventure/"
+                    href={get("instagramUrl", DEFAULTS.instagramUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-pink-600 transition"
@@ -190,11 +218,9 @@ const ContactUs = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-gray-800 mb-4">
-              Have Questions?
+              {get("faqTeaserTitle", DEFAULTS.faqTeaserTitle)}
             </h2>
-            <p className="text-lg text-gray-600 mb-6">
-              Check out our FAQ page for quick answers to common questions
-            </p>
+            <p className="text-lg text-gray-600 mb-6">{get("faqTeaserText", DEFAULTS.faqTeaserText)}</p>
             <a
               href="/faq"
               className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-semibold transition"

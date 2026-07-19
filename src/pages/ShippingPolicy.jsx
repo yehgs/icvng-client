@@ -12,45 +12,91 @@ import {
   FaEnvelope,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useSitePage } from "../hooks/useSitePage";
 
-const ShippingPolicy = () => {
-  const shippingMethods = [
+// Nigeria-authored baseline. Facts like "free shipping within Lagos" or
+// "36 states" are NG-specific and get overridden per country in the CMS
+// (Admin → Site Content → Shipping Policy) rather than shipped to every
+// market as if it were universally true.
+const DEFAULTS = {
+  heroTitle: "Shipping Policy",
+  heroSubtitle: "Fast, reliable delivery across Nigeria and West Africa with a 97% success rate",
+  stats: [
+    { value: "97%", label: "Daily Success Rate" },
+    { value: "5", label: "Delivery Vehicles" },
+    { value: "36", label: "States Coverage" },
+    { value: "4", label: "Countries Served" },
+  ],
+  shippingMethods: [
     {
-      icon: <FaShippingFast className="text-4xl text-amber-600" />,
+      iconKey: "shippingFast",
       name: "Standard Shipping",
       delivery: "3-7 business days (domestic)",
       intDelivery: "7-14 business days (international)",
       description: "Reliable delivery at affordable rates",
     },
     {
-      icon: <FaTruck className="text-4xl text-amber-600" />,
+      iconKey: "truck",
       name: "Express Shipping",
       delivery: "1-3 business days (domestic)",
       intDelivery: "3-5 business days (international)",
       description: "Faster delivery for urgent orders",
     },
-  ];
+  ],
+  deliveryZones: [
+    { zone: "Lagos State", time: "1-3 business days", freeShipping: "₦100,000+", color: "amber" },
+    { zone: "Other Nigerian States", time: "3-7 business days", freeShipping: "N/A", color: "amber" },
+    { zone: "West Africa (Benin, Togo, Cameroon)", time: "7-14 business days", freeShipping: "N/A", color: "purple" },
+  ],
+  processingTimeText:
+    "Orders are typically processed within 1-5 business days, depending on the supplier's location and product availability. You will receive an email notification when your order has been processed and shipped.",
+  packagingText:
+    "All products are carefully packaged to ensure safe delivery. We use high-quality packaging materials to protect your coffee products during transit, maintaining freshness and preventing damage.",
+  trackingText:
+    "Suppliers will provide tracking information for all orders. You can track your shipment in real-time through your account dashboard or using the tracking link sent via email and SMS.",
+  shippingCostNotes: [
+    "Shipping costs vary depending on the shipping method, package weight, and destination",
+    "Free Shipping: Available on orders over ₦100,000 within Lagos State",
+    "Final shipping cost will be calculated at checkout based on your location and cart contents",
+    "International shipping costs are calculated based on destination country and package weight",
+  ],
+  supplierResponsibilities: [
+    "Fulfill orders promptly and accurately",
+    "Provide regular shipping updates to customers",
+    "Deliver orders within 24 hours to I-Coffee office",
+    "Ensure products have minimum 6 months validity",
+    "Package products securely for safe transport",
+  ],
+  customerResponsibilities: [
+    "Provide accurate shipping addresses and contact information",
+    "Receive orders promptly at the specified address",
+    "Inspect products for damage or defects upon delivery",
+    "Report any issues within 24 hours of delivery",
+    "Be available to receive the package or arrange alternative delivery",
+  ],
+  importantNotes: [
+    "Delivery times are estimates and may vary due to factors beyond our control",
+    "We are not responsible for delays caused by incorrect shipping addresses",
+    "International shipments may be subject to customs regulations and duties",
+    "Products not supplied within 24 hours must be refunded by supplier",
+    "Contact customer service immediately if you experience any shipping issues",
+  ],
+  contactPhone: "+234 805 242 3935",
+  contactEmail: "customercare@i-coffee.ng",
+};
 
-  const deliveryZones = [
-    {
-      zone: "Lagos State",
-      time: "1-3 business days",
-      freeShipping: "₦100,000+",
-      color: "amber",
-    },
-    {
-      zone: "Other Nigerian States",
-      time: "3-7 business days",
-      freeShipping: "N/A",
-      color: "amber",
-    },
-    {
-      zone: "West Africa (Benin, Togo, Cameroon)",
-      time: "7-14 business days",
-      freeShipping: "N/A",
-      color: "purple",
-    },
-  ];
+const METHOD_ICONS = { shippingFast: FaShippingFast, truck: FaTruck };
+
+const ShippingPolicy = () => {
+  const { get } = useSitePage("shipping-policy", DEFAULTS);
+
+  const stats = get("stats", DEFAULTS.stats);
+  const shippingMethods = get("shippingMethods", DEFAULTS.shippingMethods);
+  const deliveryZones = get("deliveryZones", DEFAULTS.deliveryZones);
+  const shippingCostNotes = get("shippingCostNotes", DEFAULTS.shippingCostNotes);
+  const supplierResponsibilities = get("supplierResponsibilities", DEFAULTS.supplierResponsibilities);
+  const customerResponsibilities = get("customerResponsibilities", DEFAULTS.customerResponsibilities);
+  const importantNotes = get("importantNotes", DEFAULTS.importantNotes);
 
   return (
     <div className="bg-gray-50">
@@ -59,13 +105,8 @@ const ShippingPolicy = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaTruck className="text-6xl mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Shipping Policy
-            </h1>
-            <p className="text-xl text-amber-100">
-              Fast, reliable delivery across Nigeria and West Africa with a 97%
-              success rate
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">{get("heroTitle", DEFAULTS.heroTitle)}</h1>
+            <p className="text-xl text-amber-100">{get("heroSubtitle", DEFAULTS.heroSubtitle)}</p>
           </div>
         </div>
       </div>
@@ -74,22 +115,12 @@ const ShippingPolicy = () => {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-amber-600 mb-2">97%</div>
-              <div className="text-gray-600">Daily Success Rate</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-amber-600 mb-2">5</div>
-              <div className="text-gray-600">Delivery Vehicles</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-amber-600 mb-2">36</div>
-              <div className="text-gray-600">States Coverage</div>
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-              <div className="text-4xl font-bold text-amber-600 mb-2">4</div>
-              <div className="text-gray-600">Countries Served</div>
-            </div>
+            {stats.map((s, idx) => (
+              <div key={idx} className="bg-white rounded-xl shadow-lg p-6 text-center">
+                <div className="text-4xl font-bold text-amber-600 mb-2">{s.value}</div>
+                <div className="text-gray-600">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -107,40 +138,45 @@ const ShippingPolicy = () => {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {shippingMethods.map((method, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition"
-              >
-                <div className="flex justify-center mb-4">{method.icon}</div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-                  {method.name}
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-start">
-                    <FaClock className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
-                    <div>
-                      <div className="font-semibold text-gray-800">
-                        Domestic Delivery
-                      </div>
-                      <div className="text-gray-600">{method.delivery}</div>
-                    </div>
+            {shippingMethods.map((method, index) => {
+              const Icon = METHOD_ICONS[method.iconKey] || FaShippingFast;
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition"
+                >
+                  <div className="flex justify-center mb-4">
+                    <Icon className="text-4xl text-amber-600" />
                   </div>
-                  <div className="flex items-start">
-                    <FaGlobeAfrica className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
-                    <div>
-                      <div className="font-semibold text-gray-800">
-                        International Delivery
+                  <h3 className="text-2xl font-bold text-gray-800 mb-4 text-center">
+                    {method.name}
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-start">
+                      <FaClock className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-gray-800">
+                          Domestic Delivery
+                        </div>
+                        <div className="text-gray-600">{method.delivery}</div>
                       </div>
-                      <div className="text-gray-600">{method.intDelivery}</div>
                     </div>
+                    <div className="flex items-start">
+                      <FaGlobeAfrica className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
+                      <div>
+                        <div className="font-semibold text-gray-800">
+                          International Delivery
+                        </div>
+                        <div className="text-gray-600">{method.intDelivery}</div>
+                      </div>
+                    </div>
+                    <p className="text-gray-600 italic pt-2">
+                      {method.description}
+                    </p>
                   </div>
-                  <p className="text-gray-600 italic pt-2">
-                    {method.description}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
@@ -163,11 +199,9 @@ const ShippingPolicy = () => {
                 <div
                   key={index}
                   className={`rounded-xl p-6 border-2 ${
-                    zone.color === "amber"
-                      ? "border-amber-200 bg-amber-50"
-                      : zone.color === "amber"
-                        ? "border-amber-200 bg-amber-50"
-                        : "border-purple-200 bg-purple-50"
+                    zone.color === "purple"
+                      ? "border-purple-200 bg-purple-50"
+                      : "border-amber-200 bg-amber-50"
                   }`}
                 >
                   <h3 className="text-xl font-bold text-gray-800 mb-3">
@@ -178,7 +212,7 @@ const ShippingPolicy = () => {
                       <FaClock className="text-gray-600 mr-2" />
                       <span className="text-gray-700">{zone.time}</span>
                     </div>
-                    {zone.freeShipping !== "N/A" && (
+                    {zone.freeShipping && zone.freeShipping !== "N/A" && (
                       <div className="flex items-center">
                         <FaCheckCircle className="text-amber-600 mr-2" />
                         <span className="text-gray-700">
@@ -210,35 +244,21 @@ const ShippingPolicy = () => {
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
                   Processing Time
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Orders are typically processed within 1-5 business days,
-                  depending on the supplier's location and product availability.
-                  You will receive an email notification when your order has
-                  been processed and shipped.
-                </p>
+                <p className="text-gray-600 leading-relaxed">{get("processingTimeText", DEFAULTS.processingTimeText)}</p>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
                   Careful Packaging
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  All products are carefully packaged to ensure safe delivery.
-                  We use high-quality packaging materials to protect your coffee
-                  products during transit, maintaining freshness and preventing
-                  damage.
-                </p>
+                <p className="text-gray-600 leading-relaxed">{get("packagingText", DEFAULTS.packagingText)}</p>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
                   Tracking Information
                 </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  Suppliers will provide tracking information for all orders.
-                  You can track your shipment in real-time through your account
-                  dashboard or using the tracking link sent via email and SMS.
-                </p>
+                <p className="text-gray-600 leading-relaxed">{get("trackingText", DEFAULTS.trackingText)}</p>
               </div>
             </div>
           </div>
@@ -254,34 +274,12 @@ const ShippingPolicy = () => {
             </h2>
             <div className="bg-white rounded-xl shadow-lg p-8">
               <ul className="space-y-4 text-gray-700">
-                <li className="flex items-start">
-                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
-                  <span>
-                    Shipping costs vary depending on the shipping method,
-                    package weight, and destination
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
-                  <span>
-                    <strong>Free Shipping:</strong> Available on orders over
-                    ₦100,000 within Lagos State
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
-                  <span>
-                    Final shipping cost will be calculated at checkout based on
-                    your location and cart contents
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
-                  <span>
-                    International shipping costs are calculated based on
-                    destination country and package weight
-                  </span>
-                </li>
+                {shippingCostNotes.map((note, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <FaCheckCircle className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
+                    <span>{note}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -292,82 +290,31 @@ const ShippingPolicy = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-2 gap-8">
-            {/* Supplier Responsibilities */}
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
                 Supplier Responsibilities
               </h3>
               <ul className="space-y-3">
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Fulfill orders promptly and accurately
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Provide regular shipping updates to customers
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Deliver orders within 24 hours to I-Coffee office
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Ensure products have minimum 6 months validity
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Package products securely for safe transport
-                  </span>
-                </li>
+                {supplierResponsibilities.map((item, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <span className="text-amber-600 mr-2">•</span>
+                    <span className="text-gray-700">{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Customer Responsibilities */}
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
                 Customer Responsibilities
               </h3>
               <ul className="space-y-3">
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Provide accurate shipping addresses and contact information
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Receive orders promptly at the specified address
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Inspect products for damage or defects upon delivery
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Report any issues within 24 hours of delivery
-                  </span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-amber-600 mr-2">•</span>
-                  <span className="text-gray-700">
-                    Be available to receive the package or arrange alternative
-                    delivery
-                  </span>
-                </li>
+                {customerResponsibilities.map((item, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <span className="text-amber-600 mr-2">•</span>
+                    <span className="text-gray-700">{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -385,41 +332,12 @@ const ShippingPolicy = () => {
                   Important Information
                 </h2>
                 <ul className="space-y-3 text-gray-700">
-                  <li className="flex items-start">
-                    <span className="text-yellow-600 mr-2">•</span>
-                    <span>
-                      Delivery times are estimates and may vary due to factors
-                      beyond our control
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-yellow-600 mr-2">•</span>
-                    <span>
-                      We are not responsible for delays caused by incorrect
-                      shipping addresses
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-yellow-600 mr-2">•</span>
-                    <span>
-                      International shipments may be subject to customs
-                      regulations and duties
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-yellow-600 mr-2">•</span>
-                    <span>
-                      Products not supplied within 24 hours must be refunded by
-                      supplier
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-yellow-600 mr-2">•</span>
-                    <span>
-                      Contact customer service immediately if you experience any
-                      shipping issues
-                    </span>
-                  </li>
+                  {importantNotes.map((note, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-yellow-600 mr-2">•</span>
+                      <span>{note}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -442,13 +360,13 @@ const ShippingPolicy = () => {
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaPhone className="text-3xl mx-auto mb-4" />
                 <h3 className="font-semibold mb-2">Call Us</h3>
-                <p className="text-gray-300">+234 805 242 3935</p>
+                <p className="text-gray-300">{get("contactPhone", DEFAULTS.contactPhone)}</p>
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaEnvelope className="text-3xl mx-auto mb-4" />
                 <h3 className="font-semibold mb-2">Email Us</h3>
-                <p className="text-gray-300">customercare@i-coffee.ng</p>
+                <p className="text-gray-300">{get("contactEmail", DEFAULTS.contactEmail)}</p>
               </div>
             </div>
 

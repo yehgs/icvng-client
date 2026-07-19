@@ -361,6 +361,10 @@ const SummaryApi = {
     url: "/api/home-content/public",
     method: "get",
   },
+  getSitePage: {
+    url: "/api/site-pages/public",
+    method: "get",
+  },
   updateBanner: {
     url: "/api/banner/update",
     method: "put",

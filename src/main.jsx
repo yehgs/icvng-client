@@ -9,6 +9,7 @@ import { RouterProvider } from "react-router-dom";
 import router from "./route/index";
 import { Provider } from "react-redux";
 import { store } from "./store/store.js";
+import "./styles/editor.css";
 // Phase 2: country / i18n
 import { CountryProvider } from "./context/CountryContext.jsx";
 

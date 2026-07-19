@@ -20,84 +20,87 @@ import {
 } from "react-icons/fa";
 import ContactForm from "../components/Contactform";
 import CustomerMarquee from "../components/CustomerMarquee";
+import { useSitePage } from "../hooks/useSitePage";
+
+const ICONS = { chartLine: FaChartLine, shield: FaShieldAlt, users: FaUsers, rocket: FaRocket, money: FaMoneyBillWave, truck: FaTruck };
+
+const DEFAULT_BENEFITS = [
+  { iconKey: "chartLine", title: "Grow Your Business", description: "Reach thousands of coffee enthusiasts across Nigeria and expand your market presence." },
+  { iconKey: "shield", title: "Secure Platform", description: "Our platform ensures secure transactions and timely payments within 24 hours." },
+  { iconKey: "users", title: "Wide Customer Base", description: "Connect with coffee shops, businesses, and individual coffee lovers nationwide." },
+  { iconKey: "rocket", title: "Easy Setup", description: "Get your products online in just 15 days with our streamlined onboarding process." },
+  { iconKey: "money", title: "Competitive Rates", description: "Only 10% handling fee with transparent pricing and no hidden costs." },
+  { iconKey: "truck", title: "Logistics Support", description: "Free delivery for orders above ₦100,000 within Lagos State." },
+];
+
+const DEFAULT_KEY_FEATURES = [
+  "Your products listed at your own online prices",
+  "Payment within 24 hours of customer payment receipt",
+  "Full control over your inventory and pricing",
+  "Marketing support through our platform and social media",
+  "No upfront costs or listing fees",
+  "Dedicated account manager for support",
+];
+
+const DEFAULT_HOW_IT_WORKS = [
+  { step: "1", title: "Submit Application", description: "Fill out the partnership form with your business details and product information." },
+  { step: "2", title: "Review Process", description: "Our team reviews your products within 10 days and provides feedback." },
+  { step: "3", title: "Agreement & Setup", description: "Sign the supplier agreement and upload your product catalog with images." },
+  { step: "4", title: "Go Live", description: "Your products go live within 15 days and start reaching customers immediately." },
+];
+
+const DEFAULT_KEY_TERMS = [
+  "10% handling fee on all orders (or agreed distributor price)",
+  "Payment within 24 hours of customer payment",
+  "Free delivery for orders above ₦100,000 within Lagos",
+  "Products must have minimum 6 months validity",
+  "Supplier delivers orders within 24 hours to I-Coffee office",
+  "One-year renewable contract",
+];
+
+const DEFAULT_SUPPLIER_RESPONSIBILITIES = [
+  "Ensure compliance with all applicable laws",
+  "Maintain accurate records of products and supply",
+  "Provide weekly updates of stock, prices, and quantities",
+  "Inform platform of promotional sales and price changes",
+  "Authorize platform to use logos and brands for marketing",
+  "Supply products according to specifications as advertised",
+];
+
+const DEFAULT_PLATFORM_RESPONSIBILITIES = [
+  "Provide media design specifications",
+  "Review products within 10 days",
+  "Post products online within 15 days",
+  "Make timely payments and remittances",
+  "Communicate issues and concerns",
+];
+
+const DEFAULTS = {
+  heroTitle: "Partner With I-Coffee",
+  heroTagline: "Join Nigeria's Leading Coffee Trading Platform",
+  heroSubtitle: "Creating Value for Your Products - Connect with thousands of coffee enthusiasts and grow your business with us",
+  benefits: DEFAULT_BENEFITS,
+  keyFeatures: DEFAULT_KEY_FEATURES,
+  howItWorks: DEFAULT_HOW_IT_WORKS,
+  keyTerms: DEFAULT_KEY_TERMS,
+  supplierResponsibilities: DEFAULT_SUPPLIER_RESPONSIBILITIES,
+  platformResponsibilities: DEFAULT_PLATFORM_RESPONSIBILITIES,
+  contactAddress: "3, Kaffi Street Alausa, Lagos State",
+  contactPhone: "+234 805 242 3935",
+  contactPhoneHref: "tel:+2348039827194",
+  contactEmail: "partners@i-coffee.ng",
+};
 
 const PartnerWithUs = () => {
+  const { get } = useSitePage("partner-with-us", DEFAULTS);
   const [showAgreement, setShowAgreement] = useState(false);
 
-  const benefits = [
-    {
-      icon: <FaChartLine className="text-4xl text-amber-600" />,
-      title: "Grow Your Business",
-      description:
-        "Reach thousands of coffee enthusiasts across Nigeria and expand your market presence.",
-    },
-    {
-      icon: <FaShieldAlt className="text-4xl text-amber-600" />,
-      title: "Secure Platform",
-      description:
-        "Our platform ensures secure transactions and timely payments within 24 hours.",
-    },
-    {
-      icon: <FaUsers className="text-4xl text-amber-600" />,
-      title: "Wide Customer Base",
-      description:
-        "Connect with coffee shops, businesses, and individual coffee lovers nationwide.",
-    },
-    {
-      icon: <FaRocket className="text-4xl text-amber-600" />,
-      title: "Easy Setup",
-      description:
-        "Get your products online in just 15 days with our streamlined onboarding process.",
-    },
-    {
-      icon: <FaMoneyBillWave className="text-4xl text-amber-600" />,
-      title: "Competitive Rates",
-      description:
-        "Only 10% handling fee with transparent pricing and no hidden costs.",
-    },
-    {
-      icon: <FaTruck className="text-4xl text-amber-600" />,
-      title: "Logistics Support",
-      description:
-        "Free delivery for orders above ₦100,000 within Lagos State.",
-    },
-  ];
-
-  const keyFeatures = [
-    "Your products listed at your own online prices",
-    "Payment within 24 hours of customer payment receipt",
-    "Full control over your inventory and pricing",
-    "Marketing support through our platform and social media",
-    "No upfront costs or listing fees",
-    "Dedicated account manager for support",
-  ];
-
-  const howItWorks = [
-    {
-      step: "1",
-      title: "Submit Application",
-      description:
-        "Fill out the partnership form with your business details and product information.",
-    },
-    {
-      step: "2",
-      title: "Review Process",
-      description:
-        "Our team reviews your products within 10 days and provides feedback.",
-    },
-    {
-      step: "3",
-      title: "Agreement & Setup",
-      description:
-        "Sign the supplier agreement and upload your product catalog with images.",
-    },
-    {
-      step: "4",
-      title: "Go Live",
-      description:
-        "Your products go live within 15 days and start reaching customers immediately.",
-    },
-  ];
+  const benefits = get("benefits", DEFAULT_BENEFITS);
+  const keyFeatures = get("keyFeatures", DEFAULT_KEY_FEATURES);
+  const howItWorks = get("howItWorks", DEFAULT_HOW_IT_WORKS);
+  const keyTerms = get("keyTerms", DEFAULT_KEY_TERMS);
+  const supplierResponsibilities = get("supplierResponsibilities", DEFAULT_SUPPLIER_RESPONSIBILITIES);
+  const platformResponsibilities = get("platformResponsibilities", DEFAULT_PLATFORM_RESPONSIBILITIES);
 
   return (
     <div className="bg-gray-50">
@@ -106,16 +109,9 @@ const PartnerWithUs = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaHandshake className="text-6xl mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Partner With I-Coffee
-            </h1>
-            <p className="text-xl md:text-2xl mb-8 text-amber-100">
-              Join Nigeria's Leading Coffee Trading Platform
-            </p>
-            <p className="text-lg mb-8 text-amber-50">
-              Creating Value for Your Products - Connect with thousands of
-              coffee enthusiasts and grow your business with us
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">{get("heroTitle", DEFAULTS.heroTitle)}</h1>
+            <p className="text-xl md:text-2xl mb-8 text-amber-100">{get("heroTagline", DEFAULTS.heroTagline)}</p>
+            <p className="text-lg mb-8 text-amber-50">{get("heroSubtitle", DEFAULTS.heroSubtitle)}</p>
             <button
               onClick={() =>
                 document
@@ -144,18 +140,23 @@ const PartnerWithUs = () => {
         </div>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          {benefits.map((benefit, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1"
-            >
-              <div className="flex justify-center mb-4">{benefit.icon}</div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-3 text-center">
-                {benefit.title}
-              </h3>
-              <p className="text-gray-600 text-center">{benefit.description}</p>
-            </div>
-          ))}
+          {benefits.map((benefit, index) => {
+            const Icon = ICONS[benefit.iconKey] || FaChartLine;
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition transform hover:-translate-y-1"
+              >
+                <div className="flex justify-center mb-4">
+                  <Icon className="text-4xl text-amber-600" />
+                </div>
+                <h3 className="text-xl font-semibold text-gray-800 mb-3 text-center">
+                  {benefit.title}
+                </h3>
+                <p className="text-gray-600 text-center">{benefit.description}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -229,38 +230,12 @@ const PartnerWithUs = () => {
                   Key Terms
                 </h3>
                 <ul className="space-y-2 text-gray-600">
-                  <li className="flex items-start">
-                    <span className="text-amber-600 mr-2">•</span>
-                    <span>
-                      10% handling fee on all orders (or agreed distributor
-                      price)
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-amber-600 mr-2">•</span>
-                    <span>Payment within 24 hours of customer payment</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-amber-600 mr-2">•</span>
-                    <span>
-                      Free delivery for orders above ₦100,000 within Lagos
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-amber-600 mr-2">•</span>
-                    <span>Products must have minimum 6 months validity</span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-amber-600 mr-2">•</span>
-                    <span>
-                      Supplier delivers orders within 24 hours to I-Coffee
-                      office
-                    </span>
-                  </li>
-                  <li className="flex items-start">
-                    <span className="text-amber-600 mr-2">•</span>
-                    <span>One-year renewable contract</span>
-                  </li>
+                  {keyTerms.map((term, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-amber-600 mr-2">•</span>
+                      <span>{term}</span>
+                    </li>
+                  ))}
                 </ul>
               </div>
 
@@ -279,21 +254,9 @@ const PartnerWithUs = () => {
                       Supplier Responsibilities:
                     </h4>
                     <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>Ensure compliance with all applicable laws</li>
-                      <li>Maintain accurate records of products and supply</li>
-                      <li>
-                        Provide weekly updates of stock, prices, and quantities
-                      </li>
-                      <li>
-                        Inform platform of promotional sales and price changes
-                      </li>
-                      <li>
-                        Authorize platform to use logos and brands for marketing
-                      </li>
-                      <li>
-                        Supply products according to specifications as
-                        advertised
-                      </li>
+                      {supplierResponsibilities.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
                     </ul>
                   </div>
 
@@ -302,11 +265,9 @@ const PartnerWithUs = () => {
                       Platform Responsibilities:
                     </h4>
                     <ul className="list-disc list-inside space-y-1 ml-2">
-                      <li>Provide media design specifications</li>
-                      <li>Review products within 10 days</li>
-                      <li>Post products online within 15 days</li>
-                      <li>Make timely payments and remittances</li>
-                      <li>Communicate issues and concerns</li>
+                      {platformResponsibilities.map((item, idx) => (
+                        <li key={idx}>{item}</li>
+                      ))}
                     </ul>
                   </div>
                 </div>
@@ -349,7 +310,7 @@ const PartnerWithUs = () => {
                 <FaMapMarkerAlt className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Visit Us</h3>
                 <p className="text-gray-300 text-sm hover:text-amber-400 duration-300">
-                  3, Kaffi Street Alausa, Lagos State
+                  {get("contactAddress", DEFAULTS.contactAddress)}
                 </p>
               </div>
 
@@ -357,10 +318,10 @@ const PartnerWithUs = () => {
                 <FaPhone className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Call Us</h3>
                 <a
-                  href="tel:+2348039827194"
+                  href={get("contactPhoneHref", DEFAULTS.contactPhoneHref)}
                   className="text-gray-300 text-sm hover:text-amber-400 duration-300"
                 >
-                  +234 805 242 3935
+                  {get("contactPhone", DEFAULTS.contactPhone)}
                 </a>
               </div>
 
@@ -368,10 +329,10 @@ const PartnerWithUs = () => {
                 <FaEnvelope className="text-3xl text-amber-400 mb-3" />
                 <h3 className="font-semibold mb-2">Email Us</h3>
                 <a
-                  href="mailto:partners@i-coffee.ng"
+                  href={`mailto:${get("contactEmail", DEFAULTS.contactEmail)}`}
                   className="text-gray-300 text-sm hover:text-amber-400 duration-300"
                 >
-                  partners@i-coffee.ng
+                  {get("contactEmail", DEFAULTS.contactEmail)}
                 </a>
               </div>
             </div>

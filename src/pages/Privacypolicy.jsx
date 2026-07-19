@@ -10,79 +10,94 @@ import {
   FaCheckCircle,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useSitePage } from "../hooks/useSitePage";
+
+const ICONS = { userShield: FaUserShield, database: FaDatabase, cookie: FaCookie };
+
+const DEFAULT_DATA_TYPES = [
+  { iconKey: "userShield", title: "Personal Information", items: ["Name and contact details", "Email address", "Phone number", "Delivery address", "Company information (if applicable)"] },
+  { iconKey: "database", title: "Transaction Data", items: ["Order history", "Payment information", "Purchase preferences", "Communication records", "Account activity"] },
+  { iconKey: "cookie", title: "Technical Data", items: ["IP address", "Browser type and version", "Device information", "Cookies and usage data", "Location data"] },
+];
+
+const DEFAULT_SECURITY_MEASURES = [
+  "SSL encryption for data transmission", "Secure payment gateways", "Regular security audits",
+  "Access controls and authentication", "Data backup and recovery systems", "Employee training on data protection",
+];
+
+const DEFAULT_RIGHTS = [
+  { title: "Access", description: "Request a copy of your personal data" },
+  { title: "Correction", description: "Update or correct inaccurate information" },
+  { title: "Deletion", description: "Request deletion of your personal data" },
+  { title: "Portability", description: "Receive your data in a structured format" },
+  { title: "Object", description: "Object to processing of your data" },
+  { title: "Withdraw Consent", description: "Withdraw consent for data processing" },
+];
+
+const DEFAULT_USE_CARDS = [
+  { title: "Order Processing", text: "Process and fulfill your orders, manage payments, and provide customer support.", color: "green" },
+  { title: "Communication", text: "Send order confirmations, shipping updates, and respond to your inquiries.", color: "blue" },
+  { title: "Platform Improvement", text: "Analyze usage patterns to improve our services, features, and user experience.", color: "purple" },
+  { title: "Marketing", text: "Send promotional offers, newsletters, and updates (with your consent).", color: "orange" },
+  { title: "Security & Fraud Prevention", text: "Detect and prevent fraudulent activities, protect against security threats.", color: "red" },
+  { title: "Legal Compliance", text: "Comply with legal obligations and enforce our terms and policies.", color: "indigo" },
+];
+
+const DEFAULT_SHARING_SECTIONS = [
+  { title: "With Suppliers", text: "We share necessary information with suppliers to fulfill your orders, including delivery address and contact details." },
+  { title: "With Service Providers", text: "We work with third-party service providers for payment processing, delivery, and analytics. These providers are contractually obligated to protect your information." },
+  { title: "For Legal Reasons", text: "We may disclose information when required by law, to protect our rights, or in response to legal processes." },
+];
+
+const DEFAULTS = {
+  lastUpdated: "Last Updated: November 2025",
+  introParagraphs: [
+    "At I-Coffee, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our platform.",
+    "By using I-Coffee, you consent to the data practices described in this policy. If you do not agree with this policy, please do not use our platform.",
+  ],
+  dataTypes: DEFAULT_DATA_TYPES,
+  useCards: DEFAULT_USE_CARDS,
+  securityIntro: "We implement industry-standard security measures to protect your personal information:",
+  securityMeasures: DEFAULT_SECURITY_MEASURES,
+  securityDisclaimer: "While we strive to protect your information, no method of transmission over the internet is 100% secure. We cannot guarantee absolute security.",
+  sharingSections: DEFAULT_SHARING_SECTIONS,
+  sharingNotice: "We do not sell your personal information to third parties.",
+  yourRights: DEFAULT_RIGHTS,
+  rightsContactEmail: "customercare@i-coffee.ng",
+  cookiesIntro: "We use cookies and similar tracking technologies to enhance your experience on our platform. Cookies are small files stored on your device that help us:",
+  cookiesList: ["Remember your preferences and settings", "Keep you logged into your account", "Analyze how you use our platform", "Provide personalized content and recommendations", "Improve platform performance and security"],
+  cookiesOutro: "You can control cookies through your browser settings. However, disabling cookies may affect your ability to use certain features of our platform.",
+  retentionIntro: "We retain your personal information for as long as necessary to:",
+  retentionList: ["Fulfill the purposes outlined in this Privacy Policy", "Comply with legal obligations", "Resolve disputes and enforce agreements", "Maintain business records"],
+  retentionOutro: "When we no longer need your information, we will securely delete or anonymize it in accordance with applicable laws.",
+  childrenText: "Our platform is not intended for children under 18 years of age. We do not knowingly collect personal information from children. If you believe we have collected information from a child, please contact us immediately.",
+  transferParagraphs: [
+    "Your information may be transferred to and processed in countries other than your country of residence. We ensure appropriate safeguards are in place to protect your information in accordance with this Privacy Policy.",
+    "By using our platform, you consent to the transfer of your information to Nigeria and other countries where we operate.",
+  ],
+  updatesText: 'We may update this Privacy Policy from time to time. Changes will be posted on this page with an updated "Last Updated" date. We encourage you to review this policy periodically. Your continued use of our platform after changes constitutes acceptance of the updated policy.',
+  contactEmail: "customercare@i-coffee.ng",
+  contactPhone: "+234 805 242 3935",
+  contactPhoneHref: "tel:+2348052423935",
+  contactAddress: "3 Kaffi Street, Alausa, Ikeja, Lagos, Nigeria",
+};
+
+const CARD_COLOR = {
+  green: "bg-green-50 border-green-600", blue: "bg-blue-50 border-blue-600", purple: "bg-purple-50 border-purple-600",
+  orange: "bg-orange-50 border-orange-600", red: "bg-red-50 border-red-600", indigo: "bg-indigo-50 border-indigo-600",
+};
 
 const PrivacyPolicy = () => {
-  const dataTypes = [
-    {
-      icon: <FaUserShield className="text-3xl text-amber-600" />,
-      title: "Personal Information",
-      items: [
-        "Name and contact details",
-        "Email address",
-        "Phone number",
-        "Delivery address",
-        "Company information (if applicable)",
-      ],
-    },
-    {
-      icon: <FaDatabase className="text-3xl text-amber-600" />,
-      title: "Transaction Data",
-      items: [
-        "Order history",
-        "Payment information",
-        "Purchase preferences",
-        "Communication records",
-        "Account activity",
-      ],
-    },
-    {
-      icon: <FaCookie className="text-3xl text-amber-600" />,
-      title: "Technical Data",
-      items: [
-        "IP address",
-        "Browser type and version",
-        "Device information",
-        "Cookies and usage data",
-        "Location data",
-      ],
-    },
-  ];
-
-  const securityMeasures = [
-    "SSL encryption for data transmission",
-    "Secure payment gateways",
-    "Regular security audits",
-    "Access controls and authentication",
-    "Data backup and recovery systems",
-    "Employee training on data protection",
-  ];
-
-  const yourRights = [
-    {
-      title: "Access",
-      description: "Request a copy of your personal data",
-    },
-    {
-      title: "Correction",
-      description: "Update or correct inaccurate information",
-    },
-    {
-      title: "Deletion",
-      description: "Request deletion of your personal data",
-    },
-    {
-      title: "Portability",
-      description: "Receive your data in a structured format",
-    },
-    {
-      title: "Object",
-      description: "Object to processing of your data",
-    },
-    {
-      title: "Withdraw Consent",
-      description: "Withdraw consent for data processing",
-    },
-  ];
+  const { get } = useSitePage("privacy-policy", DEFAULTS);
+  const dataTypes = get("dataTypes", DEFAULT_DATA_TYPES);
+  const useCards = get("useCards", DEFAULT_USE_CARDS);
+  const securityMeasures = get("securityMeasures", DEFAULT_SECURITY_MEASURES);
+  const sharingSections = get("sharingSections", DEFAULT_SHARING_SECTIONS);
+  const yourRights = get("yourRights", DEFAULT_RIGHTS);
+  const introParagraphs = get("introParagraphs", DEFAULTS.introParagraphs);
+  const cookiesList = get("cookiesList", DEFAULTS.cookiesList);
+  const retentionList = get("retentionList", DEFAULTS.retentionList);
+  const transferParagraphs = get("transferParagraphs", DEFAULTS.transferParagraphs);
 
   return (
     <div className="bg-gray-50">
@@ -91,16 +106,12 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaShieldAlt className="text-6xl mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Privacy Policy
-            </h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">Privacy Policy</h1>
             <p className="text-xl text-blue-100">
               Your privacy is important to us. Learn how we collect, use, and
               protect your information.
             </p>
-            <p className="text-sm text-blue-200 mt-4">
-              Last Updated: November 2025
-            </p>
+            <p className="text-sm text-blue-200 mt-4">{get("lastUpdated", DEFAULTS.lastUpdated)}</p>
           </div>
         </div>
       </div>
@@ -113,17 +124,7 @@ const PrivacyPolicy = () => {
               Our Commitment to Your Privacy
             </h2>
             <div className="prose max-w-none text-gray-700 space-y-4">
-              <p>
-                At I-Coffee, we are committed to protecting your privacy and
-                ensuring the security of your personal information. This Privacy
-                Policy explains how we collect, use, disclose, and safeguard
-                your information when you use our platform.
-              </p>
-              <p>
-                By using I-Coffee, you consent to the data practices described
-                in this policy. If you do not agree with this policy, please do
-                not use our platform.
-              </p>
+              {introParagraphs.map((p, idx) => <p key={idx}>{p}</p>)}
             </div>
           </div>
         </div>
@@ -142,25 +143,30 @@ const PrivacyPolicy = () => {
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {dataTypes.map((type, index) => (
-              <div
-                key={index}
-                className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition"
-              >
-                <div className="flex justify-center mb-4">{type.icon}</div>
-                <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
-                  {type.title}
-                </h3>
-                <ul className="space-y-2">
-                  {type.items.map((item, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <FaCheckCircle className="text-green-600 mr-2 mt-1 flex-shrink-0" />
-                      <span className="text-gray-700">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {dataTypes.map((type, index) => {
+              const Icon = ICONS[type.iconKey] || FaUserShield;
+              return (
+                <div
+                  key={index}
+                  className="bg-white rounded-xl shadow-lg p-8 hover:shadow-xl transition"
+                >
+                  <div className="flex justify-center mb-4">
+                    <Icon className="text-3xl text-amber-600" />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-800 mb-4 text-center">
+                    {type.title}
+                  </h3>
+                  <ul className="space-y-2">
+                    {type.items.map((item, idx) => (
+                      <li key={idx} className="flex items-start">
+                        <FaCheckCircle className="text-green-600 mr-2 mt-1 flex-shrink-0" />
+                        <span className="text-gray-700">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -173,65 +179,12 @@ const PrivacyPolicy = () => {
               How We Use Your Information
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-green-50 rounded-xl p-6 border-l-4 border-green-600">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Order Processing
-                </h3>
-                <p className="text-gray-700">
-                  Process and fulfill your orders, manage payments, and provide
-                  customer support.
-                </p>
-              </div>
-
-              <div className="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-600">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Communication
-                </h3>
-                <p className="text-gray-700">
-                  Send order confirmations, shipping updates, and respond to
-                  your inquiries.
-                </p>
-              </div>
-
-              <div className="bg-purple-50 rounded-xl p-6 border-l-4 border-purple-600">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Platform Improvement
-                </h3>
-                <p className="text-gray-700">
-                  Analyze usage patterns to improve our services, features, and
-                  user experience.
-                </p>
-              </div>
-
-              <div className="bg-orange-50 rounded-xl p-6 border-l-4 border-orange-600">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Marketing
-                </h3>
-                <p className="text-gray-700">
-                  Send promotional offers, newsletters, and updates (with your
-                  consent).
-                </p>
-              </div>
-
-              <div className="bg-red-50 rounded-xl p-6 border-l-4 border-red-600">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Security & Fraud Prevention
-                </h3>
-                <p className="text-gray-700">
-                  Detect and prevent fraudulent activities, protect against
-                  security threats.
-                </p>
-              </div>
-
-              <div className="bg-indigo-50 rounded-xl p-6 border-l-4 border-indigo-600">
-                <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                  Legal Compliance
-                </h3>
-                <p className="text-gray-700">
-                  Comply with legal obligations and enforce our terms and
-                  policies.
-                </p>
-              </div>
+              {useCards.map((card, idx) => (
+                <div key={idx} className={`rounded-xl p-6 border-l-4 ${CARD_COLOR[card.color] || CARD_COLOR.green}`}>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-3">{card.title}</h3>
+                  <p className="text-gray-700">{card.text}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -247,10 +200,7 @@ const PrivacyPolicy = () => {
                 How We Protect Your Data
               </h2>
             </div>
-            <p className="text-gray-700 mb-6">
-              We implement industry-standard security measures to protect your
-              personal information:
-            </p>
+            <p className="text-gray-700 mb-6">{get("securityIntro", DEFAULTS.securityIntro)}</p>
             <div className="grid md:grid-cols-2 gap-4">
               {securityMeasures.map((measure, index) => (
                 <div key={index} className="flex items-start">
@@ -259,11 +209,7 @@ const PrivacyPolicy = () => {
                 </div>
               ))}
             </div>
-            <p className="text-gray-600 mt-6 text-sm italic">
-              While we strive to protect your information, no method of
-              transmission over the internet is 100% secure. We cannot guarantee
-              absolute security.
-            </p>
+            <p className="text-gray-600 mt-6 text-sm italic">{get("securityDisclaimer", DEFAULTS.securityDisclaimer)}</p>
           </div>
         </div>
       </div>
@@ -277,41 +223,15 @@ const PrivacyPolicy = () => {
             </h2>
             <div className="bg-white rounded-xl shadow-lg p-8">
               <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    With Suppliers
-                  </h3>
-                  <p className="text-gray-700">
-                    We share necessary information with suppliers to fulfill
-                    your orders, including delivery address and contact details.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    With Service Providers
-                  </h3>
-                  <p className="text-gray-700">
-                    We work with third-party service providers for payment
-                    processing, delivery, and analytics. These providers are
-                    contractually obligated to protect your information.
-                  </p>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    For Legal Reasons
-                  </h3>
-                  <p className="text-gray-700">
-                    We may disclose information when required by law, to protect
-                    our rights, or in response to legal processes.
-                  </p>
-                </div>
+                {sharingSections.map((s, idx) => (
+                  <div key={idx}>
+                    <h3 className="text-lg font-semibold text-gray-800 mb-2">{s.title}</h3>
+                    <p className="text-gray-700">{s.text}</p>
+                  </div>
+                ))}
 
                 <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-                  <p className="text-gray-800 font-semibold">
-                    We do not sell your personal information to third parties.
-                  </p>
+                  <p className="text-gray-800 font-semibold">{get("sharingNotice", DEFAULTS.sharingNotice)}</p>
                 </div>
               </div>
             </div>
@@ -353,10 +273,10 @@ const PrivacyPolicy = () => {
               To exercise any of these rights, please contact us at:
             </p>
             <a
-              href="mailto:customercare@i-coffee.ng"
+              href={`mailto:${get("rightsContactEmail", DEFAULTS.rightsContactEmail)}`}
               className="text-amber-600 hover:text-amber-700 font-semibold"
             >
-              customercare@i-coffee.ng
+              {get("rightsContactEmail", DEFAULTS.rightsContactEmail)}
             </a>
           </div>
         </div>
@@ -373,23 +293,11 @@ const PrivacyPolicy = () => {
               </h2>
             </div>
             <div className="prose max-w-none text-gray-700 space-y-4">
-              <p>
-                We use cookies and similar tracking technologies to enhance your
-                experience on our platform. Cookies are small files stored on
-                your device that help us:
-              </p>
+              <p>{get("cookiesIntro", DEFAULTS.cookiesIntro)}</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Remember your preferences and settings</li>
-                <li>Keep you logged into your account</li>
-                <li>Analyze how you use our platform</li>
-                <li>Provide personalized content and recommendations</li>
-                <li>Improve platform performance and security</li>
+                {cookiesList.map((item, idx) => <li key={idx}>{item}</li>)}
               </ul>
-              <p>
-                You can control cookies through your browser settings. However,
-                disabling cookies may affect your ability to use certain
-                features of our platform.
-              </p>
+              <p>{get("cookiesOutro", DEFAULTS.cookiesOutro)}</p>
             </div>
           </div>
         </div>
@@ -403,19 +311,11 @@ const PrivacyPolicy = () => {
               Data Retention
             </h2>
             <div className="prose max-w-none text-gray-700 space-y-4">
-              <p>
-                We retain your personal information for as long as necessary to:
-              </p>
+              <p>{get("retentionIntro", DEFAULTS.retentionIntro)}</p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>Fulfill the purposes outlined in this Privacy Policy</li>
-                <li>Comply with legal obligations</li>
-                <li>Resolve disputes and enforce agreements</li>
-                <li>Maintain business records</li>
+                {retentionList.map((item, idx) => <li key={idx}>{item}</li>)}
               </ul>
-              <p>
-                When we no longer need your information, we will securely delete
-                or anonymize it in accordance with applicable laws.
-              </p>
+              <p>{get("retentionOutro", DEFAULTS.retentionOutro)}</p>
             </div>
           </div>
         </div>
@@ -428,12 +328,7 @@ const PrivacyPolicy = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               Children's Privacy
             </h2>
-            <p className="text-gray-700">
-              Our platform is not intended for children under 18 years of age.
-              We do not knowingly collect personal information from children. If
-              you believe we have collected information from a child, please
-              contact us immediately.
-            </p>
+            <p className="text-gray-700">{get("childrenText", DEFAULTS.childrenText)}</p>
           </div>
         </div>
       </div>
@@ -445,16 +340,9 @@ const PrivacyPolicy = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               International Data Transfers
             </h2>
-            <p className="text-gray-700 mb-4">
-              Your information may be transferred to and processed in countries
-              other than your country of residence. We ensure appropriate
-              safeguards are in place to protect your information in accordance
-              with this Privacy Policy.
-            </p>
-            <p className="text-gray-700">
-              By using our platform, you consent to the transfer of your
-              information to Nigeria and other countries where we operate.
-            </p>
+            {transferParagraphs.map((p, idx) => (
+              <p key={idx} className={idx === 0 ? "text-gray-700 mb-4" : "text-gray-700"}>{p}</p>
+            ))}
           </div>
         </div>
       </div>
@@ -466,13 +354,7 @@ const PrivacyPolicy = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
               Updates to This Policy
             </h2>
-            <p className="text-gray-700">
-              We may update this Privacy Policy from time to time. Changes will
-              be posted on this page with an updated "Last Updated" date. We
-              encourage you to review this policy periodically. Your continued
-              use of our platform after changes constitutes acceptance of the
-              updated policy.
-            </p>
+            <p className="text-gray-700">{get("updatesText", DEFAULTS.updatesText)}</p>
           </div>
         </div>
       </div>
@@ -492,24 +374,23 @@ const PrivacyPolicy = () => {
               <p className="text-lg">
                 <strong>Email:</strong>{" "}
                 <a
-                  href="mailto:customercare@i-coffee.ng"
+                  href={`mailto:${get("contactEmail", DEFAULTS.contactEmail)}`}
                   className="text-white hover:text-green-200 underline"
                 >
-                  customercare@i-coffee.ng
+                  {get("contactEmail", DEFAULTS.contactEmail)}
                 </a>
               </p>
               <p className="text-lg">
                 <strong>Phone:</strong>{" "}
                 <a
-                  href="tel:+2348052423935"
+                  href={get("contactPhoneHref", DEFAULTS.contactPhoneHref)}
                   className="text-white hover:text-green-200 underline"
                 >
-                  +234 805 242 3935
+                  {get("contactPhone", DEFAULTS.contactPhone)}
                 </a>
               </p>
               <p className="text-lg">
-                <strong>Address:</strong> 3 Kaffi Street, Alausa, Ikeja, Lagos,
-                Nigeria
+                <strong>Address:</strong> {get("contactAddress", DEFAULTS.contactAddress)}
               </p>
             </div>
             <div className="mt-8">
