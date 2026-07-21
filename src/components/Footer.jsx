@@ -27,9 +27,11 @@ import dnvglIso from "../assets/dnvgl-iso9001.webp";
 // Currency/language/country pickers are removed — the visited domain alone
 // determines locale and currency.
 import { useCountry } from "../context/CountryContext";
+import { useSocialLinks } from "../hooks/useSocialLinks";
 
 const PreFooter = () => {
   const { t } = useCountry();
+  const social = useSocialLinks();
   const [email, setEmail] = useState("");
   const [footerBanner, setFooterBanner] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -142,7 +144,7 @@ const PreFooter = () => {
             </h3>
             <div className="flex gap-4 mt-4">
               <a
-                href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                href={social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-amber-600 transition"
@@ -150,7 +152,7 @@ const PreFooter = () => {
                 <Facebook size={24} />
               </a>
               <a
-                href="https://twitter.com/italiancoffee_v"
+                href={social.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-amber-600 transition"
@@ -158,7 +160,7 @@ const PreFooter = () => {
                 <Twitter size={24} />
               </a>
               <a
-                href="https://www.instagram.com/italiancofeeventure/"
+                href={social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-amber-600 transition"
@@ -244,6 +246,11 @@ const Footer = () => {
     email: footerBlock?.contactEmail || legacyContacts.email,
     whatsapp: footerBlock?.contactWhatsapp || legacyContacts.whatsapp,
   };
+  const social = {
+    facebook: footerBlock?.socialFacebook || "https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage",
+    twitter: footerBlock?.socialTwitter || "https://twitter.com/italiancoffee_v",
+    instagram: footerBlock?.socialInstagram || "https://www.instagram.com/italiancofeeventure/",
+  };
   const companyName = t("footer.companyName");
   const companyTagline = t("footer.companyTagline");
 
@@ -261,7 +268,7 @@ const Footer = () => {
               </p>
               <div className="flex space-x-4 mb-4">
                 <a
-                  href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                  href={social.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -271,7 +278,7 @@ const Footer = () => {
                   />
                 </a>
                 <a
-                  href="https://twitter.com/italiancoffee_v"
+                  href={social.twitter}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -281,7 +288,7 @@ const Footer = () => {
                   />
                 </a>
                 <a
-                  href="https://www.instagram.com/italiancofeeventure/"
+                  href={social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                 >

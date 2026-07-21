@@ -4,6 +4,7 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import AxiosToastError from "../utils/AxiosToastError";
 import ActiveFilterChips from "./ActiveFilterChips";
+import { useCountry } from "../context/CountryContext";
 
 const ShopFilter = ({
   onApplyFilters,
@@ -11,6 +12,8 @@ const ShopFilter = ({
   onRemoveFilter,
   onResetFilters,
 }) => {
+  const { t, country } = useCountry();
+  const currencySymbol = country?.currency?.symbol || "₦";
   // Filter states
   const [filters, setFilters] = useState({
     productType: [],
@@ -79,61 +82,61 @@ const ShopFilter = ({
 
   // Available filter options
   const productTypeOptions = [
-    { value: "COFFEE", label: "Coffee" },
-    { value: "COFFEE_BEANS", label: "Coffee Beans" },
-    { value: "MACHINE", label: "Machines" },
-    { value: "ACCESSORIES", label: "Accessories" },
-    { value: "TEA", label: "Tea" },
-    { value: "DRINKS", label: "Drinks" },
+    { value: "COFFEE", label: t("shop.typeCoffee") },
+    { value: "COFFEE_BEANS", label: t("shop.typeCoffeeBeans") },
+    { value: "MACHINE", label: t("shop.typeMachine") },
+    { value: "ACCESSORIES", label: t("shop.typeAccessories") },
+    { value: "TEA", label: t("shop.typeTea") },
+    { value: "DRINKS", label: t("shop.typeDrinks") },
   ];
 
   // Available filter options
   const roastLevelOptions = [
-    { value: "LIGHT", label: "Light Roast" },
-    { value: "MEDIUM", label: "Medium Roast" },
-    { value: "DARK", label: "Dark Roast" },
+    { value: "LIGHT", label: t("shop.roastLight") },
+    { value: "MEDIUM", label: t("shop.roastMedium") },
+    { value: "DARK", label: t("shop.roastDark") },
   ];
 
   const intensityOptions = [
-    { value: "1/10", label: "1 - Very Mild" },
+    { value: "1/10", label: `1 - ${t("shop.intensityVeryMild")}` },
     { value: "2/10", label: "2" },
     { value: "3/10", label: "3" },
     { value: "4/10", label: "4" },
-    { value: "5/10", label: "5 - Medium" },
+    { value: "5/10", label: `5 - ${t("shop.intensityMedium")}` },
     { value: "6/10", label: "6" },
     { value: "7/10", label: "7" },
     { value: "8/10", label: "8" },
     { value: "9/10", label: "9" },
-    { value: "10/10", label: "10 - Very Strong" },
+    { value: "10/10", label: `10 - ${t("shop.intensityVeryStrong")}` },
   ];
 
   const blendOptions = [
-    { value: "100% Arabica", label: "100% Arabica" },
-    { value: "100% Robusta", label: "Pure Robusta" },
+    { value: "100% Arabica", label: t("shop.blendPureArabica") },
+    { value: "100% Robusta", label: t("shop.blendPureRobusta") },
     {
       value: "Arabica/Robusta Blend (70/30)",
-      label: "Arabica/Robusta (70/30)",
+      label: t("shop.blend7030"),
     },
     {
       value: "Arabica/Robusta Blend (80/20)",
-      label: "Arabica/Robusta (80/20)",
+      label: t("shop.blend8020"),
     },
     {
       value: "Arabica/Robusta Blend (40/60)",
-      label: "Arabica/Robusta (40/60)",
+      label: t("shop.blend4060"),
     },
-    { value: "Single Origin Arabica", label: "Single Origin Arabica" },
-    { value: "Espresso Blend", label: "Espresso Blend" },
-    { value: "Breakfast Blend", label: "Breakfast Blend" },
-    { value: "House Blend", label: "House Blend" },
+    { value: "Single Origin Arabica", label: t("shop.blendSingleOriginArabica") },
+    { value: "Espresso Blend", label: t("shop.blendEspresso") },
+    { value: "Breakfast Blend", label: t("shop.blendBreakfast") },
+    { value: "House Blend", label: t("shop.blendHouse") },
   ];
 
   const sortOptions = [
-    { value: "newest", label: "Newest First" },
-    { value: "price-low", label: "Price: Low to High" },
-    { value: "price-high", label: "Price: High to Low" },
-    { value: "popularity", label: "Popularity" },
-    { value: "alphabet", label: "Name (A-Z)" },
+    { value: "newest", label: t("shop.sortNewestFirst") },
+    { value: "price-low", label: t("shop.sortPriceLowHigh") },
+    { value: "price-high", label: t("shop.sortPriceHighLow") },
+    { value: "popularity", label: t("shop.sortPopularity") },
+    { value: "alphabet", label: t("shop.sortNameAZ") },
   ];
 
   // Fetch categories, subcategories, and brands on component mount
@@ -401,7 +404,7 @@ const ShopFilter = ({
           className="flex items-center text-gray-700 font-medium"
         >
           <FaFilter className="mr-2" />
-          Filters
+          {t("shop.filters")}
           {getActiveFilterCount() > 0 && (
             <span className="ml-2 bg-green-600 text-white text-xs font-bold rounded-full px-2 py-0.5">
               {getActiveFilterCount()}
@@ -410,7 +413,7 @@ const ShopFilter = ({
         </button>
 
         <div className="flex items-center">
-          <span className="text-sm text-gray-500 mr-2">Sort by:</span>
+          <span className="text-sm text-gray-500 mr-2">{t("shop.sortByColon")}</span>
           <select
             value={filters.sort}
             onChange={(e) => handleFilterChange("sort", e.target.value)}
@@ -440,13 +443,13 @@ const ShopFilter = ({
       <div className="hidden lg:block lg:w-64 lg:mr-6">
         <div className="bg-white rounded-lg shadow-sm p-4">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="font-bold text-lg">Filters</h2>
+            <h2 className="font-bold text-lg">{t("shop.filters")}</h2>
             {getActiveFilterCount() > 0 && (
               <button
                 onClick={handleResetFilters}
                 className="text-sm text-blue-600 hover:text-blue-800"
               >
-                Clear All
+                {t("shop.clearAll")}
               </button>
             )}
           </div>
@@ -462,7 +465,7 @@ const ShopFilter = ({
 
           {/* Sort options */}
           <div className="mb-6">
-            <h3 className="font-medium mb-2">Sort By</h3>
+            <h3 className="font-medium mb-2">{t("shop.sortBy")}</h3>
             <select
               value={filters.sort}
               onChange={(e) => handleFilterChange("sort", e.target.value)}
@@ -482,7 +485,7 @@ const ShopFilter = ({
               className="flex justify-between items-center cursor-pointer mb-2"
               onClick={() => toggleSection("brand")}
             >
-              <h3 className="font-medium">Brands</h3>
+              <h3 className="font-medium">{t("shop.brands")}</h3>
               {expandedSections.brand ? <FaChevronUp /> : <FaChevronDown />}
             </div>
 
@@ -504,11 +507,11 @@ const ShopFilter = ({
                 ))}
 
                 {loading && (
-                  <div className="text-sm text-gray-500">Loading brands...</div>
+                  <div className="text-sm text-gray-500">{t("shop.loadingBrands")}</div>
                 )}
                 {!loading && brands.length === 0 && (
                   <div className="text-sm text-gray-500">
-                    No brands available
+                    {t("shop.noBrandsAvailable")}
                   </div>
                 )}
               </div>
@@ -522,7 +525,7 @@ const ShopFilter = ({
                 className="flex justify-between items-center cursor-pointer mb-2"
                 onClick={() => toggleSection("compatibleSystem")}
               >
-                <h3 className="font-medium">Compatible System</h3>
+                <h3 className="font-medium">{t("shop.compatibleSystem")}</h3>
                 {expandedSections.compatibleSystem ? (
                   <FaChevronUp />
                 ) : (
@@ -544,7 +547,7 @@ const ShopFilter = ({
                       className="mr-2"
                     />
                     <label htmlFor="compat-all" className="text-sm">
-                      All Systems
+                      {t("shop.allSystems")}
                     </label>
                   </div>
                   {compatibleBrands.map((cs) => (
@@ -588,7 +591,7 @@ const ShopFilter = ({
               className="flex justify-between items-center cursor-pointer mb-2"
               onClick={() => toggleSection("category")}
             >
-              <h3 className="font-medium">Category</h3>
+              <h3 className="font-medium">{t("shop.category")}</h3>
               {expandedSections.category ? <FaChevronUp /> : <FaChevronDown />}
             </div>
 
@@ -604,7 +607,7 @@ const ShopFilter = ({
                     className="mr-2"
                   />
                   <label htmlFor="category-all" className="text-sm">
-                    All Categories
+                    {t("shop.allCategories")}
                   </label>
                 </div>
 
@@ -629,7 +632,7 @@ const ShopFilter = ({
 
                 {loading && (
                   <div className="text-sm text-gray-500">
-                    Loading categories...
+                    {t("shop.loadingCategories")}
                   </div>
                 )}
               </div>
@@ -643,7 +646,7 @@ const ShopFilter = ({
                 className="flex justify-between items-center cursor-pointer mb-2"
                 onClick={() => toggleSection("subCategory")}
               >
-                <h3 className="font-medium">Subcategory</h3>
+                <h3 className="font-medium">{t("shop.subcategory")}</h3>
                 {expandedSections.subCategory ? (
                   <FaChevronUp />
                 ) : (
@@ -663,7 +666,7 @@ const ShopFilter = ({
                       className="mr-2"
                     />
                     <label htmlFor="subcategory-all" className="text-sm">
-                      All Subcategories
+                      {t("shop.allSubcategories")}
                     </label>
                   </div>
 
@@ -698,7 +701,7 @@ const ShopFilter = ({
               className="flex justify-between items-center cursor-pointer mb-2"
               onClick={() => toggleSection("productType")}
             >
-              <h3 className="font-medium">Product Type</h3>
+              <h3 className="font-medium">{t("shop.productType")}</h3>
               {expandedSections.productType ? (
                 <FaChevronUp />
               ) : (
@@ -739,7 +742,7 @@ const ShopFilter = ({
                   className="flex justify-between items-center cursor-pointer mb-2"
                   onClick={() => toggleSection("roastLevel")}
                 >
-                  <h3 className="font-medium">Roast Level</h3>
+                  <h3 className="font-medium">{t("shop.roastLevel")}</h3>
                   {expandedSections.roastLevel ? (
                     <FaChevronUp />
                   ) : (
@@ -778,7 +781,7 @@ const ShopFilter = ({
                   className="flex justify-between items-center cursor-pointer mb-2"
                   onClick={() => toggleSection("intensity")}
                 >
-                  <h3 className="font-medium">Intensity</h3>
+                  <h3 className="font-medium">{t("shop.intensity")}</h3>
                   {expandedSections.intensity ? (
                     <FaChevronUp />
                   ) : (
@@ -817,7 +820,7 @@ const ShopFilter = ({
                   className="flex justify-between items-center cursor-pointer mb-2"
                   onClick={() => toggleSection("blend")}
                 >
-                  <h3 className="font-medium">Coffee Blend</h3>
+                  <h3 className="font-medium">{t("shop.coffeeBlend")}</h3>
                   {expandedSections.blend ? <FaChevronUp /> : <FaChevronDown />}
                 </div>
 
@@ -854,17 +857,17 @@ const ShopFilter = ({
               className="flex justify-between items-center cursor-pointer mb-2"
               onClick={() => toggleSection("price")}
             >
-              <h3 className="font-medium">Price Range</h3>
+              <h3 className="font-medium">{t("shop.priceRange")}</h3>
               {expandedSections.price ? <FaChevronUp /> : <FaChevronDown />}
             </div>
 
             {expandedSections.price && (
               <div className="space-y-3">
                 <div className="flex items-center">
-                  <label className="text-sm mr-2">Min:</label>
+                  <label className="text-sm mr-2">{t("shop.min")}:</label>
                   <input
                     type="number"
-                    placeholder="₦0"
+                    placeholder={`${currencySymbol}0`}
                     min={0}
                     step={1}
                     value={priceRange.min}
@@ -873,10 +876,10 @@ const ShopFilter = ({
                   />
                 </div>
                 <div className="flex items-center">
-                  <label className="text-sm mr-2">Max:</label>
+                  <label className="text-sm mr-2">{t("shop.max")}:</label>
                   <input
                     type="number"
-                    placeholder="₦100000"
+                    placeholder={`${currencySymbol}100000`}
                     min={0}
                     step={1}
                     value={priceRange.max}
@@ -895,7 +898,7 @@ const ShopFilter = ({
                   }}
                   className="bg-green-600 text-white w-full py-1 rounded hover:bg-green-700 text-sm"
                 >
-                  Apply Price
+                  {t("shop.applyPrice")}
                 </button>
               </div>
             )}
@@ -905,7 +908,7 @@ const ShopFilter = ({
             onClick={applyFilters}
             className="bg-green-700 text-white w-full py-2 rounded hover:bg-green-800 mt-4"
           >
-            Apply Filters
+            {t("shop.applyFilters")}
           </button>
         </div>
       </div>
@@ -915,7 +918,7 @@ const ShopFilter = ({
         <div className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden flex">
           <div className="bg-white w-4/5 max-w-md h-full ml-auto overflow-y-auto z-50 p-4">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="font-bold text-lg">Filters</h2>
+              <h2 className="font-bold text-lg">{t("shop.filters")}</h2>
               <button
                 onClick={() => setIsFilterOpen(false)}
                 className="text-gray-500"
@@ -929,7 +932,7 @@ const ShopFilter = ({
                 onClick={handleResetFilters}
                 className="text-sm text-blue-600 hover:text-blue-800 mb-4"
               >
-                Clear All Filters
+                {t("shop.clearAllFilters")}
               </button>
             )}
 
@@ -944,7 +947,7 @@ const ShopFilter = ({
 
             {/* Sort options */}
             <div className="mb-4 border-t pt-4">
-              <h3 className="font-medium mb-2">Sort By</h3>
+              <h3 className="font-medium mb-2">{t("shop.sortBy")}</h3>
               <select
                 value={filters.sort}
                 onChange={(e) => handleFilterChange("sort", e.target.value)}
@@ -964,7 +967,7 @@ const ShopFilter = ({
                 className="flex justify-between items-center cursor-pointer mb-2"
                 onClick={() => toggleSection("brand")}
               >
-                <h3 className="font-medium">Brands</h3>
+                <h3 className="font-medium">{t("shop.brands")}</h3>
                 {expandedSections.brand ? <FaChevronUp /> : <FaChevronDown />}
               </div>
               {expandedSections.brand && (
@@ -987,11 +990,11 @@ const ShopFilter = ({
                     </div>
                   ))}
                   {loading && (
-                    <div className="text-sm text-gray-500">Loading...</div>
+                    <div className="text-sm text-gray-500">{t("shop.loading")}</div>
                   )}
                   {!loading && brands.length === 0 && (
                     <div className="text-sm text-gray-500">
-                      No brands available
+                      {t("shop.noBrandsAvailable")}
                     </div>
                   )}
                 </div>
@@ -1005,7 +1008,7 @@ const ShopFilter = ({
                   className="flex justify-between items-center cursor-pointer mb-2"
                   onClick={() => toggleSection("compatibleSystem")}
                 >
-                  <h3 className="font-medium">Compatible System</h3>
+                  <h3 className="font-medium">{t("shop.compatibleSystem")}</h3>
                   {expandedSections.compatibleSystem ? (
                     <FaChevronUp />
                   ) : (
@@ -1026,7 +1029,7 @@ const ShopFilter = ({
                         className="mr-2"
                       />
                       <label htmlFor="mob2-compat-all" className="text-sm">
-                        All Systems
+                        {t("shop.allSystems")}
                       </label>
                     </div>
                     {compatibleBrands.map((cs) => (
@@ -1071,7 +1074,7 @@ const ShopFilter = ({
                 className="flex justify-between items-center cursor-pointer mb-2"
                 onClick={() => toggleSection("productType")}
               >
-                <h3 className="font-medium">Product Type</h3>
+                <h3 className="font-medium">{t("shop.productType")}</h3>
                 {expandedSections.productType ? (
                   <FaChevronUp />
                 ) : (
@@ -1110,7 +1113,7 @@ const ShopFilter = ({
                 className="flex justify-between items-center cursor-pointer mb-2"
                 onClick={() => toggleSection("category")}
               >
-                <h3 className="font-medium">Category</h3>
+                <h3 className="font-medium">{t("shop.category")}</h3>
                 {expandedSections.category ? (
                   <FaChevronUp />
                 ) : (
@@ -1130,7 +1133,7 @@ const ShopFilter = ({
                       className="mr-2"
                     />
                     <label htmlFor="mobile-category-all" className="text-sm">
-                      All Categories
+                      {t("shop.allCategories")}
                     </label>
                   </div>
 
@@ -1155,7 +1158,7 @@ const ShopFilter = ({
 
                   {loading && (
                     <div className="text-sm text-gray-500">
-                      Loading categories...
+                      {t("shop.loadingCategories")}
                     </div>
                   )}
                 </div>
@@ -1169,7 +1172,7 @@ const ShopFilter = ({
                   className="flex justify-between items-center cursor-pointer mb-2"
                   onClick={() => toggleSection("subCategory")}
                 >
-                  <h3 className="font-medium">Subcategory</h3>
+                  <h3 className="font-medium">{t("shop.subcategory")}</h3>
                   {expandedSections.subCategory ? (
                     <FaChevronUp />
                   ) : (
@@ -1192,7 +1195,7 @@ const ShopFilter = ({
                         htmlFor="mobile-subcategory-all"
                         className="text-sm"
                       >
-                        All Subcategories
+                        {t("shop.allSubcategories")}
                       </label>
                     </div>
 
@@ -1232,7 +1235,7 @@ const ShopFilter = ({
                     className="flex justify-between items-center cursor-pointer mb-2"
                     onClick={() => toggleSection("roastLevel")}
                   >
-                    <h3 className="font-medium">Roast Level</h3>
+                    <h3 className="font-medium">{t("shop.roastLevel")}</h3>
                     {expandedSections.roastLevel ? (
                       <FaChevronUp />
                     ) : (
@@ -1271,7 +1274,7 @@ const ShopFilter = ({
                     className="flex justify-between items-center cursor-pointer mb-2"
                     onClick={() => toggleSection("intensity")}
                   >
-                    <h3 className="font-medium">Intensity</h3>
+                    <h3 className="font-medium">{t("shop.intensity")}</h3>
                     {expandedSections.intensity ? (
                       <FaChevronUp />
                     ) : (
@@ -1310,7 +1313,7 @@ const ShopFilter = ({
                     className="flex justify-between items-center cursor-pointer mb-2"
                     onClick={() => toggleSection("blend")}
                   >
-                    <h3 className="font-medium">Coffee Blend</h3>
+                    <h3 className="font-medium">{t("shop.coffeeBlend")}</h3>
                     {expandedSections.blend ? (
                       <FaChevronUp />
                     ) : (
@@ -1351,27 +1354,27 @@ const ShopFilter = ({
                 className="flex justify-between items-center cursor-pointer mb-2"
                 onClick={() => toggleSection("price")}
               >
-                <h3 className="font-medium">Price Range</h3>
+                <h3 className="font-medium">{t("shop.priceRange")}</h3>
                 {expandedSections.price ? <FaChevronUp /> : <FaChevronDown />}
               </div>
 
               {expandedSections.price && (
                 <div className="space-y-3">
                   <div className="flex items-center">
-                    <label className="text-sm mr-2">Min:</label>
+                    <label className="text-sm mr-2">{t("shop.min")}:</label>
                     <input
                       type="number"
-                      placeholder="₦0"
+                      placeholder={`${currencySymbol}0`}
                       value={priceRange.min}
                       onChange={(e) => handlePriceChange("min", e.target.value)}
                       className="border rounded py-1 px-2 w-full"
                     />
                   </div>
                   <div className="flex items-center">
-                    <label className="text-sm mr-2">Max:</label>
+                    <label className="text-sm mr-2">{t("shop.max")}:</label>
                     <input
                       type="number"
-                      placeholder="₦100000"
+                      placeholder={`${currencySymbol}100000`}
                       value={priceRange.max}
                       onChange={(e) => handlePriceChange("max", e.target.value)}
                       className="border rounded py-1 px-2 w-full"
@@ -1387,7 +1390,7 @@ const ShopFilter = ({
                 onClick={applyFilters}
                 className="bg-green-700 text-white w-full py-3 rounded hover:bg-green-800"
               >
-                Apply Filters
+                {t("shop.applyFilters")}
               </button>
             </div>
           </div>

@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import ContactForm from "../components/Contactform";
 import { useSitePage } from "../hooks/useSitePage";
+import { useSocialLinks } from "../hooks/useSocialLinks";
 
 // The page's original copy — Nigeria-authored, since NG was the only market
 // in mind when this page was built. Kept here as the fallback so the page
@@ -42,6 +43,7 @@ const DEFAULTS = {
 
 const ContactUs = () => {
   const { get } = useSitePage("contact-us", DEFAULTS);
+  const social = useSocialLinks();
 
   const address = get("address", DEFAULTS.address);
   const businessHours = get("businessHours", DEFAULTS.businessHours);
@@ -173,7 +175,7 @@ const ContactUs = () => {
                 </h3>
                 <div className="flex space-x-6">
                   <a
-                    href={get("facebookUrl", DEFAULTS.facebookUrl)}
+                    href={get("facebookUrl", social.facebook)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-blue-600 transition"
@@ -181,7 +183,7 @@ const ContactUs = () => {
                     <FaFacebook className="text-3xl" />
                   </a>
                   <a
-                    href={get("twitterUrl", DEFAULTS.twitterUrl)}
+                    href={get("twitterUrl", social.twitter)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-blue-400 transition"
@@ -189,7 +191,7 @@ const ContactUs = () => {
                     <FaTwitter className="text-3xl" />
                   </a>
                   <a
-                    href={get("instagramUrl", DEFAULTS.instagramUrl)}
+                    href={get("instagramUrl", social.instagram)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-gray-600 hover:text-pink-600 transition"

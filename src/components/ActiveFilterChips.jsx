@@ -1,5 +1,6 @@
 import React from "react";
 import { FaTimes } from "react-icons/fa";
+import { useCountry } from "../context/CountryContext";
 
 const ActiveFilterChips = ({
   filters,
@@ -9,18 +10,21 @@ const ActiveFilterChips = ({
   brandMap = {},
   compatibleSystemMap = {},
 }) => {
+  const { t, country } = useCountry();
+  const currencySymbol = country?.currency?.symbol || "₦";
+
   // Convert filter types to readable labels
   const getFilterTypeLabel = (type) => {
     const labels = {
-      productType: "Type",
-      category: "Category",
-      subCategory: "Subcategory",
-      brand: "Brand",
-      compatibleSystem: "Compatible",
-      roastLevel: "Roast",
-      intensity: "Intensity",
-      blend: "Blend",
-      priceRange: "Price Range",
+      productType: t("shop.chipType"),
+      category: t("shop.chipCategory"),
+      subCategory: t("shop.chipSubcategory"),
+      brand: t("shop.chipBrand"),
+      compatibleSystem: t("shop.chipCompatible"),
+      roastLevel: t("shop.chipRoast"),
+      intensity: t("shop.chipIntensity"),
+      blend: t("shop.chipBlend"),
+      priceRange: t("shop.chipPriceRange"),
     };
     return labels[type] || type;
   };
@@ -29,27 +33,27 @@ const ActiveFilterChips = ({
   const formatFilterValue = (type, value) => {
     if (type === "roastLevel") {
       const labels = {
-        LIGHT: "Light Roast",
-        MEDIUM: "Medium Roast",
-        DARK: "Dark Roast",
+        LIGHT: t("shop.roastLight"),
+        MEDIUM: t("shop.roastMedium"),
+        DARK: t("shop.roastDark"),
       };
       return labels[value] || value;
     }
 
     if (type === "productType") {
       const labels = {
-        COFFEE: "Coffee",
-        COFFEE_BEANS: "Coffee Beans",
-        MACHINE: "Machines",
-        ACCESSORIES: "Accessories",
-        TEA: "Tea",
-        DRINKS: "Drinks",
+        COFFEE: t("shop.typeCoffee"),
+        COFFEE_BEANS: t("shop.typeCoffeeBeans"),
+        MACHINE: t("shop.typeMachine"),
+        ACCESSORIES: t("shop.typeAccessories"),
+        TEA: t("shop.typeTea"),
+        DRINKS: t("shop.typeDrinks"),
       };
       return labels[value] || value;
     }
 
     if (type === "intensity") {
-      return `Intensity ${value.split("/")[0]}`;
+      return t("shop.chipIntensityValue", { value: value.split("/")[0] });
     }
 
     if (type === "category" && categoryMap[value]) {
@@ -74,9 +78,9 @@ const ActiveFilterChips = ({
     // For price range
     if (type === "priceRange") {
       const { min, max } = value;
-      if (min && max) return `₦${min} - ₦${max}`;
-      if (min) return `Min: ₦${min}`;
-      if (max) return `Max: ₦${max}`;
+      if (min && max) return t("shop.chipPriceMinMax", { symbol: currencySymbol, min, max });
+      if (min) return t("shop.chipPriceMinOnly", { symbol: currencySymbol, min });
+      if (max) return t("shop.chipPriceMaxOnly", { symbol: currencySymbol, max });
     }
 
     return value;
@@ -126,9 +130,10 @@ const ActiveFilterChips = ({
       chips.push({
         type: "priceRange",
         value: { min: filters.minPrice, max: filters.maxPrice },
-        label: `Price: ${filters.minPrice ? "₦" + filters.minPrice : "₦0"} - ${
-          filters.maxPrice ? "₦" + filters.maxPrice : "Any"
-        }`,
+        label: t("shop.chipPriceLabel", {
+          min: filters.minPrice ? `${currencySymbol}${filters.minPrice}` : `${currencySymbol}0`,
+          max: filters.maxPrice ? `${currencySymbol}${filters.maxPrice}` : t("shop.chipPriceAny"),
+        }),
       });
     }
 
@@ -166,7 +171,7 @@ const ActiveFilterChips = ({
           onClick={() => onRemoveFilter("all")}
           className="text-blue-600 hover:text-blue-800 text-xs underline"
         >
-          Clear All
+          {t("shop.clearAll")}
         </button>
       )}
     </div>

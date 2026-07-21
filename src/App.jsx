@@ -263,6 +263,14 @@ function App() {
     fetchCompatibleSystemStructure();
   }, []);
 
+  // Scroll to top on every route change (including footer link clicks). Without
+  // this, react-router-dom keeps the browser's current scroll position across
+  // navigations, so clicking a footer link (Privacy Policy, FAQ, etc.) from the
+  // bottom of a long page lands the visitor at the bottom of the new page too.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
   return (
     <GlobalProvider>
       <HeaderTest />
