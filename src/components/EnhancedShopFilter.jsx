@@ -125,6 +125,10 @@ const ShopFilter = ({
       value: "Arabica/Robusta Blend (40/60)",
       label: t("shop.blend4060"),
     },
+    {
+      value: "Arabica/Robusta Blend (50/50)",
+      label: t("shop.blend5050"),
+    },
     { value: "Single Origin Arabica", label: t("shop.blendSingleOriginArabica") },
     { value: "Espresso Blend", label: t("shop.blendEspresso") },
     { value: "Breakfast Blend", label: t("shop.blendBreakfast") },
