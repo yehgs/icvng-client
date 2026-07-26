@@ -344,16 +344,16 @@ const CardProduct = ({ data }) => {
   const pricingOptions = getPricingOptions();
   const badges = (() => {
     const b = [];
-    if (data.blend)
-      b.push({ label: data.blend, class: "bg-amber-50 text-amber-800" });
-    if (data.coffeeOrigin)
-      b.push({ label: data.coffeeOrigin, class: "bg-green-50 text-green-800" });
+    if (translatedData.blend)
+      b.push({ label: translatedData.blend, class: "bg-amber-50 text-amber-800" });
+    if (translatedData.coffeeOrigin)
+      b.push({ label: translatedData.coffeeOrigin, class: "bg-green-50 text-green-800" });
     return b.slice(0, 2);
   })();
 
   const getProductInfo = () => {
     const d = [];
-    if (data.unit) d.push(data.unit);
+    if (translatedData.unit) d.push(translatedData.unit);
     if (data.packaging) d.push(data.packaging);
     if (data.weight) d.push(`${data.weight}kg`);
     return d.join(" • ");

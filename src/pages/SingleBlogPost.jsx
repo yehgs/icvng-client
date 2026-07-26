@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
+import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
+import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
 
 const SingleBlogPost = () => {
   const { slug } = useParams();
@@ -28,6 +30,26 @@ const SingleBlogPost = () => {
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
+
+  // Apply server-stored translations when the active country's language
+  // isn't English — covers the post's own fields (title/excerpt/content/
+  // SEO) plus its referenced category/tags, which otherwise stayed in
+  // English regardless of the active domain/language.
+  const translatedPost = useEntityTranslation("blog", post?._id, post);
+  const translatedCategoryArr = useBulkEntityTranslation(
+    "blogCategory",
+    post?.category ? [post.category] : [],
+  );
+  const translatedTags = useBulkEntityTranslation("blogTag", post?.tags || []);
+  const translatedRelatedPosts = useBulkEntityTranslation("blog", relatedPosts);
+
+  const displayPost = post
+    ? {
+        ...translatedPost,
+        category: translatedCategoryArr[0] || post.category,
+        tags: translatedTags,
+      }
+    : post;
 
   useEffect(() => {
     if (slug) {
@@ -316,13 +338,13 @@ const SingleBlogPost = () => {
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <Link
-              to={`/blog/category/${post.category.slug}`}
+              to={`/blog/category/${displayPost.category.slug}`}
               className="text-gray-500 hover:text-amber-600"
             >
-              {post.category.name}
+              {displayPost.category.name}
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
-            <span className="text-gray-800 truncate">{post.title}</span>
+            <span className="text-gray-800 truncate">{displayPost.title}</span>
           </nav>
         </div>
       </div>
@@ -344,19 +366,19 @@ const SingleBlogPost = () => {
             <div className="relative h-96 md:h-[500px] overflow-hidden">
               <img
                 src={post.featuredImage}
-                alt={post.imageAlt || post.title}
+                alt={post.imageAlt || displayPost.title}
                 className="w-full h-full object-cover"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6 right-6">
                 <span className="inline-block px-3 py-1 bg-amber-600 text-white text-sm font-semibold rounded-full mb-4">
-                  {post.category.name}
+                  {displayPost.category.name}
                 </span>
                 <h1 className="text-3xl md:text-5xl font-bold text-white mb-4 leading-tight">
-                  {post.title}
+                  {displayPost.title}
                 </h1>
                 <p className="text-xl text-gray-200 leading-relaxed">
-                  {post.excerpt}
+                  {displayPost.excerpt}
                 </p>
               </div>
             </div>
@@ -464,19 +486,19 @@ const SingleBlogPost = () => {
             <div className="p-6 md:p-8">
               <div
                 className="prose prose-lg max-w-none prose-headings:text-gray-800 prose-p:text-gray-700 prose-a:text-amber-600 prose-strong:text-gray-800 prose-ul:text-gray-700 prose-ol:text-gray-700 blog-content"
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                dangerouslySetInnerHTML={{ __html: displayPost.content }}
               />
             </div>
 
             {/* Tags */}
-            {post.tags && post.tags.length > 0 && (
+            {displayPost.tags && displayPost.tags.length > 0 && (
               <div className="p-6 md:p-8 border-t border-gray-200">
                 <div className="flex items-center gap-3 mb-3">
                   <Tag className="w-5 h-5 text-gray-600" />
                   <span className="font-semibold text-gray-800">Tags:</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
+                  {displayPost.tags.map((tag) => (
                     <Link
                       key={tag._id || tag.name}
                       to={`/blog/tag/${tag.slug}`}
@@ -492,13 +514,13 @@ const SingleBlogPost = () => {
           </article>
 
           {/* Related Posts */}
-          {relatedPosts.length > 0 && (
+          {translatedRelatedPosts.length > 0 && (
             <div className="mt-12">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
                 Related Articles
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {relatedPosts.map((relatedPost) => (
+                {translatedRelatedPosts.map((relatedPost) => (
                   <Link
                     key={relatedPost._id}
                     to={`/blog/${relatedPost.slug}`}

@@ -580,8 +580,8 @@ const ProductDisplayPage = () => {
               </div>
             </div>
 
-            {data.shortDescription && (
-              <p className="text-gray-600">{data.shortDescription}</p>
+            {translatedData.shortDescription && (
+              <p className="text-gray-600">{translatedData.shortDescription}</p>
             )}
 
             {/* ── Pricing / Availability section ── */}
@@ -798,7 +798,7 @@ const ProductDisplayPage = () => {
                   <div className="flex flex-col">
                     <span className="text-gray-500 text-sm">Weight</span>
                     <span className="font-medium">
-                      {data.weight} {data.unit}
+                      {data.weight} {translatedData.unit}
                     </span>
                   </div>
                 )}
@@ -914,7 +914,7 @@ const ProductDisplayPage = () => {
           <div className="py-6">
             {activeTab === "description" && (
               <div className="prose max-w-none grid md:grid-cols-2 gap-6">
-                <div dangerouslySetInnerHTML={{ __html: data.description }} />
+                <div dangerouslySetInnerHTML={{ __html: translatedData.description }} />
                 {data.more_details &&
                   Object.keys(data.more_details).length > 0 && (
                     <table className="min-w-full divide-y divide-gray-200">
@@ -940,7 +940,7 @@ const ProductDisplayPage = () => {
                 <div>
                   <h3 className="font-medium mb-2">Product Details</h3>
                   <div
-                    dangerouslySetInnerHTML={{ __html: data.additionalInfo }}
+                    dangerouslySetInnerHTML={{ __html: translatedData.additionalInfo }}
                   />
                 </div>
               </div>

@@ -1,5 +1,5 @@
 // client/src/pages/BlogPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   Search,
@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
+import { useBulkEntityTranslation } from '../hooks/useBulkEntityTranslation.js';
 
 const BlogPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -38,6 +39,29 @@ const BlogPage = () => {
   const [selectedTag, setSelectedTag] = useState(searchParams.get('tag') || '');
   const [sortBy, setSortBy] = useState('publishedAt');
   const [sortOrder, setSortOrder] = useState('desc');
+
+  // Apply server-stored translations when the active country's language
+  // isn't English — the listing (cards, sidebar filters) otherwise always
+  // showed English regardless of domain.
+  const translatedPosts = useBulkEntityTranslation('blog', posts);
+  const translatedCategories = useBulkEntityTranslation('blogCategory', categories);
+  const translatedTags = useBulkEntityTranslation('blogTag', tags);
+
+  // Each post embeds its own copy of category/tags — translating the
+  // sidebar lists above doesn't touch those embedded copies. Cross-
+  // reference by _id so post cards show translated category/tag names too.
+  const displayPosts = useMemo(() => {
+    if (!translatedPosts?.length) return translatedPosts;
+    const categoryById = new Map(translatedCategories.map((c) => [c._id, c]));
+    const tagById = new Map(translatedTags.map((t) => [t._id, t]));
+    return translatedPosts.map((post) => ({
+      ...post,
+      category: post.category
+        ? categoryById.get(post.category._id) || post.category
+        : post.category,
+      tags: (post.tags || []).map((tag) => tagById.get(tag._id) || tag),
+    }));
+  }, [translatedPosts, translatedCategories, translatedTags]);
 
   useEffect(() => {
     fetchPosts();
@@ -363,7 +387,7 @@ const BlogPage = () => {
                   >
                     All Categories
                   </button>
-                  {categories.map((category) => (
+                  {translatedCategories.map((category) => (
                     <button
                       key={category._id}
                       onClick={() => setSelectedCategory(category.slug)}
@@ -388,7 +412,7 @@ const BlogPage = () => {
               <div className="mb-6">
                 <h4 className="font-medium text-gray-700 mb-3">Popular Tags</h4>
                 <div className="flex flex-wrap gap-2">
-                  {tags.slice(0, 10).map((tag) => (
+                  {translatedTags.slice(0, 10).map((tag) => (
                     <button
                       key={tag._id}
                       onClick={() =>
@@ -506,7 +530,7 @@ const BlogPage = () => {
                       : 'grid-cols-1'
                   }`}
                 >
-                  {posts.map((post) => (
+                  {displayPosts.map((post) => (
                     <BlogCard key={post._id} post={post} mode={viewMode} />
                   ))}
                 </div>
