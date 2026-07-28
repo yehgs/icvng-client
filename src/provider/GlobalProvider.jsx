@@ -291,22 +291,33 @@ const GlobalProvider = ({ children }) => {
     } catch {} finally { setCurrencyLoading(false); }
   };
 
+  // All product prices are stored in the database in NGN (the HQ/storage
+  // currency), regardless of which country domain is serving the request —
+  // NOT in the visiting country's native currency. So the conversion "base"
+  // must always be NGN, never `defaultCurrency` (which is just whichever
+  // currency the current domain happens to display by default — EUR on
+  // i-coffee.it, XOF on i-coffee.tg, etc). Using `defaultCurrency` as the
+  // base caused every non-NGN domain to skip conversion entirely and render
+  // the raw NGN figure as if it were already in the local currency.
+  const STORAGE_BASE_CURRENCY = 'NGN';
+
   const convertPrice = (priceInBase, targetCurrency = selectedCurrency) => {
-    const base = defaultCurrency;
-    if (targetCurrency === base) return priceInBase;
+    if (targetCurrency === STORAGE_BASE_CURRENCY) return priceInBase;
     const rate = exchangeRates[targetCurrency];
     return rate ? priceInBase * rate : priceInBase;
   };
 
   const formatPrice = (price, currency = selectedCurrency) => {
-    // Use country-native formatting when displaying in the country's default currency
+    const convertedPrice = convertPrice(price, currency);
+    // Use country-native locale/style when displaying in the country's
+    // default currency, but always on the already-converted amount.
     if (currency === defaultCurrency) {
-      return countryFormatPrice(price);
+      return countryFormatPrice(convertedPrice, currency);
     }
     return new Intl.NumberFormat('en-US', {
       style: 'currency', currency,
       minimumFractionDigits: currency === 'NGN' || currency === 'XOF' ? 0 : 2,
-    }).format(convertPrice(price, currency));
+    }).format(convertedPrice);
   };
 
   const changeCurrency = (code) => {
