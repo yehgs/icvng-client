@@ -14,8 +14,10 @@ import SummaryApi from "../common/SummaryApi";
 import AxiosToastError from "../utils/AxiosToastError";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
+import { useTranslation } from "../hooks/useTranslation";
 
 const ContactForm = ({ formType = "contact" }) => {
+  const { t, language } = useTranslation();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -55,7 +57,7 @@ const ContactForm = ({ formType = "contact" }) => {
       }
     } catch (error) {
       console.error("Error fetching categories:", error);
-      toast.error("Failed to load product categories");
+      toast.error(t("contactForm.failedLoadCategories"));
     } finally {
       setLoadingCategories(false);
     }
@@ -93,6 +95,9 @@ const ContactForm = ({ formType = "contact" }) => {
           formType,
           // Convert array to comma-separated string for backend
           productCategories: formData.productCategories.join(", "),
+          // Language the visitor is using — saved alongside the submission
+          // so whoever triages it in the admin panel has that context.
+          language,
         },
       });
 
@@ -111,8 +116,8 @@ const ContactForm = ({ formType = "contact" }) => {
         // Success toast
         toast.success(
           formType === "partner"
-            ? "Partnership application submitted successfully!"
-            : "Message sent successfully!",
+            ? t("contactForm.partnerSubmitSuccess")
+            : t("contactForm.contactSubmitSuccess"),
         );
       }
     } catch (error) {
@@ -139,14 +144,14 @@ const ContactForm = ({ formType = "contact" }) => {
   };
 
   const howDidYouHearOptions = [
-    "Search Engine (Google, Bing, etc.)",
-    "Social Media",
-    "Friend or Colleague Referral",
-    "Online Advertisement",
-    "Blog or Article",
-    "Trade Show or Event",
-    "Email Newsletter",
-    "Other",
+    t("contactForm.hearSearchEngine"),
+    t("contactForm.hearSocialMedia"),
+    t("contactForm.hearReferral"),
+    t("contactForm.hearAd"),
+    t("contactForm.hearBlog"),
+    t("contactForm.hearTradeShow"),
+    t("contactForm.hearNewsletter"),
+    t("contactForm.hearOther"),
   ];
 
   // Success State Component
@@ -172,33 +177,36 @@ const ContactForm = ({ formType = "contact" }) => {
           <div className="space-y-2">
             <h2 className="text-3xl font-bold text-gray-800">
               {formType === "partner"
-                ? "Application Submitted!"
-                : "Message Sent!"}
+                ? t("contactForm.applicationSubmittedTitle")
+                : t("contactForm.messageSentTitle")}
             </h2>
             <p className="text-gray-600 text-lg">
               {formType === "partner"
-                ? "Thank you for your interest in partnering with I-Coffee!"
-                : "Thank you for contacting us!"}
+                ? t("contactForm.partnerThankYou")
+                : t("contactForm.contactThankYou")}
             </p>
           </div>
 
           <div className="bg-green-50 border border-green-200 rounded-lg p-6 space-y-3">
             <p className="text-gray-700">
-              <strong>What happens next?</strong>
+              <strong>{t("contactForm.whatHappensNext")}</strong>
             </p>
             <ul className="text-left text-gray-600 space-y-2">
               <li className="flex items-start">
                 <span className="text-green-600 mr-2">•</span>
                 <span>
-                  Our team will review your{" "}
-                  {formType === "partner" ? "application" : "message"} within
-                  24-48 hours
+                  {t("contactForm.reviewWithin", {
+                    type:
+                      formType === "partner"
+                        ? t("contactForm.applicationType")
+                        : t("contactForm.messageType"),
+                  })}
                 </span>
               </li>
               <li className="flex items-start">
                 <span className="text-green-600 mr-2">•</span>
                 <span>
-                  We'll reach out via your preferred contact method:{" "}
+                  {t("contactForm.reachOutVia")}{" "}
                   <strong>{formData.preferredContact}</strong>
                 </span>
               </li>
@@ -206,8 +214,8 @@ const ContactForm = ({ formType = "contact" }) => {
                 <span className="text-green-600 mr-2">•</span>
                 <span>
                   {formType === "partner"
-                    ? "A partnership specialist will discuss opportunities with you"
-                    : "Our support team will address your inquiry"}
+                    ? t("contactForm.partnerSpecialistNote")
+                    : t("contactForm.supportTeamNote")}
                 </span>
               </li>
             </ul>
@@ -215,7 +223,7 @@ const ContactForm = ({ formType = "contact" }) => {
 
           <div className="space-y-3">
             <p className="text-gray-600">
-              We've sent a confirmation email to{" "}
+              {t("contactForm.confirmationSentTo")}{" "}
               <strong className="text-gray-800">{formData.email}</strong>
             </p>
 
@@ -224,14 +232,16 @@ const ContactForm = ({ formType = "contact" }) => {
                 onClick={resetForm}
                 className="bg-green-700 hover:bg-green-800 text-white font-semibold py-3 px-6 rounded-lg transition"
               >
-                Submit Another{" "}
-                {formType === "partner" ? "Application" : "Message"}
+                {t("contactForm.submitAnother")}{" "}
+                {formType === "partner"
+                  ? t("contactForm.applicationType")
+                  : t("contactForm.messageType")}
               </button>
               <a
                 href="/"
                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-3 px-6 rounded-lg transition"
               >
-                Back to Home
+                {t("contactForm.backToHome")}
               </a>
             </div>
           </div>
@@ -247,7 +257,7 @@ const ContactForm = ({ formType = "contact" }) => {
         {/* Name Field */}
         <div>
           <label className="block text-gray-700 font-medium mb-2">
-            Full Name *
+            {t("contactForm.fullName")} *
           </label>
           <div className="relative">
             <FaUser className="absolute left-3 top-3 text-gray-400" />
@@ -258,7 +268,7 @@ const ContactForm = ({ formType = "contact" }) => {
               onChange={handleChange}
               required
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              placeholder="John Doe"
+              placeholder={t("contactForm.fullNamePlaceholder")}
             />
           </div>
         </div>
@@ -266,7 +276,7 @@ const ContactForm = ({ formType = "contact" }) => {
         {/* Email Field */}
         <div>
           <label className="block text-gray-700 font-medium mb-2">
-            Email Address *
+            {t("contactForm.emailAddress")} *
           </label>
           <div className="relative">
             <FaEnvelope className="absolute left-3 top-3 text-gray-400" />
@@ -277,7 +287,7 @@ const ContactForm = ({ formType = "contact" }) => {
               onChange={handleChange}
               required
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              placeholder="john@example.com"
+              placeholder={t("contactForm.emailPlaceholder")}
             />
           </div>
         </div>
@@ -287,7 +297,7 @@ const ContactForm = ({ formType = "contact" }) => {
         {/* Phone Field */}
         <div>
           <label className="block text-gray-700 font-medium mb-2">
-            Phone Number *
+            {t("contactForm.phoneNumber")} *
           </label>
           <div className="relative">
             <FaPhone className="absolute left-3 top-3 text-gray-400" />
@@ -298,7 +308,7 @@ const ContactForm = ({ formType = "contact" }) => {
               onChange={handleChange}
               required
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              placeholder="+234 XXX XXX XXXX"
+              placeholder={t("contactForm.phonePlaceholder")}
             />
           </div>
         </div>
@@ -306,7 +316,7 @@ const ContactForm = ({ formType = "contact" }) => {
         {/* Company Field */}
         <div>
           <label className="block text-gray-700 font-medium mb-2">
-            Company/Organization
+            {t("contactForm.company")}
           </label>
           <div className="relative">
             <FaBuilding className="absolute left-3 top-3 text-gray-400" />
@@ -316,7 +326,7 @@ const ContactForm = ({ formType = "contact" }) => {
               value={formData.company}
               onChange={handleChange}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-              placeholder="Your Company Name"
+              placeholder={t("contactForm.companyPlaceholder")}
             />
           </div>
         </div>
@@ -328,7 +338,8 @@ const ContactForm = ({ formType = "contact" }) => {
           {/* Business Type - NOW OPTIONAL */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">
-              Business Type <span className="text-gray-400">(Optional)</span>
+              {t("contactForm.businessType")}{" "}
+              <span className="text-gray-400">{t("contactForm.optional")}</span>
             </label>
             <select
               name="businessType"
@@ -336,29 +347,29 @@ const ContactForm = ({ formType = "contact" }) => {
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
             >
-              <option value="">Select Type</option>
-              <option value="roaster">Coffee Roaster</option>
-              <option value="distributor">Distributor/Wholesaler</option>
-              <option value="manufacturer">Coffee Machine Manufacturer</option>
-              <option value="retailer">Retailer</option>
-              <option value="importer">Importer</option>
-              <option value="other">Other</option>
+              <option value="">{t("contactForm.selectType")}</option>
+              <option value="roaster">{t("contactForm.businessTypeRoaster")}</option>
+              <option value="distributor">{t("contactForm.businessTypeDistributor")}</option>
+              <option value="manufacturer">{t("contactForm.businessTypeManufacturer")}</option>
+              <option value="retailer">{t("contactForm.businessTypeRetailer")}</option>
+              <option value="importer">{t("contactForm.businessTypeImporter")}</option>
+              <option value="other">{t("contactForm.businessTypeOther")}</option>
             </select>
           </div>
 
           {/* Product Categories - NOW MULTI-SELECT DROPDOWN */}
           <div>
             <label className="block text-gray-700 font-medium mb-2">
-              Product Categories{" "}
+              {t("contactForm.productCategories")}{" "}
               <span className="text-gray-400">
-                (Optional - Select multiple)
+                {t("contactForm.optionalMultiSelect")}
               </span>
             </label>
             {loadingCategories ? (
               <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 flex items-center justify-center">
                 <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-green-600"></div>
                 <span className="ml-2 text-gray-600">
-                  Loading categories...
+                  {t("contactForm.loadingCategories")}
                 </span>
               </div>
             ) : (
@@ -370,7 +381,7 @@ const ContactForm = ({ formType = "contact" }) => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 h-32"
               >
                 {categories.length === 0 ? (
-                  <option disabled>No categories available</option>
+                  <option disabled>{t("contactForm.noCategoriesAvailable")}</option>
                 ) : (
                   categories.map((category) => (
                     <option key={category._id} value={category.name}>
@@ -381,7 +392,7 @@ const ContactForm = ({ formType = "contact" }) => {
               </select>
             )}
             <p className="text-xs text-gray-500 mt-1">
-              Hold Ctrl (Windows) or Cmd (Mac) to select multiple categories
+              {t("contactForm.multiSelectHint")}
             </p>
           </div>
         </div>
@@ -391,7 +402,7 @@ const ContactForm = ({ formType = "contact" }) => {
       {formType === "contact" && (
         <div>
           <label className="block text-gray-700 font-medium mb-2">
-            Subject *
+            {t("contactForm.subject")} *
           </label>
           <input
             type="text"
@@ -400,7 +411,7 @@ const ContactForm = ({ formType = "contact" }) => {
             onChange={handleChange}
             required
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-            placeholder="How can we help you?"
+            placeholder={t("contactForm.subjectPlaceholder")}
           />
         </div>
       )}
@@ -408,7 +419,7 @@ const ContactForm = ({ formType = "contact" }) => {
       {/* How did you hear about us */}
       <div>
         <label className="block text-gray-700 font-medium mb-2">
-          How did you hear about us? *
+          {t("contactForm.howDidYouHear")} *
         </label>
         <select
           name="howDidYouHear"
@@ -417,7 +428,7 @@ const ContactForm = ({ formType = "contact" }) => {
           required
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
         >
-          <option value="">Select an option</option>
+          <option value="">{t("contactForm.selectAnOption")}</option>
           {howDidYouHearOptions.map((option) => (
             <option key={option} value={option}>
               {option}
@@ -429,7 +440,7 @@ const ContactForm = ({ formType = "contact" }) => {
       {/* Preferred Contact Method */}
       <div>
         <label className="block text-gray-700 font-medium mb-2">
-          How would you like us to contact you? *
+          {t("contactForm.preferredContactMethod")} *
         </label>
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center cursor-pointer">
@@ -441,7 +452,7 @@ const ContactForm = ({ formType = "contact" }) => {
               onChange={handleChange}
               className="mr-2 w-4 h-4 text-green-600"
             />
-            <span>Email</span>
+            <span>{t("contactForm.contactByEmail")}</span>
           </label>
           <label className="flex items-center cursor-pointer">
             <input
@@ -452,7 +463,7 @@ const ContactForm = ({ formType = "contact" }) => {
               onChange={handleChange}
               className="mr-2 w-4 h-4 text-green-600"
             />
-            <span>Phone</span>
+            <span>{t("contactForm.contactByPhone")}</span>
           </label>
           <label className="flex items-center cursor-pointer">
             <input
@@ -463,7 +474,7 @@ const ContactForm = ({ formType = "contact" }) => {
               onChange={handleChange}
               className="mr-2 w-4 h-4 text-green-600"
             />
-            <span>WhatsApp</span>
+            <span>{t("contactForm.contactByWhatsapp")}</span>
           </label>
         </div>
       </div>
@@ -471,7 +482,7 @@ const ContactForm = ({ formType = "contact" }) => {
       {/* Message Field */}
       <div>
         <label className="block text-gray-700 font-medium mb-2">
-          Message *
+          {t("contactForm.message")} *
         </label>
         <textarea
           name="message"
@@ -482,8 +493,8 @@ const ContactForm = ({ formType = "contact" }) => {
           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 resize-none"
           placeholder={
             formType === "partner"
-              ? "Tell us about your products, production capacity, and why you would like to partner with I-Coffee..."
-              : "Please provide details about your inquiry..."
+              ? t("contactForm.messagePlaceholderPartner")
+              : t("contactForm.messagePlaceholderContact")
           }
         ></textarea>
       </div>
@@ -497,12 +508,14 @@ const ContactForm = ({ formType = "contact" }) => {
         {loading ? (
           <div className="flex items-center">
             <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white mr-2"></div>
-            <span>Sending...</span>
+            <span>{t("contactForm.sending")}</span>
           </div>
         ) : (
           <>
             <FaPaperPlane className="mr-2" />
-            {formType === "partner" ? "Submit Application" : "Send Message"}
+            {formType === "partner"
+              ? t("contactForm.submitApplication")
+              : t("contactForm.sendMessage")}
           </>
         )}
       </button>

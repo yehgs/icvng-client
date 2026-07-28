@@ -36,10 +36,27 @@ const PreFooter = () => {
   const [footerBanner, setFooterBanner] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    toast(t("footer.subscribedMessage"));
-    setEmail("");
+    const trimmed = email.trim();
+    if (!trimmed) return;
+    try {
+      setLoading(true);
+      const response = await Axios({
+        ...SummaryApi.subscribeNewsletter,
+        data: { email: trimmed, source: "footer" },
+      });
+      if (response.data.success) {
+        toast.success(t("footer.subscribedMessage"));
+        setEmail("");
+      }
+    } catch (error) {
+      toast.error(
+        error?.response?.data?.message || t("footer.subscribeError")
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const fetchFooterBanner = async () => {

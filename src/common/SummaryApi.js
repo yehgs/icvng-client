@@ -623,6 +623,10 @@ const SummaryApi = {
     url: "/api/send-email",
     method: "post",
   },
+  subscribeNewsletter: {
+    url: "/api/subscribe",
+    method: "post",
+  },
   getFomoData: {
     url: "/api/fomo/recent-purchases",
     method: "get",
