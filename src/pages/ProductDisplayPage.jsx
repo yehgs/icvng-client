@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import SummaryApi from "../common/SummaryApi";
 import Axios from "../utils/Axios";
 import AxiosToastError from "../utils/AxiosToastError";
+import { useTranslation } from "../hooks/useTranslation";
 import {
   FaStar,
   FaStarHalfAlt,
@@ -15,14 +16,12 @@ import {
   FaShippingFast,
   FaCalendarAlt,
   FaSadTear,
-  FaEdit,
   FaPlus,
   FaMinus,
 } from "react-icons/fa";
 import { BsCart4 } from "react-icons/bs";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import ProductRequestModal from "../components/ProductRequestModal";
-import EditProductAdmin from "../components/EditProductAdmin";
 import { useSelector } from "react-redux";
 import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
 import RoastIndicator from "../components/RoastIndicator";
@@ -86,10 +85,10 @@ const ProductDisplayPage = () => {
   // product's own fields AND its referenced brand/category/subCategory/
   // tags/attributes, which previously stayed in English regardless.
   const { language } = useCountry();
+  const { t } = useTranslation();
   const translatedData = useTranslatedProduct(data);
   const [selectedPriceOption, setSelectedPriceOption] = useState("regular");
   const [showRequestModal, setShowRequestModal] = useState(false);
-  const [openEditModal, setOpenEditModal] = useState(false);
   const [cartLoading, setCartLoading] = useState(false);
 
   // Image magnifier state
@@ -110,8 +109,6 @@ const ProductDisplayPage = () => {
     "5weeks": null,
   });
 
-  const user = useSelector((state) => state.user);
-  const isAdmin = user?.role === "ADMIN";
   const cartItem = useSelector((state) => state.cartItem.cart);
 
   const { formatPrice, selectedCurrency } = useCurrency();
@@ -140,7 +137,7 @@ const ProductDisplayPage = () => {
   // All other categories           → show 2-week delivery price
   // To change which categories use 5-week pricing, edit:
   //   src/config/deliveryCategories.js
-  const showFiveWeekDelivery = isFiveWeekDeliveryCategory(data.category);
+  const showFiveWeekDelivery = isFiveWeekDeliveryCategory(data.productType, data.category);
   // ─────────────────────────────────────────────────────────────────────────
 
   const getPrimaryPrice = (product) =>
@@ -239,10 +236,7 @@ const ProductDisplayPage = () => {
             color: "text-green-600",
             bgColor: "bg-green-50",
             borderColor: "border-green-200",
-            description:
-              onlineStock > 0
-                ? `Standard delivery (1-3 business days) — ${onlineStock} unit${onlineStock !== 1 ? "s" : ""} available`
-                : "Available",
+            description: "Standard delivery (1-3 business days)",
             delivery: onlineStock > 0 ? "Fast Delivery" : "Partner Stock",
           },
         ]
@@ -457,15 +451,6 @@ const ProductDisplayPage = () => {
             Home / {data.productType?.toLowerCase() || "Products"} /{" "}
             {translatedData.name}
           </div>
-          {isAdmin && (
-            <button
-              onClick={() => setOpenEditModal(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition flex items-center"
-            >
-              <FaEdit className="mr-2" />
-              Edit Product
-            </button>
-          )}
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
@@ -590,17 +575,16 @@ const ProductDisplayPage = () => {
               <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
                 <FaSadTear className="text-yellow-600 text-3xl mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-yellow-800 mb-2">
-                  Temporarily Unavailable
+                  {t("product.temporarilyUnavailableTitle")}
                 </h3>
                 <p className="text-yellow-700 mb-4">
-                  This product is temporarily unavailable for purchase. Submit a
-                  request below and our team will follow up with you directly.
+                  {t("product.temporarilyUnavailableMessage")}
                 </p>
                 <button
                   onClick={() => setShowRequestModal(true)}
                   className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition"
                 >
-                  Submit a Request
+                  {t("product.notifyMeWhenAvailable")}
                 </button>
               </div>
             ) : priceOptions.length > 0 ? (
@@ -746,17 +730,11 @@ const ProductDisplayPage = () => {
                   </button>
                 )}
 
-                {/* Stock status — only shown to user when in stock; no message when out of stock */}
+                {/* Stock status — only shown to user when in stock; no message
+                    when out of stock. Exact quantity is an internal/admin
+                    detail and is never shown to customers. */}
                 <div className="flex items-center text-sm">
-                  {onlineStock > 0 ? (
-                    <>
-                      <span className="text-green-600">In Stock</span>
-                      <span className="ml-2 text-gray-500">
-                        ({onlineStock} unit{onlineStock !== 1 ? "s" : ""}{" "}
-                        available)
-                      </span>
-                    </>
-                  ) : isPartnerProduct && partnerQty > 0 ? (
+                  {onlineStock > 0 || (isPartnerProduct && partnerQty > 0) ? (
                     <span className="text-green-600">In Stock</span>
                   ) : null}
                 </div>
@@ -772,21 +750,31 @@ const ProductDisplayPage = () => {
                 )}
               </div>
             ) : (
-              // No pricing options at all
+              // Product is marked available, but has no way to actually be
+              // purchased right now (no online stock, no partner stock, no
+              // 3/5-week delivery option) — this is a stock/availability gap,
+              // not a "pricing" problem, so the copy here should say so.
+              // Defensive fallback only — the server's PRODUCT_DETAIL_FILTER
+              // already excludes any product that reaches neither this nor
+              // the productAvailability===false branch above, so this
+              // shouldn't normally render. Per the business model, there's
+              // no meaningful "out of stock" state distinct from "not
+              // currently available" — online stock quantity is purely an
+              // internal/admin signal for which price options to offer, not
+              // something surfaced to customers as a stock-out event.
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-6 text-center">
                 <FaSadTear className="text-gray-400 text-3xl mx-auto mb-3" />
                 <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                  Pricing Unavailable
+                  {t("product.temporarilyUnavailableTitle")}
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  Pricing information for this product is currently unavailable.
-                  Please contact us for more details.
+                  {t("product.temporarilyUnavailableMessage")}
                 </p>
                 <button
                   onClick={() => setShowRequestModal(true)}
                   className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-md transition"
                 >
-                  Request Information
+                  {t("product.notifyMeWhenAvailable")}
                 </button>
               </div>
             )}
@@ -972,14 +960,6 @@ const ProductDisplayPage = () => {
           product={data}
           onClose={() => setShowRequestModal(false)}
           isDiscontinued={!data.productAvailability}
-        />
-      )}
-
-      {openEditModal && isAdmin && (
-        <EditProductAdmin
-          data={data}
-          close={() => setOpenEditModal(false)}
-          fetchProductData={fetchProductDetails}
         />
       )}
     </div>

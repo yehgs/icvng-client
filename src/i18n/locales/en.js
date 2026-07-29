@@ -126,6 +126,9 @@ const en = {
     removedFromCart: "Removed from cart",
     linkCopied: "Product link copied!",
     copyLinkFailed: "Failed to copy link",
+    notifyMeWhenAvailable: "Notify Me When Available",
+    temporarilyUnavailableTitle: "Temporarily Unavailable",
+    temporarilyUnavailableMessage: "This product has been discontinued. Join the waitlist and we'll notify you if it becomes available again.",
     type: {
       COFFEE: "Coffee",
       MACHINE: "Machine",

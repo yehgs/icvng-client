@@ -120,6 +120,9 @@ const it = {
     removedFromCart: "Rimosso dal carrello",
     linkCopied: "Link del prodotto copiato!",
     copyLinkFailed: "Impossibile copiare il link",
+    notifyMeWhenAvailable: "Avvisami quando disponibile",
+    temporarilyUnavailableTitle: "Temporaneamente non disponibile",
+    temporarilyUnavailableMessage: "Questo prodotto è stato ritirato dalla vendita. Iscriviti alla lista d'attesa e ti avviseremo se torna disponibile.",
     type: {
       COFFEE: "Caffè",
       MACHINE: "Macchina",

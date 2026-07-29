@@ -264,13 +264,13 @@ const SearchInput = () => {
                   </div>
                   <div className="text-right">
                     {(() => {
-                      // Same rule as the single product page: category
-                      // decides 5-week vs 3-week delivery, NOT productType.
-                      // productType can be mislabeled (e.g. a capsule
-                      // machine tagged "COFFEE" for its coffee-pod side),
-                      // but category (capsule-machine/coffee-maker) is
-                      // the authoritative signal — see config/deliveryCategories.js
+                      // Same rule as the single product page:
+                      // Checks BOTH productType==="MACHINE" and category
+                      // slug (capsule-machine/coffee-maker) — see
+                      // config/deliveryCategories.js for why both signals
+                      // are checked rather than trusting just one.
                       const isMachine = isFiveWeekDeliveryCategory(
+                        product.productType,
                         product.category,
                       );
                       const deliveryPrice = isMachine

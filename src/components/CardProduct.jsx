@@ -69,7 +69,7 @@ const CardProduct = ({ data }) => {
 
   const effectiveStock = getEffectiveStock(data);
   const onlineStock = data.warehouseStock?.onlineStock || 0;
-  const showFiveWeekDelivery = isFiveWeekDeliveryCategory(data.category);
+  const showFiveWeekDelivery = isFiveWeekDeliveryCategory(data.productType, data.category);
 
   const getPrimaryPrice = (product) =>
     product.btcPrice && product.btcPrice > 0 ? product.btcPrice : product.price;
@@ -477,7 +477,7 @@ const CardProduct = ({ data }) => {
         )}
         {onlineStock > 0 && (
           <div className="absolute bottom-1 right-1 bg-green-600 text-white text-xs px-2 py-1 rounded">
-            {t("product.stock")}: {onlineStock}
+            {t("product.inStock")}
           </div>
         )}
       </Link>
