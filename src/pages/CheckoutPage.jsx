@@ -1,7 +1,7 @@
 // client/src/pages/CheckoutPage.jsx
 // 4-step checkout: Address → Shipping → Payment → Review
 // Login required — guests see auth modal from cart drawer before reaching here
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
@@ -207,8 +207,6 @@ const CheckoutPage = () => {
   const loadShipping = async (addressId) => {
     if (!addressId || cartItem.length === 0) return;
     setShippingLoading(true);
-    setShippingMethods([]);
-    setSelectedMethod(null);
     try {
       const items = cartItem.map((item) => ({
         productId: item.productId._id,
@@ -233,12 +231,57 @@ const CheckoutPage = () => {
           return a.cost - b.cost;
         });
         setShippingMethods(methods);
-        if (methods.length > 0) setSelectedMethod(methods[0]);
-        else toast.error(t('checkout.noShippingOptions'));
+        // Keep the customer's chosen method selected across refreshes (e.g.
+        // quantity changes) if it's still available - just pick up its
+        // possibly-updated cost/eligibility. Only fall back to the
+        // cheapest/first option on first load or if their choice dropped
+        // out of the available list (e.g. no longer meets a free-shipping
+        // minimum after removing items).
+        setSelectedMethod((prevSelected) => {
+          const stillAvailable = prevSelected
+            ? methods.find((m) => m.code === prevSelected.code)
+            : null;
+          return stillAvailable || methods[0] || null;
+        });
+        if (methods.length === 0) toast.error(t('checkout.noShippingOptions'));
       }
     } catch { toast.error(t('checkout.failedLoadShipping')); }
     finally { setShippingLoading(false); }
   };
+
+  // Re-fetch shipping methods whenever the order contents change (quantity
+  // +/-, item removed/added) so eligibility and free-shipping thresholds
+  // stay in sync live, without requiring a page refresh. Debounced so rapid
+  // +/- clicks don't spam the endpoint. Only fires on an actual change to
+  // the cart signature - not on mount, and not merely because the address
+  // finished loading (that initial fetch already happens elsewhere).
+  const cartSignature = useMemo(
+    () => cartItem.map((item) => `${item._id}:${item.quantity}`).join('|'),
+    [cartItem]
+  );
+  const previousCartSignatureRef = useRef(null);
+
+  useEffect(() => {
+    if (!selectedAddressId || cartItem.length === 0) return;
+
+    if (previousCartSignatureRef.current === null) {
+      // First time we have both an address and a cart - just record the
+      // baseline. The initial shipping fetch is triggered by the address
+      // effect above.
+      previousCartSignatureRef.current = cartSignature;
+      return;
+    }
+
+    if (previousCartSignatureRef.current === cartSignature) return;
+    previousCartSignatureRef.current = cartSignature;
+
+    const timer = setTimeout(() => {
+      loadShipping(selectedAddressId);
+    }, 600);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cartSignature, selectedAddressId]);
 
   const handleSaveAddress = async (formData) => {
     setAddressSaving(true);
