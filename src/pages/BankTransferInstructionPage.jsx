@@ -21,12 +21,14 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { useCurrency } from '../provider/GlobalProvider';
+import { useCountry } from '../context/CountryContext.jsx';
 import toast from 'react-hot-toast';
 
 const BankTransferInstructionsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
+  const { bankTransferDetails: countryBankDetails } = useCountry();
   const user = useSelector((state) => state.user);
 
   const [copiedField, setCopiedField] = useState('');
@@ -34,12 +36,15 @@ const BankTransferInstructionsPage = () => {
   const [bankDetails, setBankDetails] = useState(null);
   const [totalAmount, setTotalAmount] = useState(0);
 
-  // Default bank details
+  // Fallback bank details — only used if this page is reached directly
+  // (no navigation state / stale sessionStorage, e.g. a refresh). Sourced
+  // from the country-scoped setting in CountryContext (the same one
+  // checkout itself uses), not a hardcoded Nigerian account.
   const defaultBankDetails = {
-    bankName: 'ZENITH BANK',
-    accountName: 'I-COFFEE VENTURES',
-    accountNumber: '1310523997',
-    sortCode: '057150042',
+    bankName: countryBankDetails?.bankName || '',
+    accountName: countryBankDetails?.accountName || '',
+    accountNumber: countryBankDetails?.accountNumber || '',
+    sortCode: countryBankDetails?.sortCode || '',
     reference: `ICOFFEE-${Date.now()}-${user._id}`,
   };
 

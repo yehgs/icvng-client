@@ -65,6 +65,14 @@ export function CountryProvider({ children }) {
   const [allCountries, setAllCountries] = useState([]);
   const [language, setLanguageState] = useState("en");
   const [loading, setLoading] = useState(true);
+  // Country-scoped Direct Bank Transfer availability — true only if
+  // IT/DIRECTOR have configured an active receiving account for THIS
+  // country (see bankTransferSettings.controller.js#getAvailablePaymentMethods
+  // on the server). Defaults to false (Stripe-only) until this resolves,
+  // matching "if the country bank transfer is not set, payment option
+  // will only be Stripe by default".
+  const [hasBankTransfer, setHasBankTransfer] = useState(false);
+  const [bankTransferDetails, setBankTransferDetails] = useState(null);
 
   // ── Bootstrap: fetch country config from server ───────────────────────────
   useEffect(() => {
@@ -99,6 +107,22 @@ export function CountryProvider({ children }) {
         const res = await Axios({ url: "/api/country/all", method: "get" });
         if (res.data?.success) setAllCountries(res.data.data);
       } catch {}
+
+      // Fetch this country's payment-method availability (non-critical —
+      // defaults stay Stripe-only/hasBankTransfer:false on failure, which
+      // is the safe fallback).
+      try {
+        const payRes = await Axios({
+          url: "/api/bank-transfer-settings/available",
+          method: "get",
+        });
+        if (payRes.data?.success) {
+          setHasBankTransfer(!!payRes.data.data?.bankTransfer);
+          setBankTransferDetails(payRes.data.data?.bankTransferDetails || null);
+        }
+      } catch (err) {
+        console.warn("[CountryProvider] Could not load payment-method availability:", err.message);
+      }
     }
 
     bootstrap();
@@ -170,6 +194,8 @@ export function CountryProvider({ children }) {
       // Payment
       hasPaystack,
       hasStripe,
+      hasBankTransfer,
+      bankTransferDetails,
       paymentProviders: country.payment?.availableProviders || ["stripe"],
       stripePublicKey: country.payment?.stripePublicKey,
       paystackPublicKey: country.payment?.paystackPublicKey,
@@ -178,7 +204,7 @@ export function CountryProvider({ children }) {
     }),
     [
       country, allCountries, language, setLanguage, t,
-      formatPrice, hasPaystack, hasStripe, loading,
+      formatPrice, hasPaystack, hasStripe, hasBankTransfer, bankTransferDetails, loading,
     ]
   );
 

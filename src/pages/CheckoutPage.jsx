@@ -155,7 +155,7 @@ const CheckoutPage = () => {
   const { isLoggedIn, fetchCartItem, fetchOrder, updateCartItem, deleteCartItem, isMerging } = useGlobalContext();
   const { selectedCurrency, formatPrice, convertPrice, getPaymentMethod, exchangeRates } = useCurrency();
   // Phase 4: country-aware payment availability
-  const { hasPaystack, hasStripe, countryCode } = useCountry();
+  const { hasPaystack, hasStripe, hasBankTransfer, bankTransferDetails, countryCode } = useCountry();
   const cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -172,6 +172,17 @@ const CheckoutPage = () => {
   const [contact, setContact] = useState({ name: '', email: '', phone: '', notes: '', paymentMethod: hasPaystack ? 'paystack' : 'stripe' });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  // Country-scoped Bank Transfer availability resolves asynchronously
+  // (see CountryContext) — if it was already selected (e.g. by a prior
+  // country context) and turns out unavailable, fall back to whatever's
+  // actually offered rather than leaving a dead selection the submit
+  // handler would reject.
+  useEffect(() => {
+    if (contact.paymentMethod === 'bank_transfer' && !hasBankTransfer) {
+      setContact((p) => ({ ...p, paymentMethod: hasPaystack ? 'paystack' : 'stripe' }));
+    }
+  }, [hasBankTransfer, hasPaystack]);
 
   // Redirect if not logged in (shouldn't reach here — cart drawer blocks it)
   useEffect(() => {
@@ -343,10 +354,17 @@ const CheckoutPage = () => {
       }));
 
       if (contact.paymentMethod === 'bank_transfer') {
+        // The receiving account shown/submitted is the IT/DIRECTOR
+        // country-scoped setting from CountryContext (fetched from
+        // GET /api/bank-transfer-settings/available) — NOT hardcoded
+        // env-var Nigerian bank details. The server independently
+        // re-resolves and validates this from the same settings (never
+        // trusts these fields from the client for the actual order
+        // record) — only `reference` is used as submitted.
         const bankDetails = {
-          bankName: import.meta.env.VITE_BANK_NAME || 'ZENITH BANK PLC',
-          accountName: import.meta.env.VITE_BANK_ACCOUNT_NAME || 'I-COFFEE VENTURES',
-          accountNumber: import.meta.env.VITE_BANK_ACCOUNT_NUMBER || '1310523997',
+          bankName: bankTransferDetails?.bankName || '',
+          accountName: bankTransferDetails?.accountName || '',
+          accountNumber: bankTransferDetails?.accountNumber || '',
           reference: `ICOFFEE-${Date.now()}-${user._id}`,
         };
         const res = await Axios({
@@ -354,7 +372,9 @@ const CheckoutPage = () => {
           data: {
             list_items: orderItems, addressId: selectedAddressId,
             subTotalAmt: subtotal, totalAmt: total, shippingCost,
-            shippingMethodId: selectedMethod._id, currency: 'NGN', bankDetails,
+            shippingMethodId: selectedMethod._id,
+            currency: bankTransferDetails?.currencyCode || 'NGN',
+            bankDetails,
             customerNotes: contact.notes,
           },
         });
@@ -603,8 +623,14 @@ const CheckoutPage = () => {
                           <span className="text-sm">💳 {hasPaystack ? t('checkout.payWithStripeIntl') : t('checkout.payWithCardStripe')}</span>
                         </label>
                       )}
-                      {/* Bank transfer always available */}
-                      {hasPaystack && (
+                      {/* Country-scoped: Bank Transfer only shown when
+                          IT/DIRECTOR have configured an active receiving
+                          account for this country (was previously gated
+                          on hasPaystack, which meant it only ever showed
+                          for Nigeria — the actual, intended rule is "if
+                          the country bank transfer is not set, only
+                          Stripe is offered", independent of Paystack). */}
+                      {hasBankTransfer && (
                         <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
                           <input type="radio" value="bank_transfer" checked={contact.paymentMethod === 'bank_transfer'}
                             onChange={() => setContact((p) => ({ ...p, paymentMethod: 'bank_transfer' }))} />
