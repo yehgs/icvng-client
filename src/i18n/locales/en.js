@@ -407,8 +407,19 @@ const en = {
 
   // ── Header ───────────────────────────────────────────────────────────────
   header: {
-    promoDesktop: "Free shipping on orders over ₦100,000 within Lagos!",
-    promoMobile: "Free shipping over ₦100k in Lagos!",
+    // Generic, country-neutral fallback — shown whenever no admin has set
+    // a country-specific promo via Admin → Site Content → Header (see
+    // HeaderTest.jsx's headerBlock/country.content.preheaderMessage
+    // logic). This used to hardcode "Free shipping on orders over
+    // ₦100,000 within Lagos!" — accurate for Nigeria, but wrong for
+    // every other country (Togo/Benin/Italy have no free-shipping tier
+    // configured at all) AND now reachable by ANY visitor regardless of
+    // country once language became independently selectable (the
+    // language dropdown), not just Nigeria-domain English speakers. The
+    // real Nigeria free-shipping promo should be set as a Nigeria-specific
+    // CMS header message, not assumed as the global default.
+    promoDesktop: "Quality coffee, delivered to your door.",
+    promoMobile: "Quality coffee, delivered.",
     partnerWithUs: "Partner with us",
     coffeeBlog: "Coffee Blog",
     shopNow: "Shop Now",

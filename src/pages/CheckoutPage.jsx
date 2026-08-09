@@ -156,6 +156,15 @@ const CheckoutPage = () => {
   const { selectedCurrency, formatPrice, convertPrice, getPaymentMethod, exchangeRates } = useCurrency();
   // Phase 4: country-aware payment availability
   const { hasPaystack, hasStripe, hasBankTransfer, bankTransferDetails, countryCode } = useCountry();
+  // Bank Transfer's receiving account is only ever held in ONE currency
+  // (bankTransferDetails.currencyCode — e.g. NGN for Nigeria's account).
+  // hasBankTransfer alone only means "this country has a bank transfer
+  // account configured" — it does NOT account for the shopper having
+  // switched their display currency away from that account's currency
+  // via the currency selector (e.g. picking EUR while still on the
+  // Nigerian storefront). Bank Transfer must hide in that case; only
+  // Stripe makes sense for a currency the receiving account doesn't hold.
+  const bankTransferAvailable = hasBankTransfer && selectedCurrency === bankTransferDetails?.currencyCode;
   const cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
@@ -179,10 +188,10 @@ const CheckoutPage = () => {
   // actually offered rather than leaving a dead selection the submit
   // handler would reject.
   useEffect(() => {
-    if (contact.paymentMethod === 'bank_transfer' && !hasBankTransfer) {
+    if (contact.paymentMethod === 'bank_transfer' && !bankTransferAvailable) {
       setContact((p) => ({ ...p, paymentMethod: hasPaystack ? 'paystack' : 'stripe' }));
     }
-  }, [hasBankTransfer, hasPaystack]);
+  }, [bankTransferAvailable, hasPaystack]);
 
   // Redirect if not logged in (shouldn't reach here — cart drawer blocks it)
   useEffect(() => {
@@ -625,12 +634,14 @@ const CheckoutPage = () => {
                       )}
                       {/* Country-scoped: Bank Transfer only shown when
                           IT/DIRECTOR have configured an active receiving
-                          account for this country (was previously gated
-                          on hasPaystack, which meant it only ever showed
-                          for Nigeria — the actual, intended rule is "if
-                          the country bank transfer is not set, only
-                          Stripe is offered", independent of Paystack). */}
-                      {hasBankTransfer && (
+                          account for this country AND the shopper's
+                          currently-selected display currency matches that
+                          account's currency (e.g. NGN for Nigeria's
+                          account) — switching the currency selector away
+                          from that hides Bank Transfer and leaves Stripe
+                          as the only option, same as any other country
+                          with no bank transfer configured at all. */}
+                      {bankTransferAvailable && (
                         <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
                           <input type="radio" value="bank_transfer" checked={contact.paymentMethod === 'bank_transfer'}
                             onChange={() => setContact((p) => ({ ...p, paymentMethod: 'bank_transfer' }))} />

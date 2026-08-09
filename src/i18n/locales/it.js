@@ -395,8 +395,11 @@ const it = {
   },
 
   header: {
-    promoDesktop: "Spedizione gratuita su tutti gli ordini!",
-    promoMobile: "Spedizione gratuita!",
+    // See en.js's promoDesktop/promoMobile comment — generic, no
+    // shipping-cost promise (Italy has no free-shipping tier configured),
+    // overridable per country via the admin CMS.
+    promoDesktop: "Caffè di qualità, consegnato a casa tua.",
+    promoMobile: "Caffè di qualità, consegnato.",
     partnerWithUs: "Collabora con noi",
     coffeeBlog: "Blog del caffè",
     shopNow: "Acquista ora",

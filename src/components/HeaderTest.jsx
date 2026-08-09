@@ -20,6 +20,7 @@ import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
 import DisplayCartItem from "./DisplayCartItem";
 import HeaderNavigation from "../components/HeaderNavigation";
 import CurrencySelector from "../components/CurrencySelector";
+import LanguageSelector from "../components/LanguageSelector";
 // Phase 2/6: preheader promo, "Partner with us", "Coffee Blog", "Shop Now"
 // all read from the i18n lib now. Language/country pickers are auto-detected
 // from the visited domain (CountryContext) and no longer offered as manual
@@ -27,6 +28,7 @@ import CurrencySelector from "../components/CurrencySelector";
 // visited country's native currency (see GlobalProvider) while still
 // letting the shopper switch to another currency if they want to.
 import { useCountry } from "../context/CountryContext";
+import { useSocialLinks } from "../hooks/useSocialLinks";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 
@@ -38,6 +40,13 @@ export default function Header() {
   const { formatPrice } = useCurrency();
   const [openCartSection, setOpenCartSection] = useState(false);
   const { t, country } = useCountry();
+  // Country-scoped social handles (Admin → Site Content → Footer),
+  // falling back to Nigeria HQ's if this market hasn't set its own —
+  // same hook Footer.jsx and Contactus.jsx already use. This preheader
+  // used to hardcode the Facebook/Twitter/Instagram URLs directly,
+  // which was the one place on the site that never picked up a
+  // country's own social handles.
+  const social = useSocialLinks();
 
   // Preheader promo: content-managed per country via Admin → Site Content →
   // Header (falls back to the legacy Country.content.preheaderMessage, then
@@ -117,21 +126,21 @@ export default function Header() {
             </Link>
             <div className="hidden md:flex space-x-4">
               <a
-                href="https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage"
+                href={social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <Facebook size={18} className="hover:opacity-80" />
               </a>
               <a
-                href="https://twitter.com/italiancoffee_v"
+                href={social.twitter}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <Twitter size={18} className="hover:opacity-80" />
               </a>
               <a
-                href="https://www.instagram.com/italiancofeeventure/"
+                href={social.instagram}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -154,6 +163,7 @@ export default function Header() {
             <Link to="/">
               <img src={logo} alt="I-Coffee" className="h-8 w-auto" />
             </Link>
+            <LanguageSelector />
             <CurrencySelector />
           </div>
 
@@ -228,6 +238,7 @@ export default function Header() {
               >
                 {t("header.coffeeBlog")}
               </Link>
+              <LanguageSelector />
               <CurrencySelector />
 
               {/* User */}

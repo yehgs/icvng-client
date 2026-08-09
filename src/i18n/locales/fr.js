@@ -395,8 +395,11 @@ const fr = {
   },
 
   header: {
-    promoDesktop: "Livraison gratuite pour toute commande !",
-    promoMobile: "Livraison gratuite !",
+    // See en.js's promoDesktop/promoMobile comment — generic, no
+    // shipping-cost promise (Togo/Benin have no free-shipping tier
+    // configured), overridable per country via the admin CMS.
+    promoDesktop: "Café de qualité, livré à votre porte.",
+    promoMobile: "Café de qualité, livré.",
     partnerWithUs: "Devenir partenaire",
     coffeeBlog: "Blog café",
     shopNow: "Acheter maintenant",

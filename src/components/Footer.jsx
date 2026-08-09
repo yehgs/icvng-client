@@ -263,11 +263,14 @@ const Footer = () => {
     email: footerBlock?.contactEmail || legacyContacts.email,
     whatsapp: footerBlock?.contactWhatsapp || legacyContacts.whatsapp,
   };
-  const social = {
-    facebook: footerBlock?.socialFacebook || "https://www.facebook.com/Italiancoffeeonline/?ref=pages_you_manage",
-    twitter: footerBlock?.socialTwitter || "https://twitter.com/italiancoffee_v",
-    instagram: footerBlock?.socialInstagram || "https://www.instagram.com/italiancofeeventure/",
-  };
+  // Single source of truth for social handles — same hook PreFooter (this
+  // file), Contactus.jsx, and HeaderTest.jsx all use, instead of this
+  // component's own separate hardcoded fallback literals duplicating the
+  // hook's DEFAULTS. The hook already re-fetches type: "footer" itself,
+  // so this doesn't add a request — it replaces the ad-hoc one above for
+  // social specifically (contacts above still needs footerBlock's other
+  // fields, so that fetch stays).
+  const social = useSocialLinks();
   const companyName = t("footer.companyName");
   const companyTagline = t("footer.companyTagline");
 
