@@ -129,12 +129,27 @@ export function CountryProvider({ children }) {
   }, []);
 
   // ── Language setter ───────────────────────────────────────────────────────
+  // Reloads the page after persisting the choice — deliberately, not an
+  // oversight. Static UI text (t()-based labels) would update instantly via
+  // React re-render on its own, but product names, category names, CMS
+  // content, and anything else fetched from the server only get localized
+  // when the request is MADE (via the X-Language header — see utils/Axios.js)
+  // — already-fetched data doesn't retroactively re-translate itself just
+  // because `language` state changed. A reload re-fetches everything under
+  // the new language in one consistent pass, the same way visiting a
+  // different country's domain always has (a full navigation) — "switch all
+  // language on all site... just like the domain thing but independent of
+  // currency switch" was the explicit ask this satisfies. Currency
+  // (changeCurrency in GlobalProvider) intentionally does NOT reload — prices
+  // convert client-side from data already in memory, so there's nothing
+  // stale to re-fetch.
   const setLanguage = useCallback((lang) => {
     if (!SUPPORTED_LANGUAGES.includes(lang)) return;
-    setLanguageState(lang);
+    if (lang === language) return; // already active — no-op, don't reload for nothing
     saveLanguage(lang);
     document.documentElement.lang = lang;
-  }, []);
+    window.location.reload();
+  }, [language]);
 
   // ── Translation function ──────────────────────────────────────────────────
   const t = useCallback(
