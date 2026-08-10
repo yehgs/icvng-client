@@ -13,6 +13,7 @@
 import React, { useEffect, useState } from "react";
 import Axios from "../../utils/Axios.js";
 import { useCountry } from "../../context/CountryContext.jsx";
+import FlagIcon from "../FlagIcon.jsx";
 
 const DISMISS_KEY = "icvng_country_redirect_dismissed";
 const DISMISS_DAYS = 30;
@@ -109,9 +110,7 @@ export default function CountryRedirectPopup() {
         <div className="p-6">
           {/* Flag + title */}
           <div className="flex items-start gap-3 mb-4">
-            <span className="text-4xl leading-none" role="img" aria-label={suggestion.name}>
-              {suggestion.flagEmoji}
-            </span>
+            <FlagIcon code={suggestion.code} className="w-10 h-8 rounded shrink-0" />
             <div>
               <h3 className="font-semibold text-gray-900 text-base leading-snug">
                 {t("country.switchTitle", { country: suggestion.name })}

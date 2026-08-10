@@ -1,15 +1,12 @@
 // components/LanguageSelector.jsx
 //
-// Manual language picker — English (🇬🇧), French (🇫🇷), Italian (🇮🇹).
-// Mirrors CurrencySelector.jsx's dropdown pattern for visual consistency.
+// Manual language picker — English, French, Italian. Mirrors
+// CurrencySelector.jsx's dropdown pattern for visual consistency.
 //
-// Uses flag EMOJI rather than flag image files: no .svg flag assets were
-// actually provided (only screenshots/CSVs came through), and the app's
-// own country config (config/countries/index.js) already represents each
-// country with a `flagEmoji` field — this keeps the same convention
-// rather than introducing a second, inconsistent flag-asset system. Swap
-// the FLAG constants below for <img src="..."/> if real SVG files are
-// added later.
+// Uses FlagIcon (inline SVG) rather than flag emoji (🇬🇧🇫🇷🇮🇹) — Windows
+// Chrome/Edge never rendered those (no native color flag glyphs on
+// Windows), so the flag appeared blank/as raw text there. SVG artwork
+// renders identically on every platform.
 //
 // Uses CountryContext's language/setLanguage (see CountryContext.jsx) —
 // this was previously auto-detected from the visited domain only, with
@@ -21,11 +18,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useCountry } from "../context/CountryContext.jsx";
 import { FaChevronDown } from "react-icons/fa";
+import FlagIcon from "./FlagIcon.jsx";
 
 const LANGUAGES = [
-  { code: "en", label: "English", flag: "🇬🇧" },
-  { code: "fr", label: "Français", flag: "🇫🇷" },
-  { code: "it", label: "Italiano", flag: "🇮🇹" },
+  { code: "en", label: "English" },
+  { code: "fr", label: "Français" },
+  { code: "it", label: "Italiano" },
 ];
 
 const LanguageSelector = ({ className = "" }) => {
@@ -58,7 +56,7 @@ const LanguageSelector = ({ className = "" }) => {
         onClick={() => setIsOpen((p) => !p)}
         aria-label="Select language"
       >
-        <span className="text-base leading-none mr-1.5">{current.flag}</span>
+        <span className="mr-1.5"><FlagIcon code={current.code} className="w-5 h-4 rounded-sm" /></span>
         <span className="uppercase">{current.code}</span>
         <FaChevronDown
           className={`w-3 h-3 ml-2 transition-transform duration-200 ${isOpen ? "transform rotate-180" : ""}`}
@@ -76,7 +74,7 @@ const LanguageSelector = ({ className = "" }) => {
                 }`}
                 onClick={() => handleLanguageChange(lang.code)}
               >
-                <span className="text-lg mr-2.5 leading-none">{lang.flag}</span>
+                <span className="mr-2.5"><FlagIcon code={lang.code} className="w-6 h-4 rounded-sm" /></span>
                 <span className="font-medium flex-1">{lang.label}</span>
                 {language === lang.code && (
                   <div className="w-2 h-2 bg-green-500 rounded-full" />
