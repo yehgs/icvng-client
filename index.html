@@ -7,6 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!-- ✅ Page Title -->
+    <!--
+      These static tags are the pre-JS / crawler fallback only (Nigeria's
+      copy — same as the old single hardcoded version). Once the app loads,
+      src/components/SiteMeta.jsx overwrites title/description/keywords/
+      canonical/og:*/twitter:* with the CURRENT country's own copy, managed
+      per-country in Admin → Content Management → Site Pages → "Site
+      Default (index.html)" (slug: site-index) — same pattern as Tawk.to
+      below. Run scripts/seedSiteIndexMeta.js to seed Togo/Benin/Italy (and
+      re-seed Nigeria) with real, distinct copy instead of relying on this
+      fallback indefinitely.
+    -->
     <title>Buy Coffee Products Online in Nigeria | I-Coffee</title>
 
     <!-- ✅ Meta Description (Very Important) -->
