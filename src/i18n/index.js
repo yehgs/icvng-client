@@ -14,8 +14,14 @@
 import en from "./locales/en.js";
 import fr from "./locales/fr.js";
 import it from "./locales/it.js";
+import es from "./locales/es.js";
+import pt from "./locales/pt.js";
+import nl from "./locales/nl.js";
+import ar from "./locales/ar.js";
+import hi from "./locales/hi.js";
+import zh from "./locales/zh.js";
 
-const LOCALES = { en, fr, it };
+const LOCALES = { en, fr, it, es, pt, nl, ar, hi, zh };
 const LS_KEY = "icvng_language";
 
 // ── Deep merge ────────────────────────────────────────────────────────────────
@@ -81,14 +87,25 @@ function resolve(locale, keyPath, params) {
 // ── Public API ────────────────────────────────────────────────────────────────
 
 /** All supported language codes */
-export const SUPPORTED_LANGUAGES = ["en", "fr", "it"];
+export const SUPPORTED_LANGUAGES = ["en", "fr", "it", "es", "pt", "nl", "ar", "hi", "zh"];
 
-/** Language display names for the UI switcher */
+/** Language display names for the UI switcher (native names, so a French
+ * speaker sees "Français" regardless of their current UI language). */
 export const LANGUAGE_NAMES = {
   en: "English",
   fr: "Français",
   it: "Italiano",
+  es: "Español",
+  pt: "Português",
+  nl: "Nederlands",
+  ar: "العربية",
+  hi: "हिन्दी",
+  zh: "中文",
 };
+
+/** Languages written right-to-left — the UI flips document direction for
+ * these (see CountryContext.jsx's setLanguage). */
+export const RTL_LANGUAGES = ["ar"];
 
 /**
  * Detect best language from:

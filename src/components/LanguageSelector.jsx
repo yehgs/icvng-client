@@ -24,6 +24,12 @@ const LANGUAGES = [
   { code: "en", label: "English" },
   { code: "fr", label: "Français" },
   { code: "it", label: "Italiano" },
+  { code: "es", label: "Español" },
+  { code: "pt", label: "Português" },
+  { code: "nl", label: "Nederlands" },
+  { code: "ar", label: "العربية" },
+  { code: "hi", label: "हिन्दी" },
+  { code: "zh", label: "中文" },
 ];
 
 const LanguageSelector = ({ className = "" }) => {

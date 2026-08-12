@@ -13,11 +13,20 @@ import React, { useState, useRef, useEffect } from "react";
 import { useCountry } from "../../context/CountryContext.jsx";
 import { FaChevronDown } from "react-icons/fa";
 
-// Language flag emoji map
+// Language flag emoji map — kept for this component's own use (see
+// FlagIcon.jsx for the SVG version used by LanguageSelector.jsx, the
+// picker actually rendered in the header; emoji flags don't render on
+// Windows Chrome/Edge, which is why that one switched to SVG).
 const LANG_FLAGS = {
   en: "🇬🇧",
   fr: "🇫🇷",
   it: "🇮🇹",
+  es: "🇪🇸",
+  pt: "🇵🇹",
+  nl: "🇳🇱",
+  ar: "🇸🇦",
+  hi: "🇮🇳",
+  zh: "🇨🇳",
 };
 
 export default function LanguageSwitcher({ className = "", compact = false }) {

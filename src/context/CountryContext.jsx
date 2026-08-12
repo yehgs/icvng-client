@@ -29,6 +29,7 @@ import {
   saveLanguage,
   SUPPORTED_LANGUAGES,
   LANGUAGE_NAMES,
+  RTL_LANGUAGES,
 } from "../i18n/index.js";
 
 // ── Default country config (mirrors server config/countries/index.js for NG) ─
@@ -92,8 +93,11 @@ export function CountryProvider({ children }) {
           // is consistent with what's rendered on this first load.
           saveLanguage(lang);
 
-          // Set <html lang="…"> for SEO
+          // Set <html lang="…"> for SEO, and flip text direction for RTL
+          // languages (Arabic) so the whole page mirrors correctly instead
+          // of just individual translated strings sitting backwards.
           document.documentElement.lang = lang;
+          document.documentElement.dir = RTL_LANGUAGES.includes(lang) ? "rtl" : "ltr";
         }
       } catch (err) {
         console.warn("[CountryProvider] Could not load country config:", err.message);
@@ -148,6 +152,7 @@ export function CountryProvider({ children }) {
     if (lang === language) return; // already active — no-op, don't reload for nothing
     saveLanguage(lang);
     document.documentElement.lang = lang;
+    document.documentElement.dir = RTL_LANGUAGES.includes(lang) ? "rtl" : "ltr";
     window.location.reload();
   }, [language]);
 
