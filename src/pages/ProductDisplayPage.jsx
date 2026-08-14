@@ -217,16 +217,17 @@ const ProductDisplayPage = () => {
     fetchProductDetails();
   }, [params]);
 
-  // ── Build price options (max 2) ───────────────────────────────────────────
-  // 1. Regular / fast delivery  — only when onlineStock > 0
-  // 2. Delivery price           — 5-week (Capsule Machine / Coffee Maker)
-  //                               3-week (all other categories)
-  // Computed fresh each render so it always reflects latest data + category
-  const priceOptions = [
-    // Option 1 — Regular price — only shown when stock is actually available
-    // (warehouse onlineStock > 0 OR partner product with quantity)
-    // Hiding it when no stock prevents customers seeing a price they can't order at standard speed
-    ...(getPrimaryPrice(data) > 0 && hasAvailableStock
+  // ── Build price options (exactly ONE, never two) ─────────────────────────
+  // Priority (matches PRODUCT_VISIBILITY_RULES.md §3, applied as an
+  // either/or display rule — see the identical fix + explanation in
+  // CardProduct.jsx's getPricingOptions()):
+  //   1. Stock available (warehouse OR partner) → regular price only.
+  //   2. No stock at all → the one delivery price matching this product's
+  //      category (5-week for Machine/coffee-maker/capsule-machine,
+  //      2-week/"3weeks" for everything else) — never the regular price.
+  // Computed fresh each render so it always reflects latest data + category.
+  const priceOptions =
+    getPrimaryPrice(data) > 0 && hasAvailableStock
       ? [
           {
             key: "regular",
@@ -237,46 +238,45 @@ const ProductDisplayPage = () => {
             bgColor: "bg-green-50",
             borderColor: "border-green-200",
             description: "Standard delivery (1-3 business days)",
-            delivery: onlineStock > 0 ? "Fast Delivery" : "Partner Stock",
+            // "Regular Price" is defined (see PRODUCT_VISIBILITY_RULES.md
+            // glossary) as fulfilled from EITHER in-house or partner stock,
+            // both within the same 1-3 business day window — so this no
+            // longer distinguishes "Fast Delivery" vs "Partner Stock" as if
+            // partner-sourced stock shipped on a different timeline.
+            delivery: "Fast Delivery",
           },
         ]
-      : []),
-
-    // Option 2 — Delivery price (category-driven)
-    ...(showFiveWeekDelivery
-      ? // Capsule Machine & Coffee Maker: 5-week only
-        data.price5weeksDelivery > 0
-        ? [
-            {
-              key: "5weeks",
-              label: "5 Weeks Delivery",
-              price: data.price5weeksDelivery,
-              icon: <FaCalendarAlt className="text-red-600" />,
-              color: "text-red-600",
-              bgColor: "bg-red-50",
-              borderColor: "border-red-200",
-              description: "Special order — Delivery in approximately 5 weeks",
-              delivery: "5 Week Special Order",
-            },
-          ]
-        : []
-      : // All other categories: 2-week only
-        data.price3weeksDelivery > 0
-        ? [
-            {
-              key: "3weeks",
-              label: "2 Weeks Delivery",
-              price: data.price3weeksDelivery,
-              icon: <FaClock className="text-orange-600" />,
-              color: "text-orange-600",
-              bgColor: "bg-orange-50",
-              borderColor: "border-orange-200",
-              description: "Special order — Delivery in approximately 2 weeks",
-              delivery: "2 Week Special Order",
-            },
-          ]
-        : []),
-  ];
+      : showFiveWeekDelivery
+        ? data.price5weeksDelivery > 0
+          ? [
+              {
+                key: "5weeks",
+                label: "5 Weeks Delivery",
+                price: data.price5weeksDelivery,
+                icon: <FaCalendarAlt className="text-red-600" />,
+                color: "text-red-600",
+                bgColor: "bg-red-50",
+                borderColor: "border-red-200",
+                description: "Special order — Delivery in approximately 5 weeks",
+                delivery: "5 Week Special Order",
+              },
+            ]
+          : []
+        : data.price3weeksDelivery > 0
+          ? [
+              {
+                key: "3weeks",
+                label: "2 Weeks Delivery",
+                price: data.price3weeksDelivery,
+                icon: <FaClock className="text-orange-600" />,
+                color: "text-orange-600",
+                bgColor: "bg-orange-50",
+                borderColor: "border-orange-200",
+                description: "Special order — Delivery in approximately 2 weeks",
+                delivery: "2 Week Special Order",
+              },
+            ]
+          : [];
 
   // Auto-select first available option when stock/prices/category change
   useEffect(() => {

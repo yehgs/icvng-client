@@ -264,47 +264,50 @@ const SearchInput = () => {
                   </div>
                   <div className="text-right">
                     {(() => {
-                      // Same rule as the single product page:
-                      // Checks BOTH productType==="MACHINE" and category
-                      // slug (capsule-machine/coffee-maker) — see
-                      // config/deliveryCategories.js for why both signals
-                      // are checked rather than trusting just one.
+                      // Same rule as the single product page and product
+                      // cards — see the identical fix + explanation in
+                      // CardProduct.jsx's getPricingOptions(). Exactly ONE
+                      // price is ever shown here too: this dropdown
+                      // previously showed btcPrice AND the delivery price
+                      // together whenever both were set, and didn't even
+                      // check stock at all (so a product with zero stock
+                      // could still show its regular price as if it were
+                      // available at 1-3 business days).
                       const isMachine = isFiveWeekDeliveryCategory(
                         product.productType,
                         product.category,
                       );
+                      const onlineStock = product.warehouseStock?.onlineStock || 0;
+                      const isPartnerProduct = product.partnerStock?.enabled === true;
+                      const partnerQty = product.partnerStock?.quantity || 0;
+                      const hasAvailableStock =
+                        onlineStock > 0 || (isPartnerProduct && partnerQty > 0);
+
+                      if (product.btcPrice > 0 && hasAvailableStock) {
+                        return (
+                          <div className="text-primary-600 font-bold">
+                            {DisplayPriceInNaira(product.btcPrice)}
+                          </div>
+                        );
+                      }
+
                       const deliveryPrice = isMachine
                         ? product.price5weeksDelivery
                         : product.price3weeksDelivery;
                       const deliveryLabel = isMachine
                         ? "5wk delivery"
                         : "3wk delivery";
-                      const hasBtcPrice = product.btcPrice > 0;
-                      const hasDeliveryPrice = deliveryPrice > 0;
 
-                      if (!hasBtcPrice && !hasDeliveryPrice) return null;
+                      if (deliveryPrice > 0) {
+                        return (
+                          <div className="text-primary-600 font-bold">
+                            <span className="text-xs text-gray-500">{deliveryLabel}: </span>
+                            {DisplayPriceInNaira(deliveryPrice)}
+                          </div>
+                        );
+                      }
 
-                      return (
-                        <>
-                          {hasBtcPrice && (
-                            <div className="text-primary-600 font-bold">
-                              {DisplayPriceInNaira(product.btcPrice)}
-                            </div>
-                          )}
-                          {hasDeliveryPrice && (
-                            <div
-                              className={
-                                hasBtcPrice
-                                  ? "text-xs text-gray-500"
-                                  : "text-primary-600 font-bold"
-                              }
-                            >
-                              {hasBtcPrice ? `${deliveryLabel}: ` : ""}
-                              {DisplayPriceInNaira(deliveryPrice)}
-                            </div>
-                          )}
-                        </>
-                      );
+                      return null;
                     })()}
                   </div>
                 </div>

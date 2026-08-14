@@ -12,6 +12,7 @@ import { IoSearchOutline } from 'react-icons/io5';
 import { FaEye, FaEdit, FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
 import { valideURLConvert } from '../utils/valideURLConvert';
+import { getApplicablePrice } from '../utils/getApplicablePrice';
 
 const ProductAdmin = () => {
   const navigate = useNavigate();
@@ -254,31 +255,44 @@ const ProductAdmin = () => {
                       </td>
                       <td className="p-3 text-center">
                         <div className="space-y-1">
-                          {/* Regular Price */}
-                          <div className="text-sm font-medium text-green-600">
-                            {DisplayPriceInNaira(product.price)}
-                          </div>
-
-                          {/* Additional Prices */}
-                          {product.price3weeksDelivery &&
-                            product.price3weeksDelivery !== product.price && (
-                              <div className="text-xs text-orange-600">
-                                3W:{' '}
-                                {DisplayPriceInNaira(
-                                  product.price3weeksDelivery
-                                )}
-                              </div>
-                            )}
-
-                          {product.price5weeksDelivery &&
-                            product.price5weeksDelivery !== product.price && (
-                              <div className="text-xs text-red-600">
-                                5W:{' '}
-                                {DisplayPriceInNaira(
-                                  product.price5weeksDelivery
-                                )}
-                              </div>
-                            )}
+                          {/* Single applicable price — previously stacked the
+                              regular price plus BOTH delivery prices whenever
+                              they differed from it, which is the same
+                              "two prices at once" issue fixed on the
+                              customer-facing product card/detail page. Uses
+                              the same priority rule: stock available →
+                              regular price; no stock → the one delivery
+                              price matching the product's category. See
+                              utils/getApplicablePrice.js and
+                              PRODUCT_VISIBILITY_RULES.md §3a. */}
+                          {(() => {
+                            const applicable = getApplicablePrice(product);
+                            if (!applicable) {
+                              return (
+                                <div className="text-sm text-gray-400 italic">
+                                  No price set
+                                </div>
+                              );
+                            }
+                            return (
+                              <>
+                                <div
+                                  className={`text-sm font-medium ${
+                                    applicable.key === "regular"
+                                      ? "text-green-600"
+                                      : applicable.key === "5weeks"
+                                        ? "text-red-600"
+                                        : "text-orange-600"
+                                  }`}
+                                >
+                                  {DisplayPriceInNaira(applicable.price)}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {applicable.deliveryText}
+                                </div>
+                              </>
+                            );
+                          })()}
 
                           {/* Discount Badge */}
                           {product.discount > 0 && (

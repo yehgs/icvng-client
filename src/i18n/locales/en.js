@@ -713,6 +713,7 @@ const en = {
     continueShopping: "Continue Shopping",
     product: "Product",
     price: "Price",
+    noPriceAvailable: "No price available",
     status: "Status",
     actions: "Actions",
     available: "Available",
@@ -844,6 +845,12 @@ const en = {
     regularPrice: "Regular Price",
     twoWeeksPrice: "2 Weeks Price",
     fiveWeeksPrice: "5 Weeks Price",
+    // Replaces the three keys above in the comparison table — see
+    // PRODUCT_VISIBILITY_RULES.md §3a. The old keys are left in place
+    // (unused by ComparePage.jsx now) rather than removed, since deleting
+    // a locale key is a breaking change for any other place that might
+    // reference it and for the fr/it/etc. translations of it.
+    price: "Price",
     discount: "Discount",
     weight: "Weight",
     packaging: "Packaging",

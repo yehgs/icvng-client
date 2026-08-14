@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import { valideURLConvert } from "../utils/valideURLConvert";
 import { updateCompareCount } from "../utils/eventUtils";
+import { getApplicablePrice } from "../utils/getApplicablePrice";
 import { useCurrency } from "../provider/GlobalProvider";
 import { useCountry } from "../context/CountryContext";
 import {
@@ -169,14 +170,16 @@ const ComparePage = () => {
     if (compareItems.length === 0) return [];
 
     const attributes = [
-      {
-        key: "price",
-        label: t('compare.regularPrice'),
-        type: "price",
-        priceKey: "btcPrice",
-      },
-      { key: "price3weeksDelivery", label: t('compare.twoWeeksPrice'), type: "price" },
-      { key: "price5weeksDelivery", label: t('compare.fiveWeeksPrice'), type: "price" },
+      // Single price row — previously three separate rows (Regular Price,
+      // 2 Weeks Price, 5 Weeks Price), which meant every product showed
+      // "-" for whichever two didn't apply to it AND, worse, could show
+      // two real prices side by side for a product that had both a
+      // regular price and a delivery price configured — the exact
+      // "at no point should two prices be displayed" issue fixed on the
+      // product card/detail page. This uses the same priority rule (see
+      // utils/getApplicablePrice.js): stock available → regular price;
+      // no stock → the one delivery price matching the product's category.
+      { key: "applicablePrice", label: t('compare.price') || "Price", type: "applicablePrice" },
       { key: "discount", label: t('compare.discount'), type: "percentage" },
       { key: "weight", label: t('compare.weight'), type: "text" },
       { key: "packaging", label: t('compare.packaging'), type: "text" },
@@ -197,6 +200,7 @@ const ComparePage = () => {
     // Filter attributes that have values in at least one product
     return attributes.filter((attr) =>
       compareItems.some((item) => {
+        if (attr.type === "applicablePrice") return getApplicablePrice(item) !== null;
         const value = attr.priceKey ? item[attr.priceKey] : item[attr.key];
         return value && value !== "";
       })
@@ -204,6 +208,29 @@ const ComparePage = () => {
   };
 
   const renderAttributeValue = (item, attribute) => {
+    if (attribute.type === "applicablePrice") {
+      const applicable = getApplicablePrice(item);
+      if (!applicable) return <span className="text-gray-400">-</span>;
+      // Only the regular price (key === "regular") is subject to the
+      // product's discount — a delivery-window special-order price is a
+      // fixed quote, not something a % discount applies on top of.
+      const displayPrice =
+        applicable.key === "regular"
+          ? pricewithDiscount(applicable.price, item.discount || 0)
+          : applicable.price;
+      return (
+        <div>
+          <div className="font-semibold text-green-600">{formatPrice(displayPrice)}</div>
+          {applicable.key === "regular" && item.discount > 0 && (
+            <div className="text-xs text-gray-500 line-through">
+              {formatPrice(applicable.price)}
+            </div>
+          )}
+          <div className="text-xs text-gray-500">{applicable.deliveryText}</div>
+        </div>
+      );
+    }
+
     const value = attribute.priceKey
       ? item[attribute.priceKey]
       : item[attribute.key];

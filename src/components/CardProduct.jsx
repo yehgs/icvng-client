@@ -119,42 +119,59 @@ const CardProduct = ({ data }) => {
   };
 
   const getPricingOptions = () => {
-    const options = [];
     const primaryPrice = getPrimaryPrice(data);
     const isPartnerProduct = data.partnerStock?.enabled === true;
     const partnerQty = data.partnerStock?.quantity || 0;
 
-    // Regular / fast price:
-    // Show if onlineStock > 0 (warehouse) OR if partner product with stock
-    // Hide if no physical stock available — don't reveal internal stock status to users
+    // Exactly ONE option is ever returned — never both a regular price and
+    // a special-order price at once. Priority order (matches
+    // PRODUCT_VISIBILITY_RULES.md §3 exactly, applied as an either/or
+    // display rule rather than the previous "show every option that has a
+    // price set" behavior):
+    //   1. Stock available (warehouse OR partner) → regular price only,
+    //      labeled "1-3 business days" either way — the doc's own
+    //      glossary defines "Regular Price" as "fulfilled from in-house/
+    //      partner stock (1-3 business days)", so partner-stock items
+    //      should never say "Special Order" even though they're not
+    //      warehouse stock. (Previously they did — a separate mislabeling
+    //      bug fixed here alongside the two-prices-at-once issue.)
+    //   2. No stock at all → the one delivery price that matches this
+    //      product's category (5-week for Machine/coffee-maker/
+    //      capsule-machine, 2-week/"3weeks" for everything else) — never
+    //      the regular price, regardless of whether btcPrice happens to
+    //      be set.
     const hasAvailableStock =
       onlineStock > 0 || (isPartnerProduct && partnerQty > 0);
 
     if (primaryPrice > 0 && hasAvailableStock) {
-      options.push({
-        price: primaryPrice,
-        label: onlineStock > 0 ? t("product.oneToThreeDays") : t("product.specialOrder"),
-        icon: <FaShippingFast className="w-3 h-3" />,
-        color: "text-green-600",
-        bgColor: "bg-green-50",
-        key: "regular",
-      });
+      return [
+        {
+          price: primaryPrice,
+          label: t("product.oneToThreeDays"),
+          icon: <FaShippingFast className="w-3 h-3" />,
+          color: "text-green-600",
+          bgColor: "bg-green-50",
+          key: "regular",
+        },
+      ];
     }
 
     if (showFiveWeekDelivery) {
       if (data.price5weeksDelivery > 0) {
-        options.push({
-          price: data.price5weeksDelivery,
-          label: t("product.fiveWeeksDelivery"),
-          icon: <FaCalendarAlt className="w-3 h-3" />,
-          color: "text-red-600",
-          bgColor: "bg-red-50",
-          key: "5weeks",
-        });
+        return [
+          {
+            price: data.price5weeksDelivery,
+            label: t("product.fiveWeeksDelivery"),
+            icon: <FaCalendarAlt className="w-3 h-3" />,
+            color: "text-red-600",
+            bgColor: "bg-red-50",
+            key: "5weeks",
+          },
+        ];
       }
-    } else {
-      if (data.price3weeksDelivery > 0) {
-        options.push({
+    } else if (data.price3weeksDelivery > 0) {
+      return [
+        {
           price: data.price3weeksDelivery,
           // NOTE: shown to shoppers as "2 weeks" while the backend field/key
           // remains price3weeksDelivery/"3weeks" — display label only, the
@@ -164,10 +181,11 @@ const CardProduct = ({ data }) => {
           color: "text-orange-600",
           bgColor: "bg-orange-50",
           key: "3weeks",
-        });
-      }
+        },
+      ];
     }
-    return options;
+
+    return [];
   };
 
   useEffect(() => {

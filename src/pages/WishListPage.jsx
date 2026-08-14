@@ -5,6 +5,7 @@ import { DisplayPriceInNaira } from "../utils/DisplayPriceInNaira";
 import { pricewithDiscount } from "../utils/PriceWithDiscount";
 import { valideURLConvert } from "../utils/valideURLConvert";
 import { updateWishlistCount } from "../utils/eventUtils";
+import { getApplicablePrice } from "../utils/getApplicablePrice";
 import {
   FaHeart,
   FaRegHeart,
@@ -310,10 +311,21 @@ const WishlistPage = () => {
                     const productUrl = `/product/${valideURLConvert(
                       item.name
                     )}-${item._id}`;
-                    const price = pricewithDiscount(
-                      item.btcPrice || item.price || 0,
-                      item.discount || 0
-                    );
+                    // Was previously always item.btcPrice || item.price,
+                    // regardless of stock — a wishlisted item with no
+                    // stock would show its regular "ships in 1-3 days"
+                    // price as if it were actually available at that
+                    // speed, instead of the real 2/5-week special-order
+                    // price (or, worse, showing nothing useful if btcPrice/
+                    // price were both unset while a delivery price
+                    // existed). Same priority rule as the product card/
+                    // detail page now — see utils/getApplicablePrice.js.
+                    const applicable = getApplicablePrice(item);
+                    const price = applicable
+                      ? applicable.key === "regular"
+                        ? pricewithDiscount(applicable.price, item.discount || 0)
+                        : applicable.price
+                      : null;
                     const isAvailable = item.productAvailability;
 
                     return (
@@ -361,14 +373,23 @@ const WishlistPage = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">
-                            {DisplayPriceInNaira(price)}
-                          </div>
-                          {Boolean(item.discount) && (
-                            <div className="text-xs text-gray-500 line-through">
-                              {DisplayPriceInNaira(
-                                item.btcPrice || item.price || 0
+                          {applicable ? (
+                            <>
+                              <div className="text-sm font-medium text-gray-900">
+                                {DisplayPriceInNaira(price)}
+                              </div>
+                              {applicable.key === "regular" && Boolean(item.discount) && (
+                                <div className="text-xs text-gray-500 line-through">
+                                  {DisplayPriceInNaira(applicable.price)}
+                                </div>
                               )}
+                              <div className="text-xs text-gray-500">
+                                {applicable.deliveryText}
+                              </div>
+                            </>
+                          ) : (
+                            <div className="text-sm text-gray-400 italic">
+                              {t('wishlist.noPriceAvailable') || "No price available"}
                             </div>
                           )}
                         </td>
