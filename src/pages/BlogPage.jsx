@@ -17,8 +17,10 @@ import {
 import Axios from '../utils/Axios';
 import SummaryApi from '../common/SummaryApi';
 import { useBulkEntityTranslation } from '../hooks/useBulkEntityTranslation.js';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 const BlogPage = () => {
+  const { t } = useTranslation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -275,7 +277,7 @@ const BlogPage = () => {
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            <span>{post.readTime} min</span>
+            <span>{t("blog.minutesRead", { count: post.readTime })}</span>
           </div>
         </div>
 
@@ -308,14 +310,14 @@ const BlogPage = () => {
             to={`/blog/${post.slug}`}
             className="flex items-center text-amber-700 font-medium hover:text-amber-800 transition-colors"
           >
-            <span className="text-sm">Read More</span>
+            <span className="text-sm">{t("blog.readMore")}</span>
             <ArrowRight
               size={16}
               className="ml-1 group-hover:translate-x-1 transition-transform duration-300"
             />
           </Link>
           {post.views && (
-            <span className="text-xs text-gray-400">{post.views} views</span>
+            <span className="text-xs text-gray-400">{t("blog.viewsCount", { count: post.views })}</span>
           )}
         </div>
       </div>
@@ -329,10 +331,10 @@ const BlogPage = () => {
         <div className="container mx-auto px-4 text-center">
           <div className="flex items-center justify-center mb-4">
             <Coffee className="w-12 h-12 mr-4" />
-            <h1 className="text-4xl md:text-5xl font-bold">Coffee Blog</h1>
+            <h1 className="text-4xl md:text-5xl font-bold">{t("header.coffeeBlog")}</h1>
           </div>
           <p className="text-xl md:text-2xl mb-8 opacity-90">
-            Stories, insights, and knowledge from the world of coffee
+            {t("blog.subtitle")}
           </p>
 
           {/* Search Bar */}
@@ -341,7 +343,7 @@ const BlogPage = () => {
               <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search coffee stories, origins, brewing techniques..."
+                placeholder={t("blog.searchPlaceholder")}
                 className="w-full pl-12 pr-4 py-4 rounded-lg text-gray-800 text-lg focus:outline-none focus:ring-2 focus:ring-amber-300"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -350,7 +352,7 @@ const BlogPage = () => {
                 type="submit"
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-amber-600 text-white px-6 py-2 rounded-lg hover:bg-amber-700 transition-colors"
               >
-                Search
+                {t("blog.searchButton")}
               </button>
             </div>
           </form>
@@ -363,19 +365,19 @@ const BlogPage = () => {
           <div className="lg:w-1/4">
             <div className="bg-white rounded-lg shadow-md p-6 sticky top-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold text-gray-800">Filters</h3>
+                <h3 className="text-lg font-semibold text-gray-800">{t("blog.filters")}</h3>
                 <button
                   onClick={clearFilters}
                   className="text-sm text-amber-600 hover:text-amber-700 flex items-center gap-1"
                 >
                   <X className="w-4 h-4" />
-                  Clear All
+                  {t("blog.clearAll")}
                 </button>
               </div>
 
               {/* Categories Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-3">Categories</h4>
+                <h4 className="font-medium text-gray-700 mb-3">{t("blog.categories")}</h4>
                 <div className="space-y-2">
                   <button
                     onClick={() => setSelectedCategory('')}
@@ -385,7 +387,7 @@ const BlogPage = () => {
                         : 'hover:bg-gray-100'
                     }`}
                   >
-                    All Categories
+                    {t("blog.allCategories")}
                   </button>
                   {translatedCategories.map((category) => (
                     <button
@@ -410,7 +412,7 @@ const BlogPage = () => {
 
               {/* Tags Filter */}
               <div className="mb-6">
-                <h4 className="font-medium text-gray-700 mb-3">Popular Tags</h4>
+                <h4 className="font-medium text-gray-700 mb-3">{t("blog.popularTags")}</h4>
                 <div className="flex flex-wrap gap-2">
                   {translatedTags.slice(0, 10).map((tag) => (
                     <button
@@ -433,7 +435,7 @@ const BlogPage = () => {
 
               {/* Sort Options */}
               <div>
-                <h4 className="font-medium text-gray-700 mb-3">Sort By</h4>
+                <h4 className="font-medium text-gray-700 mb-3">{t("blog.sortBy")}</h4>
                 <select
                   value={`${sortBy}-${sortOrder}`}
                   onChange={(e) => {
@@ -443,10 +445,10 @@ const BlogPage = () => {
                   }}
                   className="w-full py-2 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500"
                 >
-                  <option value="publishedAt-desc">Latest First</option>
-                  <option value="publishedAt-asc">Oldest First</option>
-                  <option value="views-desc">Most Popular</option>
-                  <option value="title-asc">Title A-Z</option>
+                  <option value="publishedAt-desc">{t("blog.sortLatestFirst")}</option>
+                  <option value="publishedAt-asc">{t("blog.sortOldestFirst")}</option>
+                  <option value="views-desc">{t("blog.sortMostPopular")}</option>
+                  <option value="title-asc">{t("blog.sortTitleAZ")}</option>
                 </select>
               </div>
             </div>
@@ -458,13 +460,13 @@ const BlogPage = () => {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
               <div className="flex items-center gap-2">
                 <span className="text-gray-600">
-                  {posts.length} posts found
+                  {t("blog.postsFound", { count: posts.length })}
                 </span>
                 {(searchQuery || selectedCategory || selectedTag) && (
                   <div className="flex flex-wrap gap-2">
                     {searchQuery && (
                       <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-100 text-amber-800 text-xs rounded-full">
-                        Search: {searchQuery}
+                        {t("blog.searchLabel", { query: searchQuery })}
                         <button onClick={() => setSearchQuery('')}>
                           <X className="w-3 h-3" />
                         </button>
@@ -546,7 +548,7 @@ const BlogPage = () => {
                         disabled={currentPage === 1}
                         className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                       >
-                        Previous
+                        {t("blog.previous")}
                       </button>
 
                       {Array.from(
@@ -576,7 +578,7 @@ const BlogPage = () => {
                         disabled={currentPage === totalPages}
                         className="px-4 py-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                       >
-                        Next
+                        {t("blog.next")}
                       </button>
                     </div>
                   </div>
@@ -586,16 +588,16 @@ const BlogPage = () => {
               <div className="text-center py-12">
                 <Coffee className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                  No posts found
+                  {t("blog.noPostsFoundHeading")}
                 </h3>
                 <p className="text-gray-500 mb-4">
-                  Try adjusting your search criteria or browse all posts.
+                  {t("blog.noPostsFoundMessage")}
                 </p>
                 <button
                   onClick={clearFilters}
                   className="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
                 >
-                  Clear Filters
+                  {t("blog.clearFiltersButton")}
                 </button>
               </div>
             )}

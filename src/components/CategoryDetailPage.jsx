@@ -14,8 +14,10 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import noDataImage from '../assets/nothing here yet.webp';
 import ShopFilter from '../components/EnhancedShopFilter';
 import { FaSearch, FaChevronRight } from 'react-icons/fa';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 const CategoryDetailPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { categorySlug, subcategorySlug, brandSlug } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -91,10 +93,10 @@ const CategoryDetailPage = () => {
     setSubcategoryName('');
     setBrandId('');
     setBrandName('');
-    setPageTitle('All Products');
+    setPageTitle(t("homeSections.allProducts"));
     setBreadcrumbs([
-      { label: 'Home', url: '/' },
-      { label: 'Shop', url: '/shop' },
+      { label: t("nav.home"), url: '/' },
+      { label: t("nav.shop"), url: '/shop' },
     ]);
 
     // Only reset filter state that's not derived from URL
@@ -371,7 +373,7 @@ const CategoryDetailPage = () => {
     } else if (bName) {
       title = bName;
     } else {
-      title = 'All Products';
+      title = t("homeSections.allProducts");
     }
 
     console.log('Setting page title:', title);
@@ -381,8 +383,8 @@ const CategoryDetailPage = () => {
   // Generate breadcrumbs based on available parameters
   const generateBreadcrumbs = (catName, subCatName, bName) => {
     const crumbs = [
-      { label: 'Home', url: '/' },
-      { label: 'Shop', url: '/shop' },
+      { label: t("nav.home"), url: '/' },
+      { label: t("nav.shop"), url: '/shop' },
     ];
 
     if (catName) {
@@ -783,14 +785,14 @@ const CategoryDetailPage = () => {
         {/* Error message if parameters couldn't be resolved */}
         {resolutionError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <h3 className="font-bold">Error</h3>
+            <h3 className="font-bold">{t("common.error")}</h3>
             <p>{resolutionError}</p>
-            <p>The URL may contain invalid parameters.</p>
+            <p>{t("categoryPage.invalidUrlParams")}</p>
             <button
               onClick={handleBackToShop}
               className="mt-2 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
             >
-              Back to Shop
+              {t("categoryPage.backToShop")}
             </button>
           </div>
         )}
@@ -825,7 +827,7 @@ const CategoryDetailPage = () => {
                 <div>
                   <h1 className="text-xl font-bold">{pageTitle}</h1>
                   <p className="text-gray-600 text-sm">
-                    Showing {products.length} of {totalCount} products
+                    {t("categoryPage.showingProducts", { count: products.length, total: totalCount })}
                   </p>
                 </div>
 
@@ -839,7 +841,7 @@ const CategoryDetailPage = () => {
                       type="text"
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      placeholder="Search coffee products..."
+                      placeholder={t("categoryPage.searchPlaceholder")}
                       className="w-full md:w-64 pr-10 pl-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                     />
                     <button
@@ -858,7 +860,7 @@ const CategoryDetailPage = () => {
                 hasMore={page < totalPage}
                 loader={
                   <div className="text-center py-4">
-                    Loading more products...
+                    {t("categoryPage.loadingMoreProducts")}
                   </div>
                 }
               >
@@ -883,12 +885,12 @@ const CategoryDetailPage = () => {
                 <div className="flex flex-col justify-center items-center w-full mx-auto py-10">
                   <img
                     src={noDataImage}
-                    alt="No results found"
+                    alt={t("categoryPage.noResultsFound")}
                     className="w-full h-full max-w-xs max-h-xs block"
                   />
-                  <p className="font-semibold my-2">No products found</p>
+                  <p className="font-semibold my-2">{t("categoryPage.noProductsFound")}</p>
                   <p className="text-gray-500 text-center">
-                    Try adjusting your search or filter criteria
+                    {t("categoryPage.adjustSearchOrFilter")}
                   </p>
                 </div>
               )}

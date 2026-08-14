@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useSitePage } from "../hooks/useSitePage";
+import { useTranslation } from "../hooks/useTranslation.js";
 
 // Nigeria-authored baseline. Facts like "free shipping within Lagos" or
 // "36 states" are NG-specific and get overridden per country in the CMS
@@ -88,6 +89,7 @@ const DEFAULTS = {
 const METHOD_ICONS = { shippingFast: FaShippingFast, truck: FaTruck };
 
 const ShippingPolicy = () => {
+  const { t } = useTranslation();
   const { get } = useSitePage("shipping-policy", DEFAULTS);
 
   const stats = get("stats", DEFAULTS.stats);
@@ -350,22 +352,22 @@ const ShippingPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-6">
-              Questions About Shipping?
+              {t("policyPages.questionsAboutShipping")}
             </h2>
             <p className="text-xl text-gray-300 mb-8">
-              Our customer service team is ready to assist you
+              {t("policyPages.customerServiceReady")}
             </p>
 
             <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaPhone className="text-3xl mx-auto mb-4" />
-                <h3 className="font-semibold mb-2">Call Us</h3>
+                <h3 className="font-semibold mb-2">{t("policyPages.callUs")}</h3>
                 <p className="text-gray-300">{get("contactPhone", DEFAULTS.contactPhone)}</p>
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaEnvelope className="text-3xl mx-auto mb-4" />
-                <h3 className="font-semibold mb-2">Email Us</h3>
+                <h3 className="font-semibold mb-2">{t("policyPages.emailUs")}</h3>
                 <p className="text-gray-300">{get("contactEmail", DEFAULTS.contactEmail)}</p>
               </div>
             </div>
@@ -375,7 +377,7 @@ const ShippingPolicy = () => {
                 to="/faq"
                 className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-semibold transition"
               >
-                View FAQ
+                {t("policyPages.viewFaq")}
               </Link>
             </div>
           </div>

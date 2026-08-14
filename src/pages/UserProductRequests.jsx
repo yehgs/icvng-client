@@ -8,8 +8,10 @@ import AxiosToastError from '../utils/AxiosToastError';
 import { setUserRequests } from '../store/productRequestSlice';
 import { formatDistanceToNow } from 'date-fns';
 import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 const UserProductRequests = () => {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { userRequests } = useSelector((state) => state.productRequest);
   const [loading, setLoading] = useState(false);
@@ -55,12 +57,12 @@ const UserProductRequests = () => {
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-semibold mb-6">My Product Requests</h1>
+      <h1 className="text-2xl font-semibold mb-6">{t("userProductRequests.heading")}</h1>
 
       {loading ? (
         <Loading />
       ) : userRequests.length === 0 ? (
-        <NoData message="You haven't made any product requests yet" />
+        <NoData message={t("userProductRequests.noRequestsYet")} />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {userRequests.map((request) => (
@@ -96,12 +98,12 @@ const UserProductRequests = () => {
                     />
                   ) : (
                     <div className="w-16 h-16 bg-gray-200 rounded mr-3 flex items-center justify-center">
-                      <span className="text-xs text-gray-500">No image</span>
+                      <span className="text-xs text-gray-500">{t("userProductRequests.noImage")}</span>
                     </div>
                   )}
                   <div>
                     <h3 className="font-medium">
-                      {request.product?.name || 'Unknown Product'}
+                      {request.product?.name || t("userProductRequests.unknownProduct")}
                     </h3>
                     <div className="text-sm text-gray-600 mt-1">
                       {DisplayPriceInNaira(request.product?.price || 0)}
@@ -111,12 +113,12 @@ const UserProductRequests = () => {
 
                 <div className="mb-3">
                   <div className="text-sm">
-                    <span className="font-medium">Quantity:</span>{' '}
+                    <span className="font-medium">{t("userProductRequests.quantityLabel")}</span>{' '}
                     {request.quantity}
                   </div>
                   {request.message && (
                     <div className="mt-2 text-sm">
-                      <span className="font-medium">My message:</span>
+                      <span className="font-medium">{t("userProductRequests.myMessageLabel")}</span>
                       <p className="mt-1 text-gray-700 bg-gray-50 p-2 rounded text-xs">
                         {request.message}
                       </p>
@@ -127,7 +129,7 @@ const UserProductRequests = () => {
                 {request.adminNotes && (
                   <div className="border-t pt-3 mb-3">
                     <div className="text-sm">
-                      <span className="font-medium">Admin notes:</span>
+                      <span className="font-medium">{t("userProductRequests.adminNotesLabel")}</span>
                       <p className="mt-1 text-gray-700 bg-blue-50 p-2 rounded text-xs">
                         {request.adminNotes}
                       </p>
@@ -143,7 +145,7 @@ const UserProductRequests = () => {
                     onClick={() => setSelectedRequest(request)}
                     className="text-sm text-green-600 hover:text-green-800"
                   >
-                    View Details
+                    {t("userProductRequests.viewDetails")}
                   </button>
                 </div>
               </div>
@@ -158,7 +160,7 @@ const UserProductRequests = () => {
           <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold text-gray-800">
-                Request Details
+                {t("userProductRequests.requestDetails")}
               </h2>
               <button
                 onClick={() => setSelectedRequest(null)}
@@ -184,7 +186,7 @@ const UserProductRequests = () => {
             <div className="bg-gray-50 p-4 rounded-lg mb-4">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-medium text-gray-800">
-                  Product Information
+                  {t("userProductRequests.productInformation")}
                 </h3>
                 <span
                   className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(
@@ -205,15 +207,15 @@ const UserProductRequests = () => {
                   />
                 ) : (
                   <div className="w-20 h-20 bg-gray-200 rounded mr-3 flex items-center justify-center">
-                    <span className="text-sm text-gray-500">No image</span>
+                    <span className="text-sm text-gray-500">{t("userProductRequests.noImage")}</span>
                   </div>
                 )}
                 <div>
                   <div className="font-medium">
-                    {selectedRequest.product?.name || 'Unknown Product'}
+                    {selectedRequest.product?.name || t("userProductRequests.unknownProduct")}
                   </div>
                   <div className="text-sm text-gray-600 mt-1">
-                    Price:{' '}
+                    {t("userProductRequests.priceLabel")}{' '}
                     {DisplayPriceInNaira(selectedRequest.product?.price || 0)}
                   </div>
                 </div>
@@ -221,16 +223,16 @@ const UserProductRequests = () => {
 
               <div className="text-sm">
                 <div className="mb-2">
-                  <span className="font-medium">Requested Quantity:</span>{' '}
+                  <span className="font-medium">{t("userProductRequests.requestedQuantityLabel")}</span>{' '}
                   {selectedRequest.quantity}
                 </div>
                 <div className="mb-2">
-                  <span className="font-medium">Request Date:</span>{' '}
+                  <span className="font-medium">{t("userProductRequests.requestDateLabel")}</span>{' '}
                   {new Date(selectedRequest.createdAt).toLocaleString()}
                 </div>
                 {selectedRequest.updatedAt !== selectedRequest.createdAt && (
                   <div className="mb-2">
-                    <span className="font-medium">Last Updated:</span>{' '}
+                    <span className="font-medium">{t("userProductRequests.lastUpdatedLabel")}</span>{' '}
                     {new Date(selectedRequest.updatedAt).toLocaleString()}
                   </div>
                 )}
@@ -240,7 +242,7 @@ const UserProductRequests = () => {
             {/* Customer Message */}
             {selectedRequest.message && (
               <div className="mb-4 bg-amber-50 p-4 rounded-lg">
-                <h3 className="font-medium text-gray-800 mb-2">Your Message</h3>
+                <h3 className="font-medium text-gray-800 mb-2">{t("userProductRequests.yourMessage")}</h3>
                 <p className="text-gray-700 text-sm">
                   {selectedRequest.message}
                 </p>
@@ -250,7 +252,7 @@ const UserProductRequests = () => {
             {/* Admin Notes */}
             {selectedRequest.adminNotes && (
               <div className="mb-4 bg-blue-50 p-4 rounded-lg">
-                <h3 className="font-medium text-gray-800 mb-2">Admin Notes</h3>
+                <h3 className="font-medium text-gray-800 mb-2">{t("userProductRequests.adminNotes")}</h3>
                 <p className="text-gray-700 text-sm">
                   {selectedRequest.adminNotes}
                 </p>
@@ -260,35 +262,31 @@ const UserProductRequests = () => {
             {/* Status Information */}
             <div className="p-4 rounded-lg mb-4">
               <h3 className="font-medium text-gray-800 mb-2">
-                Status Information
+                {t("userProductRequests.statusInformation")}
               </h3>
 
               <div className="text-sm space-y-2">
                 {selectedRequest.status === 'PENDING' && (
                   <p>
-                    Your request is pending review by our team. We'll process it
-                    as soon as possible.
+                    {t("userProductRequests.statusPendingMessage")}
                   </p>
                 )}
 
                 {selectedRequest.status === 'PROCESSING' && (
                   <p>
-                    Your request is currently being processed. Our team is
-                    working on it.
+                    {t("userProductRequests.statusProcessingMessage")}
                   </p>
                 )}
 
                 {selectedRequest.status === 'COMPLETED' && (
                   <p>
-                    Your request has been completed. Please contact us if you
-                    have any questions.
+                    {t("userProductRequests.statusCompletedMessage")}
                   </p>
                 )}
 
                 {selectedRequest.status === 'REJECTED' && (
                   <p>
-                    Your request could not be fulfilled. Please check the admin
-                    notes for more information or contact our support team.
+                    {t("userProductRequests.statusRejectedMessage")}
                   </p>
                 )}
               </div>
@@ -299,7 +297,7 @@ const UserProductRequests = () => {
                 onClick={() => setSelectedRequest(null)}
                 className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
               >
-                Close
+                {t("userProductRequests.close")}
               </button>
             </div>
           </div>

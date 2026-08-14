@@ -8,9 +8,11 @@ import AxiosToastError from '../utils/AxiosToastError';
 import toast from 'react-hot-toast';
 import { setUserDetails } from '../store/userSlice';
 import fetchUserDetails from '../utils/fetchUserDetails';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 
 const Profile = () => {
+    const { t } = useTranslation();
     const user = useSelector(state => state.user)
     const [openProfileAvatarEdit,setProfileAvatarEdit] = useState(false)
     const [userData,setUserData] = useState({
@@ -82,7 +84,7 @@ const Profile = () => {
                 )
             }
         </div>
-        <button onClick={()=>setProfileAvatarEdit(true)} className='text-sm min-w-20 border border-primary-100 hover:border-primary-200 hover:bg-primary-200 px-3 py-1 rounded-full mt-3'>Edit</button>
+        <button onClick={()=>setProfileAvatarEdit(true)} className='text-sm min-w-20 border border-primary-100 hover:border-primary-200 hover:bg-primary-200 px-3 py-1 rounded-full mt-3'>{t("common.edit")}</button>
         
         {
             openProfileAvatarEdit && (
@@ -93,10 +95,10 @@ const Profile = () => {
         {/**name, mobile , email, change password */}
         <form className='my-4 grid gap-4' onSubmit={handleSubmit}>
             <div className='grid'>
-                <label>Name</label>
+                <label>{t("profile.name")}</label>
                 <input
                     type='text'
-                    placeholder='Enter your name' 
+                    placeholder={t("profile.enterYourName")} 
                     className='p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded'
                     value={userData.name}
                     name='name'
@@ -105,11 +107,11 @@ const Profile = () => {
                 />
             </div>
             <div className='grid'>
-                <label htmlFor='email'>Email</label>
+                <label htmlFor='email'>{t("profile.email")}</label>
                 <input
                     type='email'
                     id='email'
-                    placeholder='Enter your email' 
+                    placeholder={t("profile.enterYourEmail")} 
                     className='p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded'
                     value={userData.email}
                     name='email'
@@ -118,11 +120,11 @@ const Profile = () => {
                 />
             </div>
             <div className='grid'>
-                <label htmlFor='mobile'>Mobile</label>
+                <label htmlFor='mobile'>{t("profile.mobile")}</label>
                 <input
                     type='text'
                     id='mobile'
-                    placeholder='Enter your mobile' 
+                    placeholder={t("profile.enterYourMobile")} 
                     className='p-2 bg-blue-50 outline-none border focus-within:border-primary-200 rounded'
                     value={userData.mobile}
                     name='mobile'
@@ -133,7 +135,7 @@ const Profile = () => {
 
             <button className='border px-4 py-2 font-semibold hover:bg-primary-100 border-primary-100 text-primary-200 hover:text-neutral-800 rounded'>
                 {
-                    loading ? "Loading..." : "Submit"
+                    loading ? t("common.loading") : t("common.submit")
                 }
             </button>
         </form>

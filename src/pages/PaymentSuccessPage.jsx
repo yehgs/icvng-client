@@ -8,8 +8,10 @@ import {
   FaReceipt,
   FaHome,
 } from 'react-icons/fa';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 const PaymentSuccessPage = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchCartItem, fetchOrder } = useGlobalContext();
@@ -44,16 +46,16 @@ const PaymentSuccessPage = () => {
             <FaCheckCircle className="text-green-500 text-5xl" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Payment Successful!
+            {t("paymentSuccess.heading")}
           </h1>
-          <p className="text-green-100 text-lg">Thank you for your order</p>
+          <p className="text-green-100 text-lg">{t("paymentSuccess.thankYou")}</p>
         </div>
 
         {/* Order Details */}
         <div className="p-8">
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              What happens next?
+              {t("paymentSuccess.whatHappensNext")}
             </h2>
 
             <div className="space-y-4">
@@ -65,11 +67,10 @@ const PaymentSuccessPage = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                     <FaReceipt className="text-blue-500" />
-                    Order Confirmation
+                    {t("paymentSuccess.orderConfirmationTitle")}
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    You'll receive an email confirmation with your order details
-                    shortly.
+                    {t("paymentSuccess.orderConfirmationDesc")}
                   </p>
                 </div>
               </div>
@@ -82,10 +83,10 @@ const PaymentSuccessPage = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                     <FaBox className="text-purple-500" />
-                    Order Processing
+                    {t("paymentSuccess.orderProcessingTitle")}
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    We'll start preparing your order for shipment.
+                    {t("paymentSuccess.orderProcessingDesc")}
                   </p>
                 </div>
               </div>
@@ -98,11 +99,10 @@ const PaymentSuccessPage = () => {
                 <div className="flex-1">
                   <h3 className="font-semibold text-gray-800 flex items-center gap-2">
                     <FaShippingFast className="text-orange-500" />
-                    Shipping Updates
+                    {t("paymentSuccess.shippingUpdatesTitle")}
                   </h3>
                   <p className="text-sm text-gray-600 mt-1">
-                    Track your order status in the Orders section of your
-                    account.
+                    {t("paymentSuccess.shippingUpdatesDesc")}
                   </p>
                 </div>
               </div>
@@ -113,26 +113,26 @@ const PaymentSuccessPage = () => {
           {orderDetails && (
             <div className="mb-8 p-4 bg-gray-50 rounded-lg">
               <h3 className="font-semibold text-gray-800 mb-3">
-                Order Summary
+                {t("paymentSuccess.orderSummary")}
               </h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Order Reference:</span>
+                  <span className="text-gray-600">{t("paymentSuccess.orderReference")}</span>
                   <span className="font-medium text-gray-800">
                     {orderDetails.reference ||
                       orderDetails.orderId ||
-                      'Processing...'}
+                      t("paymentSuccess.processingEllipsis")}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Method:</span>
+                  <span className="text-gray-600">{t("paymentSuccess.paymentMethodLabel")}</span>
                   <span className="font-medium text-gray-800">
                     {paymentMethod}
                   </span>
                 </div>
                 {orderDetails.amount && (
                   <div className="flex justify-between border-t pt-2 mt-2">
-                    <span className="text-gray-600">Amount Paid:</span>
+                    <span className="text-gray-600">{t("paymentSuccess.amountPaid")}</span>
                     <span className="font-bold text-green-600 text-lg">
                       ₦{orderDetails.amount?.toLocaleString()}
                     </span>
@@ -149,14 +149,14 @@ const PaymentSuccessPage = () => {
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               <FaBox />
-              View My Orders
+              {t("paymentSuccess.viewMyOrders")}
             </button>
 
             <button
               onClick={handleContinueShopping}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md"
             >
-              Continue Shopping
+              {t("paymentSuccess.continueShopping")}
             </button>
 
             <button
@@ -164,14 +164,14 @@ const PaymentSuccessPage = () => {
               className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <FaHome />
-              Back to Home
+              {t("paymentSuccess.backToHome")}
             </button>
           </div>
 
           {/* Help Text */}
           <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="text-sm text-blue-800 text-center">
-              <strong>Need help?</strong> Contact our customer support at{' '}
+              <strong>{t("paymentSuccess.needHelp")}</strong> {t("paymentSuccess.contactSupport")}{' '}
               <a
                 href="mailto:customercare@i-coffee.ng"
                 className="underline hover:text-blue-600"

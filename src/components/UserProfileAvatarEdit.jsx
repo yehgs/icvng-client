@@ -6,8 +6,10 @@ import SummaryApi from '../common/SummaryApi'
 import AxiosToastError from '../utils/AxiosToastError'
 import { updatedAvatar } from '../store/userSlice'
 import { IoClose } from "react-icons/io5";
+import { useTranslation } from '../hooks/useTranslation.js';
 
 const UserProfileAvatarEdit = ({close}) => {
+    const { t } = useTranslation();
     const user = useSelector(state => state.user)
     const dispatch = useDispatch()
     const [loading,setLoading] = useState(false)
@@ -66,7 +68,7 @@ const UserProfileAvatarEdit = ({close}) => {
                 <label htmlFor='uploadProfile'>
                     <div className='border border-primary-200 cursor-pointer hover:bg-primary-200 px-4 py-1 rounded text-sm my-3'>
                         {
-                            loading ? "Loading..." : "Upload"
+                            loading ? t("common.loading") : t("profile.upload")
                         }
                     </div>
                     <input onChange={handleUploadAvatarImage} type='file' id='uploadProfile' className='hidden'/>

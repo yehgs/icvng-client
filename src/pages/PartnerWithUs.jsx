@@ -21,6 +21,7 @@ import {
 import ContactForm from "../components/Contactform";
 import CustomerMarquee from "../components/CustomerMarquee";
 import { useSitePage } from "../hooks/useSitePage";
+import { useTranslation } from "../hooks/useTranslation.js";
 
 const ICONS = { chartLine: FaChartLine, shield: FaShieldAlt, users: FaUsers, rocket: FaRocket, money: FaMoneyBillWave, truck: FaTruck };
 
@@ -92,6 +93,7 @@ const DEFAULTS = {
 };
 
 const PartnerWithUs = () => {
+  const { t } = useTranslation();
   const { get } = useSitePage("partner-with-us", DEFAULTS);
   const [showAgreement, setShowAgreement] = useState(false);
 
@@ -300,15 +302,15 @@ const PartnerWithUs = () => {
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-6">Have Questions?</h2>
+            <h2 className="text-3xl font-bold mb-6">{t("policyPages.haveQuestions")}</h2>
             <p className="text-lg text-gray-300 mb-8">
-              Our partnership team is here to help you get started
+              {t("policyPages.partnershipTeamHereToHelp")}
             </p>
 
             <div className="grid md:grid-cols-3 gap-8">
               <div className="flex flex-col items-center">
                 <FaMapMarkerAlt className="text-3xl text-amber-400 mb-3" />
-                <h3 className="font-semibold mb-2">Visit Us</h3>
+                <h3 className="font-semibold mb-2">{t("policyPages.visitUs")}</h3>
                 <p className="text-gray-300 text-sm hover:text-amber-400 duration-300">
                   {get("contactAddress", DEFAULTS.contactAddress)}
                 </p>
@@ -316,7 +318,7 @@ const PartnerWithUs = () => {
 
               <div className="flex flex-col items-center">
                 <FaPhone className="text-3xl text-amber-400 mb-3" />
-                <h3 className="font-semibold mb-2">Call Us</h3>
+                <h3 className="font-semibold mb-2">{t("policyPages.callUs")}</h3>
                 <a
                   href={get("contactPhoneHref", DEFAULTS.contactPhoneHref)}
                   className="text-gray-300 text-sm hover:text-amber-400 duration-300"
@@ -327,7 +329,7 @@ const PartnerWithUs = () => {
 
               <div className="flex flex-col items-center">
                 <FaEnvelope className="text-3xl text-amber-400 mb-3" />
-                <h3 className="font-semibold mb-2">Email Us</h3>
+                <h3 className="font-semibold mb-2">{t("policyPages.emailUs")}</h3>
                 <a
                   href={`mailto:${get("contactEmail", DEFAULTS.contactEmail)}`}
                   className="text-gray-300 text-sm hover:text-amber-400 duration-300"

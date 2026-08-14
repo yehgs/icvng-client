@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useSitePage } from "../hooks/useSitePage";
+import { useTranslation } from "../hooks/useTranslation.js";
 
 const CATEGORY_ICONS = {
   all: FaQuestionCircle,
@@ -73,6 +74,7 @@ const DEFAULTS = {
 };
 
 const FAQ = () => {
+  const { t } = useTranslation();
   const { get } = useSitePage("faq", DEFAULTS);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
@@ -114,7 +116,7 @@ const FAQ = () => {
             <FaSearch className="absolute left-4 top-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search for answers..."
+              placeholder={t("policyPages.searchForAnswers")}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-600 text-lg"
@@ -155,10 +157,10 @@ const FAQ = () => {
             <div className="bg-white rounded-xl shadow-lg p-12 text-center">
               <FaQuestionCircle className="text-5xl text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                No results found
+                {t("policyPages.noResultsFound")}
               </h3>
               <p className="text-gray-600">
-                Try adjusting your search or browse all questions
+                {t("policyPages.adjustSearchOrBrowse")}
               </p>
             </div>
           ) : (
@@ -204,13 +206,13 @@ const FAQ = () => {
                 to="/contact-us"
                 className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-3 rounded-lg font-semibold transition inline-flex items-center justify-center"
               >
-                Contact Us
+                {t("footer.contactUs")}
               </Link>
               <a
                 href={`tel:${get("ctaPhone", DEFAULTS.ctaPhone)}`}
                 className="bg-green-600 hover:bg-green-800 text-white px-8 py-3 rounded-lg font-semibold transition inline-flex items-center justify-center border-2 border-white"
               >
-                Call Now
+                {t("policyPages.callNow")}
               </a>
             </div>
           </div>
@@ -221,7 +223,7 @@ const FAQ = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            Related Pages
+            {t("policyPages.relatedPages")}
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <Link
@@ -229,14 +231,14 @@ const FAQ = () => {
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
               <FaShippingFast className="text-4xl text-amber-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-800">Shipping Policy</h3>
+              <h3 className="font-semibold text-gray-800">{t("footer.shippingPolicy")}</h3>
             </Link>
             <Link
               to="/return-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
               <FaUndo className="text-4xl text-amber-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-800">Return Policy</h3>
+              <h3 className="font-semibold text-gray-800">{t("footer.returnPolicy")}</h3>
             </Link>
             <Link
               to="/terms-conditions"
@@ -244,7 +246,7 @@ const FAQ = () => {
             >
               <FaUserShield className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">
-                Terms & Conditions
+                {t("footer.termsConditions")}
               </h3>
             </Link>
           </div>

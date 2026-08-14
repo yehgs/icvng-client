@@ -15,6 +15,7 @@ import {
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useSitePage } from '../hooks/useSitePage';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 const ICONS = { clock: FaClock, box: FaBox, shield: FaShieldAlt, money: FaMoneyBillWave };
 
@@ -72,6 +73,7 @@ const DEFAULTS = {
 };
 
 const ReturnPolicy = () => {
+  const { t } = useTranslation();
   const { get } = useSitePage('return-policy', DEFAULTS);
   const returnConditions = get('returnConditions', DEFAULT_RETURN_CONDITIONS);
   const returnProcess = get('returnProcess', DEFAULT_RETURN_PROCESS);
@@ -199,21 +201,21 @@ const ReturnPolicy = () => {
 
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Deductions
+                  {t("policyPages.deductions")}
                 </h3>
                 <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                   <ul className="space-y-2 text-gray-700">
                     <li className="flex items-start">
                       <span className="text-orange-600 mr-2">•</span>
-                      <span><strong>Handling Fee:</strong> {get('deductionHandlingFee', DEFAULTS.deductionHandlingFee)}</span>
+                      <span><strong>{t("policyPages.handlingFee")}</strong> {get('deductionHandlingFee', DEFAULTS.deductionHandlingFee)}</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-orange-600 mr-2">•</span>
-                      <span><strong>Transportation Cost:</strong> {get('deductionTransportCost', DEFAULTS.deductionTransportCost)}</span>
+                      <span><strong>{t("policyPages.transportationCost")}</strong> {get('deductionTransportCost', DEFAULTS.deductionTransportCost)}</span>
                     </li>
                     <li className="flex items-start">
                       <span className="text-green-600 mr-2">✓</span>
-                      <span><strong>Exception:</strong> {get('deductionException', DEFAULTS.deductionException)}</span>
+                      <span><strong>{t("policyPages.exception")}</strong> {get('deductionException', DEFAULTS.deductionException)}</span>
                     </li>
                   </ul>
                 </div>
@@ -294,23 +296,23 @@ const ReturnPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold mb-6">
-              Need Help with a Return?
+              {t("policyPages.needHelpWithReturn")}
             </h2>
             <p className="text-xl text-gray-300 mb-8">
-              Our customer service team is here to assist you
+              {t("policyPages.customerServiceHereToAssist")}
             </p>
 
             <div className="grid md:grid-cols-2 gap-8 max-w-2xl mx-auto">
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaPhone className="text-3xl mx-auto mb-4" />
-                <h3 className="font-semibold mb-2">Call Us</h3>
+                <h3 className="font-semibold mb-2">{t("policyPages.callUs")}</h3>
                 <p className="text-gray-300">{get('contactPhone', DEFAULTS.contactPhone)}</p>
                 <p className="text-sm text-gray-400 mt-2">{get('contactPhoneHours', DEFAULTS.contactPhoneHours)}</p>
               </div>
 
               <div className="bg-white bg-opacity-10 rounded-xl p-6 backdrop-blur-sm">
                 <FaEnvelope className="text-3xl mx-auto mb-4" />
-                <h3 className="font-semibold mb-2">Email Us</h3>
+                <h3 className="font-semibold mb-2">{t("policyPages.emailUs")}</h3>
                 <p className="text-gray-300">{get('contactEmail', DEFAULTS.contactEmail)}</p>
                 <p className="text-sm text-gray-400 mt-2">{get('contactEmailNote', DEFAULTS.contactEmailNote)}</p>
               </div>
@@ -342,7 +344,7 @@ const ReturnPolicy = () => {
             to="/faq"
             className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-semibold transition"
           >
-            View FAQ
+            {t("policyPages.viewFaq")}
           </Link>
         </div>
       </div>

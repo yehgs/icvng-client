@@ -21,8 +21,10 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
 import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
+import { useTranslation } from "../hooks/useTranslation.js";
 
 const SingleBlogPost = () => {
+  const { t } = useTranslation();
   const { slug } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
@@ -262,7 +264,7 @@ const SingleBlogPost = () => {
         break;
       case "copy":
         navigator.clipboard.writeText(url);
-        alert("Link copied to clipboard!");
+        alert(t("blog.linkCopied"));
         return;
     }
 
@@ -440,7 +442,7 @@ const SingleBlogPost = () => {
                       className="flex items-center gap-2 px-4 py-2 bg-amber-100 text-amber-600 rounded-lg hover:bg-amber-200 transition-colors"
                     >
                       <Share2 className="w-4 h-4" />
-                      <span>Share</span>
+                      <span>{t("blog.share")}</span>
                     </button>
 
                     {shareMenuOpen && (
@@ -472,7 +474,7 @@ const SingleBlogPost = () => {
                             className="flex items-center gap-3 w-full px-4 py-2 text-left hover:bg-gray-50"
                           >
                             <Share2 className="w-4 h-4 text-gray-600" />
-                            <span>Copy Link</span>
+                            <span>{t("blog.copyLink")}</span>
                           </button>
                         </div>
                       </div>

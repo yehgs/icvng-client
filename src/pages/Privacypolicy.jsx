@@ -11,6 +11,7 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useSitePage } from "../hooks/useSitePage";
+import { useTranslation } from "../hooks/useTranslation.js";
 
 const ICONS = { userShield: FaUserShield, database: FaDatabase, cookie: FaCookie };
 
@@ -88,6 +89,7 @@ const CARD_COLOR = {
 };
 
 const PrivacyPolicy = () => {
+  const { t } = useTranslation();
   const { get } = useSitePage("privacy-policy", DEFAULTS);
   const dataTypes = get("dataTypes", DEFAULT_DATA_TYPES);
   const useCards = get("useCards", DEFAULT_USE_CARDS);
@@ -106,10 +108,9 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4 py-16">
           <div className="max-w-4xl mx-auto text-center">
             <FaShieldAlt className="text-6xl mx-auto mb-6" />
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">Privacy Policy</h1>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">{t("policyPages.privacyPolicyHeading")}</h1>
             <p className="text-xl text-blue-100">
-              Your privacy is important to us. Learn how we collect, use, and
-              protect your information.
+              {t("policyPages.privacyPolicySubtitle")}
             </p>
             <p className="text-sm text-blue-200 mt-4">{get("lastUpdated", DEFAULTS.lastUpdated)}</p>
           </div>
@@ -365,14 +366,14 @@ const PrivacyPolicy = () => {
           <div className="max-w-4xl mx-auto text-center">
             <FaEnvelope className="text-5xl mx-auto mb-6" />
             <h2 className="text-3xl font-bold mb-4">
-              Questions About Privacy?
+              {t("policyPages.questionsAboutPrivacy")}
             </h2>
             <p className="text-xl text-green-100 mb-8">
-              We're here to help with any privacy-related concerns
+              {t("policyPages.hereToHelpPrivacyConcerns")}
             </p>
             <div className="space-y-4">
               <p className="text-lg">
-                <strong>Email:</strong>{" "}
+                <strong>{t("policyPages.emailLabel")}</strong>{" "}
                 <a
                   href={`mailto:${get("contactEmail", DEFAULTS.contactEmail)}`}
                   className="text-white hover:text-green-200 underline"
@@ -381,7 +382,7 @@ const PrivacyPolicy = () => {
                 </a>
               </p>
               <p className="text-lg">
-                <strong>Phone:</strong>{" "}
+                <strong>{t("policyPages.phoneLabel")}</strong>{" "}
                 <a
                   href={get("contactPhoneHref", DEFAULTS.contactPhoneHref)}
                   className="text-white hover:text-green-200 underline"
@@ -390,7 +391,7 @@ const PrivacyPolicy = () => {
                 </a>
               </p>
               <p className="text-lg">
-                <strong>Address:</strong> {get("contactAddress", DEFAULTS.contactAddress)}
+                <strong>{t("policyPages.addressLabel")}</strong> {get("contactAddress", DEFAULTS.contactAddress)}
               </p>
             </div>
             <div className="mt-8">
@@ -398,7 +399,7 @@ const PrivacyPolicy = () => {
                 to="/contact-us"
                 className="inline-block bg-white hover:bg-gray-100 text-gray-800 px-8 py-3 rounded-lg font-semibold transition"
               >
-                Contact Us
+                {t("footer.contactUs")}
               </Link>
             </div>
           </div>
@@ -409,7 +410,7 @@ const PrivacyPolicy = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            Related Information
+            {t("policyPages.relatedInformation")}
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <Link
@@ -418,7 +419,7 @@ const PrivacyPolicy = () => {
             >
               <FaShieldAlt className="text-4xl text-amber-600 mx-auto mb-3" />
               <h3 className="font-semibold text-gray-800">
-                Terms & Conditions
+                {t("footer.termsConditions")}
               </h3>
             </Link>
             <Link
@@ -426,7 +427,7 @@ const PrivacyPolicy = () => {
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
               <FaUserShield className="text-4xl text-amber-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-800">FAQ</h3>
+              <h3 className="font-semibold text-gray-800">{t("policyPages.faqLinkLabel")}</h3>
             </Link>
           </div>
         </div>

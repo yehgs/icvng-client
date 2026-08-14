@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useSitePage } from '../hooks/useSitePage';
+import { useTranslation } from '../hooks/useTranslation.js';
 
 const ICONS = { userCheck: FaUserCheck, handshake: FaHandshake, shield: FaShieldAlt, balance: FaBalanceScale };
 
@@ -131,6 +132,7 @@ const DEFAULTS = {
 const RichLine = ({ text }) => <span dangerouslySetInnerHTML={{ __html: text }} />;
 
 const TermsConditions = () => {
+  const { t } = useTranslation();
   const { get } = useSitePage('terms-conditions', DEFAULTS);
   const sections = get('sections', DEFAULT_SECTIONS);
   const detailedSections = get('detailedSections', DEFAULT_DETAILED_SECTIONS);
@@ -245,22 +247,22 @@ const TermsConditions = () => {
       <div className="bg-gradient-to-r from-secondary-100 to-secondary-200 text-white py-16">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4">Questions About Our Terms?</h2>
+            <h2 className="text-3xl font-bold mb-4">{t("policyPages.questionsAboutTerms")}</h2>
             <p className="text-xl text-amber-100 mb-8">
-              Contact our team for clarification or assistance
+              {t("policyPages.contactTeamForClarification")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 to="/contact-us"
                 className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-3 rounded-lg font-semibold transition"
               >
-                Contact Us
+                {t("footer.contactUs")}
               </Link>
               <Link
                 to="/faq"
                 className="bg-amber-600 hover:bg-amber-800 text-white px-8 py-3 rounded-lg font-semibold transition border-2 border-white"
               >
-                View FAQ
+                {t("policyPages.viewFaq")}
               </Link>
             </div>
           </div>
@@ -271,7 +273,7 @@ const TermsConditions = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-            Related Policies
+            {t("policyPages.relatedPolicies")}
           </h2>
           <div className="grid md:grid-cols-3 gap-6">
             <Link
@@ -279,21 +281,21 @@ const TermsConditions = () => {
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
               <FaShieldAlt className="text-4xl text-amber-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-800">Privacy Policy</h3>
+              <h3 className="font-semibold text-gray-800">{t("footer.privacyPolicy")}</h3>
             </Link>
             <Link
               to="/return-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
               <FaHandshake className="text-4xl text-amber-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-800">Return Policy</h3>
+              <h3 className="font-semibold text-gray-800">{t("footer.returnPolicy")}</h3>
             </Link>
             <Link
               to="/shipping-policy"
               className="bg-white rounded-xl shadow-lg p-6 text-center hover:shadow-xl transition"
             >
               <FaBalanceScale className="text-4xl text-amber-600 mx-auto mb-3" />
-              <h3 className="font-semibold text-gray-800">Shipping Policy</h3>
+              <h3 className="font-semibold text-gray-800">{t("footer.shippingPolicy")}</h3>
             </Link>
           </div>
         </div>

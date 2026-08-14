@@ -28,7 +28,7 @@ const BankTransferInstructionsPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { formatPrice } = useCurrency();
-  const { bankTransferDetails: countryBankDetails } = useCountry();
+  const { bankTransferDetails: countryBankDetails, t } = useCountry();
   const user = useSelector((state) => state.user);
 
   const [copiedField, setCopiedField] = useState('');
@@ -76,7 +76,7 @@ const BankTransferInstructionsPage = () => {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedField(field);
-      toast.success(`${field} copied`);
+      toast.success(t("bankTransfer.fieldCopied", { field }));
       setTimeout(() => setCopiedField(''), 2000);
     } catch (error) {
       // Fallback for browsers that don't support clipboard API
@@ -87,7 +87,7 @@ const BankTransferInstructionsPage = () => {
       document.execCommand('copy');
       document.body.removeChild(textArea);
       setCopiedField(field);
-      toast.success(`${field} copied`);
+      toast.success(t("bankTransfer.fieldCopied", { field }));
       setTimeout(() => setCopiedField(''), 2000);
     }
   };
@@ -97,12 +97,16 @@ const BankTransferInstructionsPage = () => {
   };
 
   const shareOnWhatsApp = () => {
-    const message = `I-Coffee Order Payment Details:
-Bank: ${currentBankDetails.bankName}
-Account: ${currentBankDetails.accountName}
-Account Number: ${currentBankDetails.accountNumber}
-Reference: ${currentBankDetails.reference}
-Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
+    const message = [
+      t("bankTransfer.whatsappShareTitle"),
+      t("bankTransfer.whatsappShareBank", { bank: currentBankDetails.bankName }),
+      t("bankTransfer.whatsappShareAccount", { account: currentBankDetails.accountName }),
+      t("bankTransfer.whatsappShareAccountNumber", { number: currentBankDetails.accountNumber }),
+      t("bankTransfer.whatsappShareReference", { reference: currentBankDetails.reference }),
+      t("bankTransfer.whatsappShareAmount", {
+        amount: totalAmount > 0 ? formatPrice(totalAmount) : t("bankTransfer.seeOrderDetails"),
+      }),
+    ].join("\n");
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
@@ -118,16 +122,16 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
               <CheckCircle2 className="w-8 h-8 text-green-600" />
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Order Confirmed
+              {t("bankTransfer.orderConfirmed")}
             </h1>
             <p className="text-gray-600">
-              Complete your payment using bank transfer
+              {t("bankTransfer.completePaymentSubtitle")}
             </p>
             {orderDetails && orderDetails.length > 0 && (
               <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg">
                 <FileText className="w-4 h-4 text-gray-600" />
                 <span className="text-sm text-gray-700">
-                  Order ID: {orderDetails[0]?.orderId}
+                  {t("bankTransfer.orderIdLabel")} {orderDetails[0]?.orderId}
                 </span>
               </div>
             )}
@@ -142,13 +146,13 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <div className="flex items-center gap-3 mb-4">
                     <CreditCard className="w-5 h-5 text-gray-700" />
                     <h2 className="text-lg font-semibold text-gray-900">
-                      Payment Summary
+                      {t("bankTransfer.paymentSummary")}
                     </h2>
                   </div>
                   <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-700 font-medium">
-                        Total Amount:
+                        {t("bankTransfer.totalAmountLabel")}
                       </span>
                       <span className="text-2xl font-bold text-gray-900">
                         {formatPrice(totalAmount)}
@@ -163,7 +167,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                 <div className="flex items-center gap-3 mb-6">
                   <Building2 className="w-5 h-5 text-gray-700" />
                   <h2 className="text-lg font-semibold text-gray-900">
-                    Bank Account Details
+                    {t("bankTransfer.bankAccountDetails")}
                   </h2>
                 </div>
 
@@ -172,7 +176,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <label className="text-xs font-medium text-gray-500 uppercase mb-1 block">
-                        Bank Name
+                        {t("bankTransfer.bankNameLabel")}
                       </label>
                       <p className="text-base font-semibold text-gray-900">
                         {currentBankDetails.bankName}
@@ -186,7 +190,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                         )
                       }
                       className="ml-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Copy"
+                      title={t("bankTransfer.copy")}
                     >
                       {copiedField === 'Bank Name' ? (
                         <Check className="w-5 h-5 text-green-600" />
@@ -200,7 +204,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <label className="text-xs font-medium text-gray-500 uppercase mb-1 block">
-                        Account Name
+                        {t("bankTransfer.accountNameLabel")}
                       </label>
                       <p className="text-base font-semibold text-gray-900">
                         {currentBankDetails.accountName}
@@ -214,7 +218,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                         )
                       }
                       className="ml-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Copy"
+                      title={t("bankTransfer.copy")}
                     >
                       {copiedField === 'Account Name' ? (
                         <Check className="w-5 h-5 text-green-600" />
@@ -228,7 +232,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex-1">
                       <label className="text-xs font-medium text-blue-700 uppercase mb-1 block">
-                        Account Number
+                        {t("bankTransfer.accountNumberLabel")}
                       </label>
                       <p className="text-xl font-bold text-gray-900 font-mono">
                         {currentBankDetails.accountNumber}
@@ -242,7 +246,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                         )
                       }
                       className="ml-4 p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-lg transition-colors"
-                      title="Copy"
+                      title={t("bankTransfer.copy")}
                     >
                       {copiedField === 'Account Number' ? (
                         <Check className="w-5 h-5 text-green-600" />
@@ -256,7 +260,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-200">
                     <div className="flex-1">
                       <label className="text-xs font-medium text-gray-500 uppercase mb-1 block">
-                        Sort Code
+                        {t("bankTransfer.sortCodeLabel")}
                       </label>
                       <p className="text-base font-semibold text-gray-900 font-mono">
                         {currentBankDetails.sortCode}
@@ -270,7 +274,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                         )
                       }
                       className="ml-4 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
-                      title="Copy"
+                      title={t("bankTransfer.copy")}
                     >
                       {copiedField === 'Sort Code' ? (
                         <Check className="w-5 h-5 text-green-600" />
@@ -286,7 +290,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                       <div className="flex items-center gap-2 mb-1">
                         <AlertTriangle className="w-4 h-4 text-orange-600" />
                         <label className="text-xs font-bold text-orange-700 uppercase">
-                          Payment Reference (Required)
+                          {t("bankTransfer.paymentReferenceRequired")}
                         </label>
                       </div>
                       <p className="text-lg font-bold text-gray-900 font-mono mb-1">
@@ -295,7 +299,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                       <p className="text-xs text-orange-700 flex items-start gap-1">
                         <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
                         <span>
-                          Include this reference in your transfer description
+                          {t("bankTransfer.includeReferenceNote")}
                         </span>
                       </p>
                     </div>
@@ -307,7 +311,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                         )
                       }
                       className="ml-4 p-2 text-orange-600 hover:text-orange-800 hover:bg-orange-100 rounded-lg transition-colors"
-                      title="Copy"
+                      title={t("bankTransfer.copy")}
                     >
                       {copiedField === 'Reference' ? (
                         <Check className="w-5 h-5 text-green-600" />
@@ -324,7 +328,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                 <div className="flex items-center gap-3 mb-4">
                   <Info className="w-5 h-5 text-gray-700" />
                   <h3 className="text-lg font-semibold text-gray-900">
-                    How to Complete Your Transfer
+                    {t("bankTransfer.howToCompleteTransfer")}
                   </h3>
                 </div>
 
@@ -332,38 +336,34 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   {[
                     {
                       step: 1,
-                      title: 'Access Your Banking App',
-                      desc: 'Log into your mobile banking app or visit your bank',
+                      title: t("bankTransfer.step1Title"),
+                      desc: t("bankTransfer.step1Desc"),
                     },
                     {
                       step: 2,
-                      title: 'Select Transfer Option',
-                      desc: 'Choose "Transfer Funds" or "Send Money"',
+                      title: t("bankTransfer.step2Title"),
+                      desc: t("bankTransfer.step2Desc"),
                     },
                     {
                       step: 3,
-                      title: 'Enter Account Details',
-                      desc: 'Input the account information shown above',
+                      title: t("bankTransfer.step3Title"),
+                      desc: t("bankTransfer.step3Desc"),
                     },
                     {
                       step: 4,
-                      title: 'Add Payment Reference',
-                      desc: `Include reference: ${currentBankDetails.reference}`,
+                      title: t("bankTransfer.step4Title"),
+                      desc: t("bankTransfer.step4Desc", { reference: currentBankDetails.reference }),
                       important: true,
                     },
                     {
                       step: 5,
-                      title: 'Transfer Exact Amount',
-                      desc: `Send exactly ${
-                        totalAmount > 0
-                          ? formatPrice(totalAmount)
-                          : 'the order amount'
-                      }`,
+                      title: t("bankTransfer.step5Title"),
+                      desc: t("bankTransfer.step5Desc", { amount: totalAmount > 0 ? formatPrice(totalAmount) : t("bankTransfer.orderAmountFallback") }),
                     },
                     {
                       step: 6,
-                      title: 'Save Your Receipt',
-                      desc: 'Keep your transfer confirmation for records',
+                      title: t("bankTransfer.step6Title"),
+                      desc: t("bankTransfer.step6Desc"),
                     },
                   ].map((item) => (
                     <div key={item.step} className="flex items-start gap-3">
@@ -397,7 +397,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                 <div className="flex items-center gap-2 mb-4">
                   <Clock className="w-5 h-5 text-gray-700" />
                   <h3 className="text-base font-semibold text-gray-900">
-                    What Happens Next
+                    {t("bankTransfer.whatHappensNext")}
                   </h3>
                 </div>
 
@@ -405,26 +405,26 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   {[
                     {
                       icon: <CheckCircle2 className="w-4 h-4" />,
-                      title: 'Order Confirmed',
-                      desc: 'Your order received',
+                      title: t("bankTransfer.timelineOrderConfirmedTitle"),
+                      desc: t("bankTransfer.timelineOrderConfirmedDesc"),
                       status: 'complete',
                     },
                     {
                       icon: <Clock className="w-4 h-4" />,
-                      title: 'Payment Verification',
-                      desc: '24-48 hours',
+                      title: t("bankTransfer.timelinePaymentVerificationTitle"),
+                      desc: t("bankTransfer.timelinePaymentVerificationDesc"),
                       status: 'pending',
                     },
                     {
                       icon: <FileText className="w-4 h-4" />,
-                      title: 'Order Processing',
-                      desc: 'Items prepared',
+                      title: t("bankTransfer.timelineOrderProcessingTitle"),
+                      desc: t("bankTransfer.timelineOrderProcessingDesc"),
                       status: 'upcoming',
                     },
                     {
                       icon: <ShoppingBag className="w-4 h-4" />,
-                      title: 'Shipment & Delivery',
-                      desc: 'Per delivery timeline',
+                      title: t("bankTransfer.timelineShipmentTitle"),
+                      desc: t("bankTransfer.timelineShipmentDesc"),
                       status: 'upcoming',
                     },
                   ].map((item, index) => (
@@ -454,10 +454,10 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
               {/* Contact Support */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-3">
-                  Need Help?
+                  {t("bankTransfer.needHelp")}
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Contact us for any questions about your order or payment.
+                  {t("bankTransfer.needHelpDesc")}
                 </p>
 
                 <div className="space-y-2">
@@ -466,28 +466,28 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
                   >
                     <Phone className="w-4 h-4" />
-                    Call Support
+                    {t("bankTransfer.callSupport")}
                   </a>
                   <a
                     href="mailto:customercare@i-coffee.ng"
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                   >
                     <Mail className="w-4 h-4" />
-                    Email Support
+                    {t("bankTransfer.emailSupport")}
                   </a>
                   <button
                     onClick={shareOnWhatsApp}
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                   >
                     <MessageCircle className="w-4 h-4" />
-                    Share on WhatsApp
+                    {t("bankTransfer.shareOnWhatsApp")}
                   </button>
                   <button
                     onClick={handlePrintInstructions}
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium no-print"
                   >
                     <Printer className="w-4 h-4" />
-                    Print Instructions
+                    {t("bankTransfer.printInstructions")}
                   </button>
                 </div>
               </div>
@@ -495,7 +495,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
               {/* Quick Actions */}
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <h3 className="text-base font-semibold text-gray-900 mb-3">
-                  Quick Actions
+                  {t("bankTransfer.quickActions")}
                 </h3>
                 <div className="space-y-2">
                   <Link
@@ -503,14 +503,14 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
                   >
                     <ShoppingBag className="w-4 h-4" />
-                    View My Orders
+                    {t("bankTransfer.viewMyOrders")}
                   </Link>
                   <Link
                     to="/shop"
                     className="flex items-center justify-center gap-2 w-full px-4 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                   >
                     <Home className="w-4 h-4" />
-                    Continue Shopping
+                    {t("bankTransfer.continueShopping")}
                   </Link>
                 </div>
               </div>
@@ -519,28 +519,28 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
               <div className="bg-gray-900 rounded-lg p-6 text-white">
                 <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
                   <Info className="w-4 h-4" />
-                  Quick Tips
+                  {t("bankTransfer.quickTips")}
                 </h3>
                 <ul className="text-sm space-y-2 text-gray-300">
                   <li className="flex items-start gap-2">
                     <ArrowRight className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>
-                      Double-check account details before transferring
+                      {t("bankTransfer.tipDoubleCheck")}
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <ArrowRight className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>Save this page for reference</span>
+                    <span>{t("bankTransfer.tipSavePage")}</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <ArrowRight className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>
-                      Contact us if transfer takes longer than expected
+                      {t("bankTransfer.tipContactUs")}
                     </span>
                   </li>
                   <li className="flex items-start gap-2">
                     <ArrowRight className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                    <span>Keep your receipt until order is delivered</span>
+                    <span>{t("bankTransfer.tipKeepReceipt")}</span>
                   </li>
                 </ul>
               </div>
@@ -552,20 +552,20 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
               <div className="flex items-center gap-2 mb-3">
                 <Info className="w-5 h-5 text-blue-700" />
-                <h4 className="font-semibold text-blue-900">Security Notice</h4>
+                <h4 className="font-semibold text-blue-900">{t("bankTransfer.securityNotice")}</h4>
               </div>
               <ul className="text-sm text-blue-800 space-y-2">
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>Never share your banking credentials with anyone</span>
+                  <span>{t("bankTransfer.securityNeverShare")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>Always verify account details before transferring</span>
+                  <span>{t("bankTransfer.securityVerifyDetails")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>Keep your transfer receipt as proof of payment</span>
+                  <span>{t("bankTransfer.securityKeepReceipt")}</span>
                 </li>
               </ul>
             </div>
@@ -574,21 +574,21 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
               <div className="flex items-center gap-2 mb-3">
                 <AlertTriangle className="w-5 h-5 text-orange-700" />
                 <h4 className="font-semibold text-orange-900">
-                  Important Reminders
+                  {t("bankTransfer.importantReminders")}
                 </h4>
               </div>
               <ul className="text-sm text-orange-800 space-y-2">
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>Include the payment reference in your transfer</span>
+                  <span>{t("bankTransfer.reminderIncludeReference")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>Transfer the exact amount shown</span>
+                  <span>{t("bankTransfer.reminderExactAmount")}</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <Check className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  <span>Payment verification takes 24-48 hours</span>
+                  <span>{t("bankTransfer.reminderVerificationTime")}</span>
                 </li>
               </ul>
             </div>
@@ -597,7 +597,7 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
           {/* Alternative Methods */}
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-8">
             <h3 className="text-lg font-semibold text-gray-900 mb-4">
-              Alternative Transfer Methods
+              {t("bankTransfer.alternativeMethods")}
             </h3>
             <div className="grid md:grid-cols-3 gap-4">
               <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -605,10 +605,10 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <Phone className="w-6 h-6 text-gray-700" />
                 </div>
                 <h4 className="font-semibold text-gray-900 mb-1 text-sm">
-                  Mobile Banking
+                  {t("bankTransfer.mobileBanking")}
                 </h4>
                 <p className="text-xs text-gray-600">
-                  Use your bank's mobile app for instant transfers
+                  {t("bankTransfer.mobileBankingDesc")}
                 </p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -616,10 +616,10 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <MessageCircle className="w-6 h-6 text-gray-700" />
                 </div>
                 <h4 className="font-semibold text-gray-900 mb-1 text-sm">
-                  USSD Banking
+                  {t("bankTransfer.ussdBanking")}
                 </h4>
                 <p className="text-xs text-gray-600">
-                  Dial your bank's USSD code for quick transfers
+                  {t("bankTransfer.ussdBankingDesc")}
                 </p>
               </div>
               <div className="text-center p-4 bg-gray-50 rounded-lg">
@@ -627,10 +627,10 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
                   <Building2 className="w-6 h-6 text-gray-700" />
                 </div>
                 <h4 className="font-semibold text-gray-900 mb-1 text-sm">
-                  Bank Branch
+                  {t("bankTransfer.bankBranch")}
                 </h4>
                 <p className="text-xs text-gray-600">
-                  Visit any bank branch for direct transfers
+                  {t("bankTransfer.bankBranchDesc")}
                 </p>
               </div>
             </div>
@@ -639,19 +639,19 @@ Amount: ${totalAmount > 0 ? formatPrice(totalAmount) : 'See order details'}`;
           {/* Thank You Message */}
           <div className="bg-gray-900 rounded-lg p-6 text-white text-center mt-8">
             <h3 className="text-xl font-bold mb-2">
-              Thank You for Your Order!
+              {t("bankTransfer.thankYou")}
             </h3>
             <p className="text-gray-300 mb-4 text-sm">
-              We appreciate your business and look forward to serving you.
+              {t("bankTransfer.thankYouDesc")}
             </p>
             <div className="flex justify-center gap-8">
               <div>
-                <p className="font-semibold text-sm">Order Processing</p>
-                <p className="text-xs text-gray-400">24-48 hours</p>
+                <p className="font-semibold text-sm">{t("bankTransfer.timelineOrderProcessingTitle")}</p>
+                <p className="text-xs text-gray-400">{t("bankTransfer.orderProcessingHours")}</p>
               </div>
               <div>
-                <p className="font-semibold text-sm">Customer Support</p>
-                <p className="text-xs text-gray-400">24/7 Available</p>
+                <p className="font-semibold text-sm">{t("bankTransfer.needHelp")}</p>
+                <p className="text-xs text-gray-400">{t("bankTransfer.customerSupportAvailability")}</p>
               </div>
             </div>
           </div>

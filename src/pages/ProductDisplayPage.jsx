@@ -231,19 +231,19 @@ const ProductDisplayPage = () => {
       ? [
           {
             key: "regular",
-            label: "Regular Price",
+            label: t("product.regularPriceLabel"),
             price: getPrimaryPrice(data),
             icon: <FaShippingFast className="text-green-600" />,
             color: "text-green-600",
             bgColor: "bg-green-50",
             borderColor: "border-green-200",
-            description: "Standard delivery (1-3 business days)",
+            description: t("product.standardDeliveryDesc"),
             // "Regular Price" is defined (see PRODUCT_VISIBILITY_RULES.md
             // glossary) as fulfilled from EITHER in-house or partner stock,
             // both within the same 1-3 business day window — so this no
             // longer distinguishes "Fast Delivery" vs "Partner Stock" as if
             // partner-sourced stock shipped on a different timeline.
-            delivery: "Fast Delivery",
+            delivery: t("product.trustFastDelivery"),
           },
         ]
       : showFiveWeekDelivery
@@ -251,14 +251,14 @@ const ProductDisplayPage = () => {
           ? [
               {
                 key: "5weeks",
-                label: "5 Weeks Delivery",
+                label: t("product.fiveWeeksDeliveryLabel"),
                 price: data.price5weeksDelivery,
                 icon: <FaCalendarAlt className="text-red-600" />,
                 color: "text-red-600",
                 bgColor: "bg-red-50",
                 borderColor: "border-red-200",
-                description: "Special order — Delivery in approximately 5 weeks",
-                delivery: "5 Week Special Order",
+                description: t("product.specialOrderFiveWeeksDesc"),
+                delivery: t("product.fiveWeekSpecialOrder"),
               },
             ]
           : []
@@ -266,14 +266,14 @@ const ProductDisplayPage = () => {
           ? [
               {
                 key: "3weeks",
-                label: "2 Weeks Delivery",
+                label: t("product.twoWeeksDeliveryLabel"),
                 price: data.price3weeksDelivery,
                 icon: <FaClock className="text-orange-600" />,
                 color: "text-orange-600",
                 bgColor: "bg-orange-50",
                 borderColor: "border-orange-200",
-                description: "Special order — Delivery in approximately 2 weeks",
-                delivery: "2 Week Special Order",
+                description: t("product.specialOrderTwoWeeksDesc"),
+                delivery: t("product.twoWeekSpecialOrder"),
               },
             ]
           : [];
@@ -316,7 +316,7 @@ const ProductDisplayPage = () => {
           price3weeksDelivery: data.price3weeksDelivery,
           price5weeksDelivery: data.price5weeksDelivery,
         });
-        toast.success("Added to cart");
+        toast.success(t("product.addedToCart"));
         window.dispatchEvent(new CustomEvent("cart-updated"));
         return;
       }
@@ -331,7 +331,7 @@ const ProductDisplayPage = () => {
       });
 
       if (response.data.success) {
-        toast.success("Added to cart");
+        toast.success(t("product.addedToCart"));
         fetchCartItem();
         window.dispatchEvent(new CustomEvent("cart-updated"));
       }
@@ -356,7 +356,7 @@ const ProductDisplayPage = () => {
       } else {
         const response = await updateCartItem(cartId, currentQty + 1);
         if (response.success) {
-          toast.success("Quantity updated");
+          toast.success(t("product.quantityUpdated"));
           window.dispatchEvent(new CustomEvent("cart-updated"));
         }
       }
@@ -382,10 +382,10 @@ const ProductDisplayPage = () => {
       } else {
         if (currentQty === 1) {
           await deleteCartItem(cartId);
-          toast.success("Removed from cart");
+          toast.success(t("product.removedFromCart"));
         } else {
           const response = await updateCartItem(cartId, currentQty - 1);
-          if (response.success) toast.success("Quantity updated");
+          if (response.success) toast.success(t("product.quantityUpdated"));
         }
         window.dispatchEvent(new CustomEvent("cart-updated"));
       }
@@ -448,7 +448,7 @@ const ProductDisplayPage = () => {
         {/* ── Breadcrumb ── */}
         <div className="flex items-center justify-between mb-6">
           <div className="text-sm text-gray-500">
-            Home / {data.productType?.toLowerCase() || "Products"} /{" "}
+            {t("product.breadcrumbHome")} / {data.productType?.toLowerCase() || t("product.breadcrumbProducts")} /{" "}
             {translatedData.name}
           </div>
         </div>
@@ -546,7 +546,7 @@ const ProductDisplayPage = () => {
                       data.limitedEdition?.bannerColor || "#c8102e",
                   }}
                 >
-                  ✨ {data.limitedEdition?.bannerText || "Limited Edition"}
+                  ✨ {data.limitedEdition?.bannerText || t("product.limitedEdition")}
                 </span>
               )}
               {data.featured && (
@@ -559,8 +559,7 @@ const ProductDisplayPage = () => {
                   {renderStars(data.averageRating)}
                 </div>
                 <span className="text-sm text-gray-500">
-                  {data.averageRating.toFixed(1)} ({data.ratings.length}{" "}
-                  reviews)
+                  {data.averageRating.toFixed(1)} ({t("product.reviewCount", { count: data.ratings.length })})
                 </span>
               </div>
             </div>
@@ -594,8 +593,8 @@ const ProductDisplayPage = () => {
                   <h3 className="text-lg font-semibold text-gray-800">
                     {/* Only say "Choose" if there are multiple delivery options */}
                     {priceOptions.length > 1
-                      ? "Choose Delivery Option"
-                      : "Pricing"}
+                      ? t("product.chooseDeliveryOption")
+                      : t("product.pricingHeading")}
                   </h3>
                   {/* Delivery mode badge — only shown when a delivery variant actually exists */}
                   {priceOptions.some(
@@ -611,12 +610,12 @@ const ProductDisplayPage = () => {
                       {showFiveWeekDelivery ? (
                         <>
                           <FaCalendarAlt className="w-3 h-3" />
-                          Up to 5 weeks
+                          {t("product.upToFiveWeeks")}
                         </>
                       ) : (
                         <>
                           <FaClock className="w-3 h-3" />
-                          Up to 2 weeks
+                          {t("product.upToTwoWeeks")}
                         </>
                       )}
                     </span>
@@ -724,7 +723,7 @@ const ProductDisplayPage = () => {
                     ) : (
                       <>
                         <BsCart4 className="mr-2" />
-                        Add to Cart
+                        {t("product.addToCart")}
                       </>
                     )}
                   </button>
@@ -784,7 +783,7 @@ const ProductDisplayPage = () => {
               <div className="bg-gray-50 p-4 rounded-lg grid md:grid-cols-2 gap-4">
                 {data.weight > 0 && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Weight</span>
+                    <span className="text-gray-500 text-sm">{t("product.weight")}</span>
                     <span className="font-medium">
                       {data.weight} {translatedData.unit}
                     </span>
@@ -792,43 +791,43 @@ const ProductDisplayPage = () => {
                 )}
                 {data.packaging && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Packaging</span>
+                    <span className="text-gray-500 text-sm">{t("product.packaging")}</span>
                     <span className="font-medium">{data.packaging}</span>
                   </div>
                 )}
                 {translatedData.blend && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Blend</span>
+                    <span className="text-gray-500 text-sm">{t("product.blend")}</span>
                     <span className="font-medium">{translatedData.blend}</span>
                   </div>
                 )}
                 {data.coffeeOrigin && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Origin</span>
+                    <span className="text-gray-500 text-sm">{t("product.origin")}</span>
                     <span className="font-medium">{translatedData.coffeeOrigin}</span>
                   </div>
                 )}
                 {translatedData.roastOrigin && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Roast Origin</span>
+                    <span className="text-gray-500 text-sm">{t("product.roastOrigin")}</span>
                     <span className="font-medium">{translatedData.roastOrigin}</span>
                   </div>
                 )}
                 {data.aromaticProfile && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Profile</span>
+                    <span className="text-gray-500 text-sm">{t("product.profile")}</span>
                     <span className="font-medium">{data.aromaticProfile}</span>
                   </div>
                 )}
                 {data.roastLevel && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Roast Level</span>
+                    <span className="text-gray-500 text-sm">{t("product.roastLevel")}</span>
                     <RoastIndicator level={data.roastLevel} />
                   </div>
                 )}
                 {data.intensity && (
                   <div className="flex flex-col">
-                    <span className="text-gray-500 text-sm">Intensity</span>
+                    <span className="text-gray-500 text-sm">{t("product.intensity")}</span>
                     <IntensityMeter intensity={data.intensity} />
                   </div>
                 )}
@@ -839,21 +838,21 @@ const ProductDisplayPage = () => {
             <div className="grid grid-cols-3 gap-4 border-t border-b py-4">
               <div className="flex flex-col items-center text-center">
                 <FaTruck className="text-green-700 text-2xl mb-2" />
-                <span className="text-sm font-medium">Fast Delivery</span>
-                <span className="text-xs text-gray-500">Multiple Options</span>
+                <span className="text-sm font-medium">{t("product.trustFastDelivery")}</span>
+                <span className="text-xs text-gray-500">{t("product.trustFastDeliveryDesc")}</span>
               </div>
               <div className="flex flex-col items-center text-center">
                 <FaShieldAlt className="text-green-700 text-2xl mb-2" />
-                <span className="text-sm font-medium">Quality Guarantee</span>
+                <span className="text-sm font-medium">{t("product.trustQualityGuarantee")}</span>
                 <span className="text-xs text-gray-500">
-                  100% Original Products
+                  {t("product.trustQualityGuaranteeDesc")}
                 </span>
               </div>
               <div className="flex flex-col items-center text-center">
                 <FaLeaf className="text-green-700 text-2xl mb-2" />
-                <span className="text-sm font-medium">Sustainably Sourced</span>
+                <span className="text-sm font-medium">{t("product.trustSustainablySourced")}</span>
                 <span className="text-xs text-gray-500">
-                  Eco-friendly options
+                  {t("product.trustSustainablySourcedDesc")}
                 </span>
               </div>
             </div>
@@ -872,7 +871,7 @@ const ProductDisplayPage = () => {
                 }`}
                 onClick={() => setActiveTab("description")}
               >
-                Description
+                {t("product.description")}
               </button>
               {data.additionalInfo && data.additionalInfo.trim() !== "" && (
                 <button
@@ -883,7 +882,7 @@ const ProductDisplayPage = () => {
                   }`}
                   onClick={() => setActiveTab("additionalInfo")}
                 >
-                  Additional Information
+                  {t("product.additionalInformation")}
                 </button>
               )}
               <button
@@ -894,7 +893,7 @@ const ProductDisplayPage = () => {
                 }`}
                 onClick={() => setActiveTab("reviews")}
               >
-                Reviews ({data.ratings.length})
+                {t("product.reviews")} ({data.ratings.length})
               </button>
             </div>
           </div>

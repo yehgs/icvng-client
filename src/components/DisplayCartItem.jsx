@@ -146,7 +146,11 @@ const DisplayCartItem = ({ close }) => {
   };
 
   const getPriceOptionLabel = (opt) =>
-    ({ regular: 'Regular Delivery', '3weeks': '2 Weeks Delivery', '5weeks': '5 Weeks Delivery' }[opt] || 'Regular Delivery');
+    ({
+      regular: t("product.regularDeliveryLabel"),
+      '3weeks': t("product.twoWeeksDeliveryLabel"),
+      '5weeks': t("product.fiveWeeksDeliveryLabel"),
+    }[opt] || t("product.regularDeliveryLabel"));
 
   const getPriceOptionColor = (opt) =>
     ({ regular: 'bg-green-100 text-green-700 border-green-200', '3weeks': 'bg-orange-100 text-orange-700 border-orange-200', '5weeks': 'bg-red-100 text-red-700 border-red-200' }[opt] || 'bg-gray-100 text-gray-700 border-gray-200');
@@ -277,11 +281,11 @@ const DisplayCartItem = ({ close }) => {
       <div className="cart-drawer-panel bg-white w-full max-w-sm min-h-screen max-h-screen ml-auto flex flex-col">
         {/* Header */}
         <div className="flex items-center p-4 shadow-md gap-3 justify-between border-b">
-          <h2 className="font-semibold text-lg">Cart {totalQty > 0 && `(${totalQty})`}</h2>
+          <h2 className="font-semibold text-lg">{t("cart.cartHeading")} {totalQty > 0 && `(${totalQty})`}</h2>
           <button
             onClick={close}
             className="hover:bg-gray-100 p-1 rounded transition-colors"
-            aria-label="Close cart"
+            aria-label={t("cart.closeCart")}
           >
             <IoClose size={25} />
           </button>
@@ -291,7 +295,7 @@ const DisplayCartItem = ({ close }) => {
         {!isLoggedIn && currentCart.length > 0 && (
           <div className="px-4 py-2.5 bg-amber-50 border-b border-amber-100 flex items-center gap-2 text-xs text-amber-700">
             <LogIn className="w-3.5 h-3.5 shrink-0" />
-            <span>Sign in to save your cart and track your order</span>
+            <span>{t("cart.signInToSaveCart")}</span>
           </div>
         )}
 
