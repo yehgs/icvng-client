@@ -49,6 +49,80 @@ const MERGED = Object.fromEntries(
   ])
 );
 
+// ── DB overrides overlay ────────────────────────────────────────────────
+//
+// Same mechanism as admin/src/i18n/index.js — EFFECTIVE starts as a clone
+// of the bundled static MERGED locales (always available synchronously,
+// works offline) and is overlaid with whatever
+// GET /api/ui-translations/merged?app=client&language=<lang> returns, via
+// applyDbOverrides() below. Populated by scripts/seedUiTranslations.js and
+// edited live from the admin's UiTranslationsManagement.jsx (a single CRUD
+// page manages both apps' copy — see server PRD §8a).
+const EFFECTIVE = Object.fromEntries(
+  Object.entries(MERGED).map(([code, locale]) => [code, locale]),
+);
+
+let revision = 0;
+const revisionListeners = new Set();
+
+function notifyRevision() {
+  revision += 1;
+  revisionListeners.forEach((cb) => {
+    try {
+      cb(revision);
+    } catch {
+      /* a listener throwing shouldn't break the others */
+    }
+  });
+}
+
+/** Subscribe to "the effective locale for some language changed". Returns
+ * an unsubscribe fn. Consumed by CountryContext.jsx to force `t()` output
+ * to re-render once DB overrides for the active language arrive. */
+export function subscribeI18nRevision(cb) {
+  revisionListeners.add(cb);
+  return () => revisionListeners.delete(cb);
+}
+
+function setPath(target, keyPath, value) {
+  const parts = keyPath.split(".");
+  let node = target;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!node[parts[i]] || typeof node[parts[i]] !== "object") node[parts[i]] = {};
+    node = node[parts[i]];
+  }
+  node[parts[parts.length - 1]] = value;
+}
+
+/** Apply a flat { "cart.checkout": "Passer commande", ... } map on top of
+ * the bundled locale for `lang`. Always rebuilt fresh from the static
+ * MERGED[lang] base rather than patched incrementally, so a key removed
+ * from the DB (reverted) falls back to the bundled value. */
+export function applyDbOverrides(lang, flatOverrides) {
+  if (!MERGED[lang] && lang !== "en") return;
+  const base = MERGED[lang] || MERGED.en;
+  const clone = JSON.parse(JSON.stringify(base));
+  for (const [key, value] of Object.entries(flatOverrides || {})) {
+    if (value) setPath(clone, key, value);
+  }
+  EFFECTIVE[lang] = clone;
+  notifyRevision();
+}
+
+/** Fetches DB overrides for one language and applies them. Failures are
+ * swallowed — a network hiccup just means "keep showing the bundled
+ * static strings" rather than breaking the storefront. */
+export async function loadUiTranslationOverrides(lang, apiBase) {
+  try {
+    const base = apiBase || import.meta.env.VITE_APP_API_URL || "http://localhost:8080/api";
+    const res = await fetch(`${base}/ui-translations/merged?app=client&language=${encodeURIComponent(lang)}`);
+    const json = await res.json();
+    if (json?.success) applyDbOverrides(lang, json.data || {});
+  } catch (e) {
+    console.warn(`[i18n] Failed to load DB overrides for '${lang}' — using bundled strings.`, e);
+  }
+}
+
 // ── String interpolation ──────────────────────────────────────────────────────
 function interpolate(str, params = {}) {
   if (!params || Object.keys(params).length === 0) return str;
@@ -142,14 +216,14 @@ export function saveLanguage(lang) {
  * @returns {string}
  */
 export function translate(lang, key, params) {
-  const locale = MERGED[lang] || MERGED.en;
+  const locale = EFFECTIVE[lang] || EFFECTIVE.en;
   const result = resolve(locale, key, params);
 
   if (result !== null) return result;
 
   // Fallback to English
   if (lang !== "en") {
-    const enResult = resolve(MERGED.en, key, params);
+    const enResult = resolve(EFFECTIVE.en, key, params);
     if (enResult !== null) return enResult;
   }
 

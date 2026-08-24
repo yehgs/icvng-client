@@ -30,6 +30,8 @@ import {
   SUPPORTED_LANGUAGES,
   LANGUAGE_NAMES,
   RTL_LANGUAGES,
+  loadUiTranslationOverrides,
+  subscribeI18nRevision,
 } from "../i18n/index.js";
 
 // ── Default country config (mirrors server config/countries/index.js for NG) ─
@@ -157,9 +159,25 @@ export function CountryProvider({ children }) {
   }, [language]);
 
   // ── Translation function ──────────────────────────────────────────────────
+  // DB-backed UI-copy overrides (see i18n/index.js's applyDbOverrides /
+  // EFFECTIVE) — fetched once `language` is known. setLanguage() above
+  // always does a full page reload on an actual language change, so
+  // (unlike the admin panel, which switches in-place) this only needs to
+  // fire when `language` is first set on this page load, not on every
+  // subsequent change. `i18nRevision` is bumped once the fetch resolves,
+  // which is what makes `t` re-render already-rendered strings with the
+  // override applied.
+  const [i18nRevision, setI18nRevision] = useState(0);
+  useEffect(() => {
+    if (!language) return;
+    loadUiTranslationOverrides(language);
+  }, [language]);
+  useEffect(() => subscribeI18nRevision(setI18nRevision), []);
+
   const t = useCallback(
     (key, params) => translate(language, key, params),
-    [language]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [language, i18nRevision]
   );
 
   // ── Currency formatting ───────────────────────────────────────────────────
