@@ -221,7 +221,10 @@ Non-exhaustive map of `server/controllers` by domain:
   home content blocks, site pages, SEO, FOMO widget, subscribers.
 - **Support & requests** — support tickets, product requests, order
   requests + order-request auth, contact messages, CRM leads.
-- **Platform** — country management/config, translations (AI-assisted),
+- **Platform** — country management/config, language lib
+  (`models/language.model.js` — admin-manageable list of supported
+  languages, `/api/languages`), translations (AI-assisted, all 9 languages
+  in the lib — see `server/PRD.md` §8/§8a/§8b for the full writeup),
   notifications, file/image upload, scraper tool + quota.
 
 ---

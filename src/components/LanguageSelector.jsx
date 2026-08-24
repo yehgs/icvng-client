@@ -1,7 +1,8 @@
 // components/LanguageSelector.jsx
 //
-// Manual language picker — English, French, Italian. Mirrors
-// CurrencySelector.jsx's dropdown pattern for visual consistency.
+// Manual language picker — every language in the platform's language lib
+// (see i18n/index.js SUPPORTED_LANGUAGES). Mirrors CurrencySelector.jsx's
+// dropdown pattern for visual consistency.
 //
 // Uses FlagIcon (inline SVG) rather than flag emoji (🇬🇧🇫🇷🇮🇹) — Windows
 // Chrome/Edge never rendered those (no native color flag glyphs on
@@ -19,18 +20,18 @@ import React, { useState, useRef, useEffect } from "react";
 import { useCountry } from "../context/CountryContext.jsx";
 import { FaChevronDown } from "react-icons/fa";
 import FlagIcon from "./FlagIcon.jsx";
+import { SUPPORTED_LANGUAGES, LANGUAGE_NAMES } from "../i18n/index.js";
 
-const LANGUAGES = [
-  { code: "en", label: "English" },
-  { code: "fr", label: "Français" },
-  { code: "it", label: "Italiano" },
-  { code: "es", label: "Español" },
-  { code: "pt", label: "Português" },
-  { code: "nl", label: "Nederlands" },
-  { code: "ar", label: "العربية" },
-  { code: "hi", label: "हिन्दी" },
-  { code: "zh", label: "中文" },
-];
+// Was a separately hand-maintained copy of the same 9-language list already
+// exported from i18n/index.js (SUPPORTED_LANGUAGES/LANGUAGE_NAMES) — three
+// independent copies of this list existed across the codebase (this file,
+// client i18n, admin i18n), each one driftable out of sync with the
+// others. Derive from i18n/index.js instead, same fix applied on the admin
+// side (InlineTranslateFields.jsx, BlogPosts.jsx, SitePagesManagement.jsx).
+const LANGUAGES = SUPPORTED_LANGUAGES.map((code) => ({
+  code,
+  label: LANGUAGE_NAMES[code] || code,
+}));
 
 const LanguageSelector = ({ className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
