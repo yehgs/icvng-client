@@ -1206,6 +1206,28 @@ const en = {
     addToCompare: "Add to compare",
     removeFromCompare: "Remove from compare",
   },
+  paystackCallback: {
+    verifyingHeading: "Verifying Payment…",
+    verifyingBody: "Please wait while we confirm your payment with Paystack.",
+    successHeading: "Payment Successful!",
+    successBody: "Your payment has been confirmed and your order has been placed.",
+    successToast: "Payment successful! Your order has been placed.",
+    orderReference: "Order Reference",
+    amountPaid: "Amount Paid",
+    redirecting: "Redirecting to order details…",
+    failedHeading: "Payment Failed",
+    failedBody: "Your payment could not be processed. Please try again.",
+    verificationFailed: "Payment verification failed",
+    errorHeading: "Verification Error",
+    errorBody: "We couldn't verify your payment status right now.",
+    errorChargeRecorded: "If you were charged, your payment has been recorded and our team can trace it using the reference above. Please contact support and we'll resolve it.",
+    verificationErrorToast: "Failed to verify payment. Please contact support.",
+    referenceNotFound: "Payment reference not found",
+    tryAgain: "Try Again",
+    returnToCheckout: "Return to Checkout",
+    contactSupport: "Contact Support",
+    supportSubject: "Payment Issue"
+  },
 };
 
 export default en;

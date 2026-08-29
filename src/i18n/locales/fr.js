@@ -1098,5 +1098,27 @@ export default {
     "faqLinkLabel": "FAQ",
     "contactTeamForClarification": "Contactez notre équipe pour des éclaircissements ou de l'aide",
     "relatedPolicies": "Politiques connexes"
-  }
+  },
+  "paystackCallback": {
+    "verifyingHeading": "Vérification du paiement…",
+    "verifyingBody": "Veuillez patienter pendant que nous confirmons votre paiement avec Paystack.",
+    "successHeading": "Paiement réussi !",
+    "successBody": "Votre paiement a été confirmé et votre commande a été enregistrée.",
+    "successToast": "Paiement réussi ! Votre commande a été enregistrée.",
+    "orderReference": "Référence de commande",
+    "amountPaid": "Montant payé",
+    "redirecting": "Redirection vers les détails de la commande…",
+    "failedHeading": "Paiement échoué",
+    "failedBody": "Votre paiement n'a pas pu être traité. Veuillez réessayer.",
+    "verificationFailed": "Échec de la vérification du paiement",
+    "errorHeading": "Erreur de vérification",
+    "errorBody": "Nous ne parvenons pas à vérifier l'état de votre paiement pour le moment.",
+    "errorChargeRecorded": "Si vous avez été débité, votre paiement a bien été enregistré et notre équipe peut le retrouver grâce à la référence ci-dessus. Contactez le support et nous réglerons cela.",
+    "verificationErrorToast": "Échec de la vérification du paiement. Veuillez contacter le support.",
+    "referenceNotFound": "Référence de paiement introuvable",
+    "tryAgain": "Réessayer",
+    "returnToCheckout": "Retour au paiement",
+    "contactSupport": "Contacter le support",
+    "supportSubject": "Problème de paiement"
+  },
 };

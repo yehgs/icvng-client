@@ -1098,5 +1098,27 @@ export default {
     "faqLinkLabel": "FAQ",
     "contactTeamForClarification": "Contatta il nostro team per chiarimenti o assistenza",
     "relatedPolicies": "Politiche correlate"
-  }
+  },
+  "paystackCallback": {
+    "verifyingHeading": "Verifica del pagamento…",
+    "verifyingBody": "Attendi mentre confermiamo il tuo pagamento con Paystack.",
+    "successHeading": "Pagamento riuscito!",
+    "successBody": "Il tuo pagamento è stato confermato e il tuo ordine è stato registrato.",
+    "successToast": "Pagamento riuscito! Il tuo ordine è stato registrato.",
+    "orderReference": "Riferimento ordine",
+    "amountPaid": "Importo pagato",
+    "redirecting": "Reindirizzamento ai dettagli dell'ordine…",
+    "failedHeading": "Pagamento fallito",
+    "failedBody": "Non è stato possibile elaborare il pagamento. Riprova.",
+    "verificationFailed": "Verifica del pagamento fallita",
+    "errorHeading": "Errore di verifica",
+    "errorBody": "Al momento non riusciamo a verificare lo stato del tuo pagamento.",
+    "errorChargeRecorded": "Se ti è stato addebitato l'importo, il pagamento è stato registrato e il nostro team può rintracciarlo tramite il riferimento qui sopra. Contatta l'assistenza e risolveremo.",
+    "verificationErrorToast": "Verifica del pagamento fallita. Contatta l'assistenza.",
+    "referenceNotFound": "Riferimento di pagamento non trovato",
+    "tryAgain": "Riprova",
+    "returnToCheckout": "Torna al checkout",
+    "contactSupport": "Contatta l'assistenza",
+    "supportSubject": "Problema di pagamento"
+  },
 };
