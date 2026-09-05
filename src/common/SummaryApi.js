@@ -357,6 +357,10 @@ const SummaryApi = {
     url: "/api/banner/active",
     method: "get",
   },
+  getActivePopup: {
+    url: "/api/popup/active",
+    method: "get",
+  },
   getHomeContentBlocks: {
     url: "/api/home-content/public",
     method: "get",
