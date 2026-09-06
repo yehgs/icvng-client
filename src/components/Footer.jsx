@@ -358,6 +358,22 @@ const Footer = () => {
                   </li>
                   <li className="mb-2">
                     <Link
+                      to="/gift-cards/buy"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      {t("footer.giftCardsLink")}
+                    </Link>
+                  </li>
+                  <li className="mb-2">
+                    <Link
+                      to="/gift-cards/balance"
+                      className="hover:text-amber-300 cursor-pointer transition"
+                    >
+                      {t("footer.giftCardBalanceLink")}
+                    </Link>
+                  </li>
+                  <li className="mb-2">
+                    <Link
                       to="/partner-with-us"
                       className="hover:text-amber-300 cursor-pointer transition"
                     >

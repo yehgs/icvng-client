@@ -48,6 +48,10 @@ const SingleBlogPost = lazy(() => import("../pages/SingleBlogPost.jsx"));
 const PaymentSuccessPage = lazy(() => import("../pages/PaymentSuccessPage"));
 const PaymentCancelPage = lazy(() => import("../pages/PaymentCancelPage"));
 const PaystackCallbackPage = lazy(() => import("../pages/PaystackCallbackPage"));
+const GiftCardBuyPage = lazy(() => import("../pages/GiftCardBuyPage"));
+const GiftCardBalancePage = lazy(() => import("../pages/GiftCardBalancePage"));
+const GiftCardPaystackCallbackPage = lazy(() => import("../pages/GiftCardPaystackCallbackPage"));
+const GiftCardStripeCallbackPage = lazy(() => import("../pages/GiftCardStripeCallbackPage"));
 
 // New Pages
 const PartnerWithUs = lazy(() => import("../pages/PartnerWithUs"));
@@ -225,6 +229,22 @@ const router = createBrowserRouter([
       {
         path: "/payment/paystack/callback",
         element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PaystackCallbackPage  /></Suspense>,
+      },
+      {
+        path: "gift-cards/buy",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><GiftCardBuyPage  /></Suspense>,
+      },
+      {
+        path: "gift-cards/balance",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><GiftCardBalancePage  /></Suspense>,
+      },
+      {
+        path: "gift-cards/paystack/callback",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><GiftCardPaystackCallbackPage  /></Suspense>,
+      },
+      {
+        path: "gift-cards/stripe/callback",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><GiftCardStripeCallbackPage  /></Suspense>,
       },
       // Dashboard Routes
       {

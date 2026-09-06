@@ -361,6 +361,31 @@ const SummaryApi = {
     url: "/api/popup/active",
     method: "get",
   },
+  // Gift cards
+  purchaseGiftCardPaystack: {
+    url: "/api/gift-card/purchase/paystack",
+    method: "post",
+  },
+  verifyGiftCardPaystack: {
+    url: "/api/gift-card/purchase/paystack/verify", // + /:reference
+    method: "get",
+  },
+  purchaseGiftCardStripe: {
+    url: "/api/gift-card/purchase/stripe",
+    method: "post",
+  },
+  giftCardPurchaseStatus: {
+    url: "/api/gift-card/purchase/status", // + /:reference
+    method: "get",
+  },
+  validateGiftCard: {
+    url: "/api/gift-card/validate",
+    method: "post",
+  },
+  checkGiftCardBalance: {
+    url: "/api/gift-card/balance", // + /:code
+    method: "get",
+  },
   getHomeContentBlocks: {
     url: "/api/home-content/public",
     method: "get",

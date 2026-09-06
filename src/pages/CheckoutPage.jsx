@@ -182,6 +182,15 @@ const CheckoutPage = () => {
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // ── Gift card redemption ──────────────────────────────────────────────
+  // Wired server-side for Paystack and Bank Transfer only (see
+  // giftCardCheckout.js) — Stripe's cart-checkout line-item flow doesn't
+  // support it yet, so the UI disables applying one while Stripe is
+  // selected rather than silently charging the full amount anyway.
+  const [giftCardCode, setGiftCardCode] = useState('');
+  const [giftCardApplied, setGiftCardApplied] = useState(null); // { code, appliedAmount, remainderToPay, currency }
+  const [giftCardChecking, setGiftCardChecking] = useState(false);
+
   // Country-scoped Bank Transfer availability resolves asynchronously
   // (see CountryContext) — if it was already selected (e.g. by a prior
   // country context) and turns out unavailable, fall back to whatever's
@@ -223,6 +232,33 @@ const CheckoutPage = () => {
 
   const shippingCost = selectedMethod?.cost || 0;
   const total = subtotal + shippingCost;
+  const giftCardDiscount = giftCardApplied?.appliedAmount || 0;
+  const payableTotal = Math.max(0, total - giftCardDiscount);
+
+  const handleApplyGiftCard = async () => {
+    if (!giftCardCode.trim()) return;
+    setGiftCardChecking(true);
+    try {
+      const res = await Axios({
+        ...SummaryApi.validateGiftCard,
+        data: { code: giftCardCode.trim(), orderAmount: total },
+      });
+      if (res.data.success) {
+        setGiftCardApplied(res.data.data);
+        toast.success(t('checkout.giftCardApplied'));
+      }
+    } catch (err) {
+      setGiftCardApplied(null);
+      AxiosToastError(err);
+    } finally {
+      setGiftCardChecking(false);
+    }
+  };
+
+  const handleRemoveGiftCard = () => {
+    setGiftCardApplied(null);
+    setGiftCardCode('');
+  };
 
   const loadShipping = async (addressId) => {
     if (!addressId || cartItem.length === 0) return;
@@ -362,7 +398,15 @@ const CheckoutPage = () => {
         selectedPrice: item.selectedPrice || item.productId.price,
       }));
 
-      if (contact.paymentMethod === 'bank_transfer') {
+      const fullyCoveredByGiftCard = giftCardApplied && payableTotal <= 0;
+
+      // A gift card covering the ENTIRE order has nowhere to go through
+      // Paystack (which requires a non-zero charge) or Stripe (not wired
+      // for gift cards at all yet) — it always goes through the bank
+      // transfer endpoint instead, which the server allows for a
+      // zero-remainder order even in a country with no bank transfer
+      // otherwise configured (see DirectBankTransferOrderController).
+      if (contact.paymentMethod === 'bank_transfer' || fullyCoveredByGiftCard) {
         // The receiving account shown/submitted is the IT/DIRECTOR
         // country-scoped setting from CountryContext (fetched from
         // GET /api/bank-transfer-settings/available) — NOT hardcoded
@@ -385,13 +429,26 @@ const CheckoutPage = () => {
             currency: bankTransferDetails?.currencyCode || 'NGN',
             bankDetails,
             customerNotes: contact.notes,
+            ...(giftCardApplied && { giftCardCode: giftCardApplied.code }),
           },
         });
         if (res.data.success) {
           fetchCartItem?.(); fetchOrder?.();
-          navigate('/bank-transfer-instructions', {
-            state: { orderDetails: res.data.data, bankDetails, totalAmount: total, shippingCost, shippingMethod: selectedMethod },
-          });
+          if (fullyCoveredByGiftCard) {
+            // Already PAID via GIFT_CARD — nothing to await, so this goes
+            // to the normal order-success screen, not the bank-transfer
+            // "here's where to send money" instructions page.
+            const parent = Array.isArray(res.data.data)
+              ? (res.data.data.find((o) => o.isParentOrder) || res.data.data[0])
+              : res.data.data;
+            navigate('/order-success', {
+              state: { orderDetails: parent, paymentMethod: 'Gift Card' },
+            });
+          } else {
+            navigate('/bank-transfer-instructions', {
+              state: { orderDetails: res.data.data, bankDetails, totalAmount: total, shippingCost, shippingMethod: selectedMethod },
+            });
+          }
         }
       } else {
         // Paystack (NGN) or Stripe (international)
@@ -415,6 +472,7 @@ const CheckoutPage = () => {
             shippingMethodId: selectedMethod._id,
             currency: selectedCurrency, paymentMethod,
             customerNotes: contact.notes,
+            ...(giftCardApplied && { giftCardCode: giftCardApplied.code }),
           },
         });
 
@@ -651,6 +709,41 @@ const CheckoutPage = () => {
                     </div>
                   </div>
 
+                  {/* Gift card redemption — Paystack, Stripe, and Bank Transfer */}
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">{t('checkout.giftCardLabel')}</label>
+                    {giftCardApplied ? (
+                      <div className="flex items-center justify-between p-3 border border-green-300 bg-green-50 rounded-lg">
+                        <div className="text-sm">
+                          <span className="font-mono font-semibold text-green-700">{giftCardApplied.code}</span>
+                          <span className="text-green-700 ml-2">
+                            {t('checkout.giftCardAppliedAmount', { amount: formatPrice ? formatPrice(giftCardApplied.appliedAmount) : giftCardApplied.appliedAmount })}
+                          </span>
+                        </div>
+                        <button type="button" onClick={handleRemoveGiftCard} className="text-xs text-red-600 hover:underline">
+                          {t('checkout.remove')}
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2">
+                        <input
+                          value={giftCardCode}
+                          onChange={(e) => setGiftCardCode(e.target.value)}
+                          placeholder={t('checkout.giftCardPlaceholder')}
+                          className={inp}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyGiftCard}
+                          disabled={giftCardChecking || !giftCardCode.trim()}
+                          className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
+                        >
+                          {giftCardChecking ? <Loader2 className="w-4 h-4 animate-spin" /> : t('checkout.apply')}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.orderNotes')}</label>
                     <textarea value={contact.notes} rows={3} className={inp + ' resize-none'}
@@ -744,7 +837,7 @@ const CheckoutPage = () => {
                     className="flex-1 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
                     {submitting
                       ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('checkout.processing')}</>
-                      : <>{t('checkout.placeOrder')} — {formatPrice(total)}</>}
+                      : <>{t('checkout.placeOrder')} — {formatPrice(payableTotal)}</>}
                   </button>
                 </div>
               </div>
@@ -769,9 +862,15 @@ const CheckoutPage = () => {
                 )}
               </div>
               <div className="border-t border-gray-200 pt-3">
+                {giftCardApplied && (
+                  <div className="flex justify-between text-green-600 text-sm mb-1">
+                    <span>{t('checkout.giftCardDiscount')}</span>
+                    <span>-{formatPrice(giftCardDiscount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold text-gray-900 text-base">
                   <span>{t('checkout.total')}</span>
-                  <span>{formatPrice(total)}</span>
+                  <span>{formatPrice(payableTotal)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-2 text-xs text-gray-400 pt-2 border-t border-gray-100">
