@@ -11,6 +11,7 @@ import {
   Twitter,
   Instagram,
   Menu,
+  Gift,
 } from "lucide-react";
 import { VscGitCompare } from "react-icons/vsc";
 import SearchInput from "./Search";
@@ -237,6 +238,13 @@ export default function Header() {
                 className="bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 text-sm font-semibold whitespace-nowrap"
               >
                 {t("header.coffeeBlog")}
+              </Link>
+              <Link
+                to="/gift-cards/buy"
+                className="flex items-center gap-1.5 bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 text-sm font-semibold whitespace-nowrap"
+              >
+                <Gift size={16} />
+                {t("header.giftCardCta")}
               </Link>
               <LanguageSelector />
               <CurrencySelector />

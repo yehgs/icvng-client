@@ -14,6 +14,7 @@ import PopularProductsSection from "../components/PopularProductsSection";
 import CoffeeOriginSection from "../components/CoffeeOriginSection";
 import TestimonialsSection from "../components/TestimonialsSection";
 import TrustBadgesSection from "../components/TrustBadgesSection";
+import GiftCardPromoSection from "../components/GiftCardPromoSection";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 
@@ -169,6 +170,9 @@ const Home = () => {
 
       {/* Testimonials Section */}
       <TestimonialsSection />
+
+      {/* Gift Card Promo — last section, sits right above the footer */}
+      <GiftCardPromoSection />
     </section>
   );
 };

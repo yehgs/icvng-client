@@ -11,6 +11,7 @@ import {
   BookOpen,
   Handshake,
   Phone,
+  Gift,
 } from "lucide-react";
 
 const BROWN = "#7B3F1C";
@@ -1045,6 +1046,17 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                     className="text-secondary-200 flex-shrink-0"
                   />
                   {t("header.coffeeBlog")}
+                </Link>
+                <Link
+                  to="/gift-cards/buy"
+                  className="flex items-center gap-3 p-4 text-sm text-gray-700 hover:bg-gray-50 border-b"
+                  onClick={() => setVerticalMenuActive(false)}
+                >
+                  <Gift
+                    size={16}
+                    className="text-secondary-200 flex-shrink-0"
+                  />
+                  {t("header.giftCardCta")}
                 </Link>
                 <Link
                   to="/partner-with-us"
