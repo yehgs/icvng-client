@@ -1057,6 +1057,9 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                     className="text-secondary-200 flex-shrink-0"
                   />
                   {t("header.giftCardCta")}
+                  <span className="bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full animate-bounce">
+                    {t("header.newBadge")}
+                  </span>
                 </Link>
                 <Link
                   to="/partner-with-us"

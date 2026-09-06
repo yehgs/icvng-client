@@ -527,6 +527,7 @@ const en = {
     partnerWithUs: "Partner with us",
     coffeeBlog: "Coffee Blog",
     giftCardCta: "Gift Cards",
+    newBadge: "New",
     shopNow: "Shop Now",
     searchPrefix: "Search",
     browse: "Browse",

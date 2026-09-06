@@ -239,13 +239,18 @@ export default function Header() {
               >
                 {t("header.coffeeBlog")}
               </Link>
-              <Link
-                to="/gift-cards/buy"
-                className="flex items-center gap-1.5 bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 text-sm font-semibold whitespace-nowrap"
-              >
-                <Gift size={16} />
-                {t("header.giftCardCta")}
-              </Link>
+              <div className="relative">
+                <Link
+                  to="/gift-cards/buy"
+                  className="flex items-center gap-1.5 bg-secondary-200 hover:bg-secondary-100 text-white rounded py-2 px-3 text-sm font-semibold whitespace-nowrap"
+                >
+                  <Gift size={16} />
+                  {t("header.giftCardCta")}
+                </Link>
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-bounce pointer-events-none">
+                  {t("header.newBadge")}
+                </span>
+              </div>
               <LanguageSelector />
               <CurrencySelector />
 
