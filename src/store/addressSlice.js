@@ -1,19 +1,3 @@
-import { createSlice } from "@reduxjs/toolkit";
-
-const initialValue = {
-    addressList : []
-}
-
-const addressSlice = createSlice({
-    name : 'address',
-    initialState : initialValue,
-    reducers : {
-        handleAddAddress : (state,action)=>{
-            state.addressList = [...action.payload]
-        }
-    }
-})
-
-export const {handleAddAddress  } = addressSlice.actions
-
-export default addressSlice.reducer
+// client/src/store/addressSlice.js
+// Thin re-export shim — see userSlice.js in this same folder for why.
+export * from "@yehgs/icvng-core/store";

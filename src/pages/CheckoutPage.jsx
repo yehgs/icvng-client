@@ -1,46 +1,99 @@
 // client/src/pages/CheckoutPage.jsx
 // 4-step checkout: Address → Shipping → Payment → Review
 // Login required — guests see auth modal from cart drawer before reaching here
-import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import AxiosToastError from '../utils/AxiosToastError';
-import toast from 'react-hot-toast';
-import { nigeriaStatesLgas } from '../data/nigeria-states-lgas';
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { useGlobalContext, useCurrency } from "../provider/GlobalProvider";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import AxiosToastError from "../utils/AxiosToastError";
+import toast from "react-hot-toast";
+import { nigeriaStatesLgas } from "../data/nigeria-states-lgas";
 // Phase 4: country-aware payment routing
-import { useCountry } from '../context/CountryContext.jsx';
-import { useTranslation } from '../hooks/useTranslation';
+import { useCountry } from "../context/CountryContext.jsx";
+import { useTranslation } from "../hooks/useTranslation";
 import {
-  MapPin, Truck, CreditCard, FileText, ChevronRight,
-  Plus, Loader2, Package, Minus, Trash2, Store,
-} from 'lucide-react';
-import { FaShoppingCart, FaShieldAlt } from 'react-icons/fa';
+  MapPin,
+  Truck,
+  CreditCard,
+  FileText,
+  ChevronRight,
+  Plus,
+  Loader2,
+  Package,
+  Minus,
+  Trash2,
+  Store,
+} from "lucide-react";
+import { FaShoppingCart, FaShieldAlt } from "react-icons/fa";
+import {
+  computeCheckoutTotals,
+  buildOrderItems,
+  applyGiftCard,
+  submitBankTransferOrder,
+  submitGatewayOrder,
+} from "@yehgs/icvng-core/checkout";
+import {
+  calculateShipping,
+  reconcileSelectedShippingMethod,
+} from "@yehgs/icvng-core/shipping";
+import {
+  createAddress as createAddressCore,
+  fetchAddresses,
+  pickDefaultAddress,
+} from "@yehgs/icvng-core/address";
 
-const STEP_KEYS = ['checkout.stepAddress', 'checkout.stepShipping', 'checkout.stepPayment', 'checkout.stepReview'];
+const STEP_KEYS = [
+  "checkout.stepAddress",
+  "checkout.stepShipping",
+  "checkout.stepPayment",
+  "checkout.stepReview",
+];
 
 // ─── Simple inline address form ──────────────────────────────────────────────
 function AddressForm({ onSave, saving }) {
   const { t } = useTranslation();
   const [form, setForm] = useState({
-    fullName: '', phone: '', address_line: '', address_line_2: '',
-    city: '', state: 'Rivers', lga: '', country: 'Nigeria', label: '',
+    fullName: "",
+    phone: "",
+    address_line: "",
+    address_line_2: "",
+    city: "",
+    state: "Rivers",
+    lga: "",
+    country: "Nigeria",
+    label: "",
   });
 
   const set = (k, v) => setForm((p) => ({ ...p, [k]: v }));
-  const inp = 'w-full border border-gray-300 px-3 py-2 text-sm rounded focus:outline-none focus:border-green-500 bg-white';
+  const inp =
+    "w-full border border-gray-300 px-3 py-2 text-sm rounded focus:outline-none focus:border-green-500 bg-white";
 
   const stateData = nigeriaStatesLgas.find((s) => s.state === form.state);
   const lgas = stateData?.lga || [];
 
   const handleUse = () => {
-    if (!form.fullName) { toast.error(t('checkout.enterFullName')); return; }
-    if (!form.phone) { toast.error(t('checkout.enterPhone')); return; }
-    if (!form.address_line) { toast.error(t('checkout.enterStreetAddress')); return; }
-    if (!form.city) { toast.error(t('checkout.enterCity')); return; }
-    if (!form.state) { toast.error(t('checkout.selectStateError')); return; }
+    if (!form.fullName) {
+      toast.error(t("checkout.enterFullName"));
+      return;
+    }
+    if (!form.phone) {
+      toast.error(t("checkout.enterPhone"));
+      return;
+    }
+    if (!form.address_line) {
+      toast.error(t("checkout.enterStreetAddress"));
+      return;
+    }
+    if (!form.city) {
+      toast.error(t("checkout.enterCity"));
+      return;
+    }
+    if (!form.state) {
+      toast.error(t("checkout.selectStateError"));
+      return;
+    }
     // lga is recommended but not blocking — fall back to state in handleSaveAddress
     onSave(form);
   };
@@ -48,38 +101,77 @@ function AddressForm({ onSave, saving }) {
   return (
     <div className="space-y-3 border border-gray-200 p-4 rounded-lg bg-gray-50">
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.fullNameLabel')} *</label>
-        <input placeholder={t('checkout.namePlaceholder')} value={form.fullName}
-          onChange={(e) => set('fullName', e.target.value)} className={inp} />
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          {t("checkout.fullNameLabel")} *
+        </label>
+        <input
+          placeholder={t("checkout.namePlaceholder")}
+          value={form.fullName}
+          onChange={(e) => set("fullName", e.target.value)}
+          className={inp}
+        />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.phoneLabel')} *</label>
-        <input placeholder="+234 801 234 5678" value={form.phone}
-          onChange={(e) => set('phone', e.target.value)} className={inp} />
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          {t("checkout.phoneLabel")} *
+        </label>
+        <input
+          placeholder="+234 801 234 5678"
+          value={form.phone}
+          onChange={(e) => set("phone", e.target.value)}
+          className={inp}
+        />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.streetAddressLabel')} *</label>
-        <input placeholder={t('checkout.streetLabel')} value={form.address_line}
-          onChange={(e) => set('address_line', e.target.value)} className={inp} />
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          {t("checkout.streetAddressLabel")} *
+        </label>
+        <input
+          placeholder={t("checkout.streetLabel")}
+          value={form.address_line}
+          onChange={(e) => set("address_line", e.target.value)}
+          className={inp}
+        />
       </div>
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.apartmentLabel')}</label>
-        <input placeholder={t('checkout.streetPlaceholder')} value={form.address_line_2}
-          onChange={(e) => set('address_line_2', e.target.value)} className={inp} />
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          {t("checkout.apartmentLabel")}
+        </label>
+        <input
+          placeholder={t("checkout.streetPlaceholder")}
+          value={form.address_line_2}
+          onChange={(e) => set("address_line_2", e.target.value)}
+          className={inp}
+        />
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.cityTownLabel')} *</label>
-          <input placeholder={t('checkout.cityPlaceholder')} value={form.city}
-            onChange={(e) => set('city', e.target.value)} className={inp} />
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
+            {t("checkout.cityTownLabel")} *
+          </label>
+          <input
+            placeholder={t("checkout.cityPlaceholder")}
+            value={form.city}
+            onChange={(e) => set("city", e.target.value)}
+            className={inp}
+          />
         </div>
         <div>
-          <label className="block text-xs font-semibold text-gray-700 mb-1">{t('address.state')} *</label>
-          <select value={form.state}
-            onChange={(e) => { set('state', e.target.value); set('lga', ''); }}
-            className={inp}>
+          <label className="block text-xs font-semibold text-gray-700 mb-1">
+            {t("address.state")} *
+          </label>
+          <select
+            value={form.state}
+            onChange={(e) => {
+              set("state", e.target.value);
+              set("lga", "");
+            }}
+            className={inp}
+          >
             {nigeriaStatesLgas.map((s) => (
-              <option key={s.state} value={s.state}>{s.state}</option>
+              <option key={s.state} value={s.state}>
+                {s.state}
+              </option>
             ))}
           </select>
         </div>
@@ -87,22 +179,49 @@ function AddressForm({ onSave, saving }) {
       {lgas.length > 0 && (
         <div>
           <label className="block text-xs font-semibold text-gray-700 mb-1">
-            {t('address.lga')} <span className="font-normal text-gray-500">— {t('checkout.lgaHint')}</span>
+            {t("address.lga")}{" "}
+            <span className="font-normal text-gray-500">
+              — {t("checkout.lgaHint")}
+            </span>
           </label>
-          <select value={form.lga} onChange={(e) => set('lga', e.target.value)} className={inp}>
-            <option value="">{t('checkout.selectLGA')}</option>
-            {lgas.map((l) => <option key={l} value={l}>{l}</option>)}
+          <select
+            value={form.lga}
+            onChange={(e) => set("lga", e.target.value)}
+            className={inp}
+          >
+            <option value="">{t("checkout.selectLGA")}</option>
+            {lgas.map((l) => (
+              <option key={l} value={l}>
+                {l}
+              </option>
+            ))}
           </select>
         </div>
       )}
       <div>
-        <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.addressLabelField')}</label>
-        <input placeholder={t('checkout.addressLabelPlaceholder')} value={form.label}
-          onChange={(e) => set('label', e.target.value)} className={inp} />
+        <label className="block text-xs font-semibold text-gray-700 mb-1">
+          {t("checkout.addressLabelField")}
+        </label>
+        <input
+          placeholder={t("checkout.addressLabelPlaceholder")}
+          value={form.label}
+          onChange={(e) => set("label", e.target.value)}
+          className={inp}
+        />
       </div>
-      <button type="button" onClick={handleUse} disabled={saving}
-        className="w-full bg-green-600 text-white text-sm font-semibold py-2.5 rounded hover:bg-green-700 disabled:opacity-60 flex items-center justify-center gap-2 transition">
-        {saving ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('common.saving')}</> : t('checkout.useThisAddress')}
+      <button
+        type="button"
+        onClick={handleUse}
+        disabled={saving}
+        className="w-full bg-green-600 text-white text-sm font-semibold py-2.5 rounded hover:bg-green-700 disabled:opacity-60 flex items-center justify-center gap-2 transition"
+      >
+        {saving ? (
+          <>
+            <Loader2 className="w-4 h-4 animate-spin" /> {t("common.saving")}
+          </>
+        ) : (
+          t("checkout.useThisAddress")
+        )}
       </button>
     </div>
   );
@@ -114,32 +233,54 @@ function CartAdjuster({ items, onUpdate, onRemove, formatPrice }) {
   if (!items?.length) return null;
   return (
     <div className="bg-gray-50 border border-gray-200 rounded p-3 space-y-3">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">{t('checkout.yourItems')}</p>
+      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+        {t("checkout.yourItems")}
+      </p>
       {items.map((item) => {
         const product = item.productId;
         const price = item.selectedPrice || product?.price || 0;
         return (
           <div key={item._id} className="flex items-center gap-2">
             <div className="w-9 h-9 bg-white rounded border overflow-hidden shrink-0">
-              {product?.image?.[0] && <img src={product.image[0]} alt={product.name} className="w-full h-full object-contain" />}
+              {product?.image?.[0] && (
+                <img
+                  src={product.image[0]}
+                  alt={product.name}
+                  className="w-full h-full object-contain"
+                />
+              )}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-medium text-gray-900 truncate">{product?.name}</p>
+              <p className="text-xs font-medium text-gray-900 truncate">
+                {product?.name}
+              </p>
               <p className="text-xs text-gray-500">{formatPrice(price)}</p>
             </div>
             <div className="flex items-center border border-gray-200 rounded bg-white overflow-hidden">
-              <button onClick={() => onUpdate(item, item.quantity - 1)} disabled={item.quantity <= 1}
-                className="px-1.5 py-1 text-gray-400 hover:bg-gray-50 disabled:opacity-30">
+              <button
+                onClick={() => onUpdate(item, item.quantity - 1)}
+                disabled={item.quantity <= 1}
+                className="px-1.5 py-1 text-gray-400 hover:bg-gray-50 disabled:opacity-30"
+              >
                 <Minus className="w-3 h-3" />
               </button>
-              <span className="w-6 text-center text-xs font-semibold">{item.quantity}</span>
-              <button onClick={() => onUpdate(item, item.quantity + 1)}
-                className="px-1.5 py-1 text-gray-400 hover:bg-gray-50">
+              <span className="w-6 text-center text-xs font-semibold">
+                {item.quantity}
+              </span>
+              <button
+                onClick={() => onUpdate(item, item.quantity + 1)}
+                className="px-1.5 py-1 text-gray-400 hover:bg-gray-50"
+              >
                 <Plus className="w-3 h-3" />
               </button>
             </div>
-            <p className="text-xs font-bold w-16 text-right shrink-0">{formatPrice(price * item.quantity)}</p>
-            <button onClick={() => onRemove(item)} className="p-1 text-gray-300 hover:text-red-500 transition">
+            <p className="text-xs font-bold w-16 text-right shrink-0">
+              {formatPrice(price * item.quantity)}
+            </p>
+            <button
+              onClick={() => onRemove(item)}
+              className="p-1 text-gray-300 hover:text-red-500 transition"
+            >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -152,10 +293,29 @@ function CartAdjuster({ items, onUpdate, onRemove, formatPrice }) {
 // ─── Main Checkout ────────────────────────────────────────────────────────────
 const CheckoutPage = () => {
   const { t } = useTranslation();
-  const { isLoggedIn, fetchCartItem, fetchOrder, updateCartItem, deleteCartItem, isMerging } = useGlobalContext();
-  const { selectedCurrency, formatPrice, convertPrice, getPaymentMethod, exchangeRates } = useCurrency();
+  const {
+    isLoggedIn,
+    fetchCartItem,
+    fetchOrder,
+    updateCartItem,
+    deleteCartItem,
+    isMerging,
+  } = useGlobalContext();
+  const {
+    selectedCurrency,
+    formatPrice,
+    convertPrice,
+    getPaymentMethod,
+    exchangeRates,
+  } = useCurrency();
   // Phase 4: country-aware payment availability
-  const { hasPaystack, hasStripe, hasBankTransfer, bankTransferDetails, countryCode } = useCountry();
+  const {
+    hasPaystack,
+    hasStripe,
+    hasBankTransfer,
+    bankTransferDetails,
+    countryCode,
+  } = useCountry();
   // Bank Transfer's receiving account is only ever held in ONE currency
   // (bankTransferDetails.currencyCode — e.g. NGN for Nigeria's account).
   // hasBankTransfer alone only means "this country has a bank transfer
@@ -164,21 +324,28 @@ const CheckoutPage = () => {
   // via the currency selector (e.g. picking EUR while still on the
   // Nigerian storefront). Bank Transfer must hide in that case; only
   // Stripe makes sense for a currency the receiving account doesn't hold.
-  const bankTransferAvailable = hasBankTransfer && selectedCurrency === bankTransferDetails?.currencyCode;
+  const bankTransferAvailable =
+    hasBankTransfer && selectedCurrency === bankTransferDetails?.currencyCode;
   const cartItem = useSelector((state) => state.cartItem.cart);
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
   const [step, setStep] = useState(0);
   const [addressList, setAddressList] = useState([]);
-  const [selectedAddressId, setSelectedAddressId] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState("");
   const [showAddressForm, setShowAddressForm] = useState(false);
   const [addressSaving, setAddressSaving] = useState(false);
   const [shippingMethods, setShippingMethods] = useState([]);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
   // Default payment method: paystack for NG, stripe for others
-  const [contact, setContact] = useState({ name: '', email: '', phone: '', notes: '', paymentMethod: hasPaystack ? 'paystack' : 'stripe' });
+  const [contact, setContact] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    notes: "",
+    paymentMethod: hasPaystack ? "paystack" : "stripe",
+  });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -187,7 +354,7 @@ const CheckoutPage = () => {
   // giftCardCheckout.js) — Stripe's cart-checkout line-item flow doesn't
   // support it yet, so the UI disables applying one while Stripe is
   // selected rather than silently charging the full amount anyway.
-  const [giftCardCode, setGiftCardCode] = useState('');
+  const [giftCardCode, setGiftCardCode] = useState("");
   const [giftCardApplied, setGiftCardApplied] = useState(null); // { code, appliedAmount, remainderToPay, currency }
   const [giftCardChecking, setGiftCardChecking] = useState(false);
 
@@ -197,112 +364,114 @@ const CheckoutPage = () => {
   // actually offered rather than leaving a dead selection the submit
   // handler would reject.
   useEffect(() => {
-    if (contact.paymentMethod === 'bank_transfer' && !bankTransferAvailable) {
-      setContact((p) => ({ ...p, paymentMethod: hasPaystack ? 'paystack' : 'stripe' }));
+    if (contact.paymentMethod === "bank_transfer" && !bankTransferAvailable) {
+      setContact((p) => ({
+        ...p,
+        paymentMethod: hasPaystack ? "paystack" : "stripe",
+      }));
     }
   }, [bankTransferAvailable, hasPaystack]);
 
   // Redirect if not logged in (shouldn't reach here — cart drawer blocks it)
   useEffect(() => {
-    if (!isLoggedIn) navigate('/');
+    if (!isLoggedIn) navigate("/");
   }, [isLoggedIn]);
 
   // Pre-fill contact from user account
   useEffect(() => {
-    if (user) setContact((p) => ({ ...p, name: user.name || '', email: user.email || '', phone: user.mobile || '' }));
+    if (user)
+      setContact((p) => ({
+        ...p,
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.mobile || "",
+      }));
   }, [user]);
 
   // Load saved addresses
   useEffect(() => {
     if (!isLoggedIn) return;
-    Axios({ ...SummaryApi.getAddress }).then((res) => {
-      if (res.data.success) {
-        const addrs = res.data.data || [];
+    fetchAddresses({ apiClient: Axios, endpoints: SummaryApi }).then(
+      (addrs) => {
         setAddressList(addrs);
-        const primary = addrs.find((a) => a.is_primary) || addrs[0];
-        if (primary) { setSelectedAddressId(primary._id); loadShipping(primary._id); }
-        else setShowAddressForm(true);
-      }
-    }).catch(() => {});
+        const primary = pickDefaultAddress(addrs);
+        if (primary) {
+          setSelectedAddressId(primary._id);
+          loadShipping(primary._id);
+        } else setShowAddressForm(true);
+      },
+    );
   }, [isLoggedIn]);
 
-  const subtotal = useMemo(() =>
-    cartItem.reduce((s, item) => s + (item.selectedPrice || item.productId?.price || 0) * item.quantity, 0),
-    [cartItem]);
+  const subtotal = useMemo(
+    () =>
+      cartItem.reduce(
+        (s, item) =>
+          s +
+          (item.selectedPrice || item.productId?.price || 0) * item.quantity,
+        0,
+      ),
+    [cartItem],
+  );
 
   const shippingCost = selectedMethod?.cost || 0;
-  const total = subtotal + shippingCost;
-  const giftCardDiscount = giftCardApplied?.appliedAmount || 0;
-  const payableTotal = Math.max(0, total - giftCardDiscount);
+  const { total, giftCardDiscount, payableTotal, fullyCoveredByGiftCard } =
+    useMemo(
+      () => computeCheckoutTotals(cartItem, shippingCost, giftCardApplied),
+      [cartItem, shippingCost, giftCardApplied],
+    );
 
   const handleApplyGiftCard = async () => {
     if (!giftCardCode.trim()) return;
     setGiftCardChecking(true);
-    try {
-      const res = await Axios({
-        ...SummaryApi.validateGiftCard,
-        data: { code: giftCardCode.trim(), orderAmount: total },
-      });
-      if (res.data.success) {
-        setGiftCardApplied(res.data.data);
-        toast.success(t('checkout.giftCardApplied'));
-      }
-    } catch (err) {
+    const result = await applyGiftCard({
+      apiClient: Axios,
+      endpoints: SummaryApi,
+      code: giftCardCode,
+      orderAmount: total,
+    });
+    if (result.success) {
+      setGiftCardApplied(result.data);
+      toast.success(t("checkout.giftCardApplied"));
+    } else {
       setGiftCardApplied(null);
-      AxiosToastError(err);
-    } finally {
-      setGiftCardChecking(false);
+      toast.error(result.message);
     }
+    setGiftCardChecking(false);
   };
 
   const handleRemoveGiftCard = () => {
     setGiftCardApplied(null);
-    setGiftCardCode('');
+    setGiftCardCode("");
   };
 
   const loadShipping = async (addressId) => {
     if (!addressId || cartItem.length === 0) return;
     setShippingLoading(true);
-    try {
-      const items = cartItem.map((item) => ({
-        productId: item.productId._id,
-        quantity: item.quantity,
-        category: item.productId.category?._id || item.productId.category,
-        weight: item.productId.weight || 1,
-        name: item.productId.name,
-        priceOption: item.priceOption || 'regular',
-        selectedPrice: item.selectedPrice || item.productId.price,
-      }));
-      const totalWeight = items.reduce((t, i) => t + (i.weight || 1) * i.quantity, 0);
-
-      const res = await Axios({
-        url: '/api/shipping/calculate-checkout', method: 'post',
-        data: { addressId, items, orderValue: subtotal, totalWeight },
-      });
-
-      if (res.data.success) {
-        const methods = (res.data.data?.methods || []).sort((a, b) => {
-          if (a.type === 'pickup' && b.type !== 'pickup') return 1;
-          if (b.type === 'pickup' && a.type !== 'pickup') return -1;
-          return a.cost - b.cost;
-        });
-        setShippingMethods(methods);
-        // Keep the customer's chosen method selected across refreshes (e.g.
-        // quantity changes) if it's still available - just pick up its
-        // possibly-updated cost/eligibility. Only fall back to the
-        // cheapest/first option on first load or if their choice dropped
-        // out of the available list (e.g. no longer meets a free-shipping
-        // minimum after removing items).
-        setSelectedMethod((prevSelected) => {
-          const stillAvailable = prevSelected
-            ? methods.find((m) => m.code === prevSelected.code)
-            : null;
-          return stillAvailable || methods[0] || null;
-        });
-        if (methods.length === 0) toast.error(t('checkout.noShippingOptions'));
-      }
-    } catch { toast.error(t('checkout.failedLoadShipping')); }
-    finally { setShippingLoading(false); }
+    const result = await calculateShipping({
+      apiClient: Axios,
+      endpoints: SummaryApi,
+      addressId,
+      cartItem,
+      orderValue: subtotal,
+    });
+    if (result.success) {
+      setShippingMethods(result.methods);
+      // Keep the customer's chosen method selected across refreshes (e.g.
+      // quantity changes) if it's still available - just pick up its
+      // possibly-updated cost/eligibility. Only fall back to the
+      // cheapest/first option on first load or if their choice dropped
+      // out of the available list (e.g. no longer meets a free-shipping
+      // minimum after removing items).
+      setSelectedMethod((prevSelected) =>
+        reconcileSelectedShippingMethod(result.methods, prevSelected),
+      );
+      if (result.methods.length === 0)
+        toast.error(t("checkout.noShippingOptions"));
+    } else {
+      toast.error(t("checkout.failedLoadShipping"));
+    }
+    setShippingLoading(false);
   };
 
   // Re-fetch shipping methods whenever the order contents change (quantity
@@ -312,8 +481,8 @@ const CheckoutPage = () => {
   // the cart signature - not on mount, and not merely because the address
   // finished loading (that initial fetch already happens elsewhere).
   const cartSignature = useMemo(
-    () => cartItem.map((item) => `${item._id}:${item.quantity}`).join('|'),
-    [cartItem]
+    () => cartItem.map((item) => `${item._id}:${item.quantity}`).join("|"),
+    [cartItem],
   );
   const previousCartSignatureRef = useRef(null);
 
@@ -341,35 +510,25 @@ const CheckoutPage = () => {
 
   const handleSaveAddress = async (formData) => {
     setAddressSaving(true);
-    try {
-      // Map checkout form field names to what the server's addAddressController expects.
-      // The inline form uses: fullName, phone, address_line, city, state, lga, label
-      // The server requires:  address_line, city, state, lga, mobile
-      const payload = {
-        address_line: formData.address_line,
-        address_line_2: formData.address_line_2 || '',
-        city: formData.city,
-        state: formData.state,
-        lga: formData.lga || formData.state, // fall back to state name if LGA not selected
-        mobile: formData.phone,              // server field is "mobile", form field is "phone"
-        address_type: 'home',
-        status: true,
-      };
-
-      const res = await Axios({ ...SummaryApi.createAddress, data: payload });
-      if (res.data.success) {
-        toast.success(t('checkout.addressSaved'));
-        const newAddr = res.data.data;
-        // Attach display fields locally so the review step can show them
-        newAddr.fullName = formData.fullName;
-        newAddr.phone = formData.phone;
-        setAddressList((p) => [...p, newAddr]);
-        setSelectedAddressId(newAddr._id);
-        setShowAddressForm(false);
-        await loadShipping(newAddr._id);
-      }
-    } catch (e) { AxiosToastError(e); }
-    finally { setAddressSaving(false); }
+    const result = await createAddressCore({
+      apiClient: Axios,
+      endpoints: SummaryApi,
+      formData,
+    });
+    if (result.success) {
+      toast.success(t("checkout.addressSaved"));
+      const newAddr = result.address;
+      // Attach display fields locally so the review step can show them
+      newAddr.fullName = formData.fullName;
+      newAddr.phone = formData.phone;
+      setAddressList((p) => [...p, newAddr]);
+      setSelectedAddressId(newAddr._id);
+      setShowAddressForm(false);
+      await loadShipping(newAddr._id);
+    } else {
+      toast.error(result.message);
+    }
+    setAddressSaving(false);
   };
 
   const handleCartUpdate = async (item, qty) => {
@@ -381,24 +540,26 @@ const CheckoutPage = () => {
   const handleCartRemove = async (item) => {
     await deleteCartItem(item._id);
     fetchCartItem?.();
-    toast.success(t('checkout.itemRemovedFromCart'));
+    toast.success(t("checkout.itemRemovedFromCart"));
   };
 
   const handleSubmit = async () => {
-    if (!agreeToTerms) { toast.error(t('checkout.agreeToTerms')); return; }
-    if (!selectedMethod) { toast.error(t('checkout.selectShippingMethod')); return; }
-    if (!contact.name || !contact.email || !contact.phone) { toast.error(t('checkout.completeContactDetails')); return; }
+    if (!agreeToTerms) {
+      toast.error(t("checkout.agreeToTerms"));
+      return;
+    }
+    if (!selectedMethod) {
+      toast.error(t("checkout.selectShippingMethod"));
+      return;
+    }
+    if (!contact.name || !contact.email || !contact.phone) {
+      toast.error(t("checkout.completeContactDetails"));
+      return;
+    }
 
     setSubmitting(true);
     try {
-      const orderItems = cartItem.map((item) => ({
-        productId: item.productId._id,
-        quantity: item.quantity,
-        priceOption: item.priceOption || 'regular',
-        selectedPrice: item.selectedPrice || item.productId.price,
-      }));
-
-      const fullyCoveredByGiftCard = giftCardApplied && payableTotal <= 0;
+      const orderItems = buildOrderItems(cartItem);
 
       // A gift card covering the ENTIRE order has nowhere to go through
       // Paystack (which requires a non-zero charge) or Stripe (not wired
@@ -406,49 +567,50 @@ const CheckoutPage = () => {
       // transfer endpoint instead, which the server allows for a
       // zero-remainder order even in a country with no bank transfer
       // otherwise configured (see DirectBankTransferOrderController).
-      if (contact.paymentMethod === 'bank_transfer' || fullyCoveredByGiftCard) {
-        // The receiving account shown/submitted is the IT/DIRECTOR
-        // country-scoped setting from CountryContext (fetched from
-        // GET /api/bank-transfer-settings/available) — NOT hardcoded
-        // env-var Nigerian bank details. The server independently
-        // re-resolves and validates this from the same settings (never
-        // trusts these fields from the client for the actual order
-        // record) — only `reference` is used as submitted.
-        const bankDetails = {
-          bankName: bankTransferDetails?.bankName || '',
-          accountName: bankTransferDetails?.accountName || '',
-          accountNumber: bankTransferDetails?.accountNumber || '',
-          reference: `ICOFFEE-${Date.now()}-${user._id}`,
-        };
-        const res = await Axios({
-          ...SummaryApi.directBankTransferOrder,
-          data: {
-            list_items: orderItems, addressId: selectedAddressId,
-            subTotalAmt: subtotal, totalAmt: total, shippingCost,
-            shippingMethodId: selectedMethod._id,
-            currency: bankTransferDetails?.currencyCode || 'NGN',
-            bankDetails,
-            customerNotes: contact.notes,
-            ...(giftCardApplied && { giftCardCode: giftCardApplied.code }),
-          },
+      if (contact.paymentMethod === "bank_transfer" || fullyCoveredByGiftCard) {
+        const result = await submitBankTransferOrder({
+          apiClient: Axios,
+          endpoints: SummaryApi,
+          orderItems,
+          addressId: selectedAddressId,
+          subtotal,
+          total,
+          shippingCost,
+          shippingMethodId: selectedMethod._id,
+          bankTransferDetails,
+          userId: user._id,
+          customerNotes: contact.notes,
+          giftCardApplied,
+          fullyCoveredByGiftCard,
         });
-        if (res.data.success) {
-          fetchCartItem?.(); fetchOrder?.();
-          if (fullyCoveredByGiftCard) {
-            // Already PAID via GIFT_CARD — nothing to await, so this goes
-            // to the normal order-success screen, not the bank-transfer
-            // "here's where to send money" instructions page.
-            const parent = Array.isArray(res.data.data)
-              ? (res.data.data.find((o) => o.isParentOrder) || res.data.data[0])
-              : res.data.data;
-            navigate('/order-success', {
-              state: { orderDetails: parent, paymentMethod: 'Gift Card' },
-            });
-          } else {
-            navigate('/bank-transfer-instructions', {
-              state: { orderDetails: res.data.data, bankDetails, totalAmount: total, shippingCost, shippingMethod: selectedMethod },
-            });
-          }
+
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
+
+        fetchCartItem?.();
+        fetchOrder?.();
+        if (result.fullyCoveredByGiftCard) {
+          // Already PAID via GIFT_CARD — nothing to await, so this goes
+          // to the normal order-success screen, not the bank-transfer
+          // "here's where to send money" instructions page.
+          const parent = Array.isArray(result.order)
+            ? result.order.find((o) => o.isParentOrder) || result.order[0]
+            : result.order;
+          navigate("/order-success", {
+            state: { orderDetails: parent, paymentMethod: "Gift Card" },
+          });
+        } else {
+          navigate("/bank-transfer-instructions", {
+            state: {
+              orderDetails: result.order,
+              bankDetails: result.bankDetails,
+              totalAmount: total,
+              shippingCost,
+              shippingMethod: selectedMethod,
+            },
+          });
         }
       } else {
         // Paystack (NGN) or Stripe (international)
@@ -457,38 +619,48 @@ const CheckoutPage = () => {
         const convertedShipping = convertPrice(shippingCost);
         const convertedTotal = convertPrice(total);
         const exchangeRate = exchangeRates[selectedCurrency] || 1;
-        const endpoint = paymentMethod === 'stripe' ? SummaryApi.payment_url : SummaryApi.paystackPaymentController;
 
-        const res = await Axios({
-          ...endpoint,
-          data: {
-            list_items: orderItems,
-            addressId: selectedAddressId,
-            subTotalAmt: selectedCurrency === 'NGN' ? subtotal : convertedSubTotal,
-            totalAmt: selectedCurrency === 'NGN' ? total : convertedTotal,
-            shippingCost: selectedCurrency === 'NGN' ? shippingCost : convertedShipping,
-            originalAmounts: { subTotalAmt: subtotal, shippingCost, totalAmt: total },
-            exchangeRateInfo: { rate: exchangeRate, fromCurrency: 'NGN', toCurrency: selectedCurrency },
-            shippingMethodId: selectedMethod._id,
-            currency: selectedCurrency, paymentMethod,
-            customerNotes: contact.notes,
-            ...(giftCardApplied && { giftCardCode: giftCardApplied.code }),
-          },
+        const result = await submitGatewayOrder({
+          apiClient: Axios,
+          endpoints: SummaryApi,
+          paymentMethod,
+          orderItems,
+          addressId: selectedAddressId,
+          subtotal,
+          total,
+          shippingCost,
+          shippingMethodId: selectedMethod._id,
+          currency: selectedCurrency,
+          convertedSubtotal: convertedSubTotal,
+          convertedShipping,
+          convertedTotal,
+          exchangeRate,
+          customerNotes: contact.notes,
+          giftCardApplied,
         });
 
-        if (res.data.success) {
-          fetchCartItem?.(); fetchOrder?.();
-          if (paymentMethod === 'stripe') {
-            const { loadStripe } = await import('@stripe/stripe-js');
-            const stripe = await loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
-            await stripe.redirectToCheckout({ sessionId: res.data.id });
-          } else {
-            window.location.href = res.data.paymentUrl;
-          }
+        if (!result.success) {
+          toast.error(result.message);
+          return;
+        }
+
+        fetchCartItem?.();
+        fetchOrder?.();
+        if (paymentMethod === "stripe") {
+          const { loadStripe } = await import("@stripe/stripe-js");
+          const stripe = await loadStripe(
+            import.meta.env.VITE_STRIPE_PUBLIC_KEY,
+          );
+          await stripe.redirectToCheckout({ sessionId: result.data.id });
+        } else {
+          window.location.href = result.data.paymentUrl;
         }
       }
-    } catch (e) { AxiosToastError(e); }
-    finally { setSubmitting(false); }
+    } catch (e) {
+      AxiosToastError(e);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   // While guest cart is being merged — show a loading screen instead of "empty cart"
@@ -496,7 +668,7 @@ const CheckoutPage = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 gap-4">
         <Loader2 className="w-10 h-10 text-green-600 animate-spin" />
-        <p className="text-gray-600 font-medium">{t('checkout.loadingCart')}</p>
+        <p className="text-gray-600 font-medium">{t("checkout.loadingCart")}</p>
       </div>
     );
   }
@@ -506,9 +678,14 @@ const CheckoutPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <FaShoppingCart className="mx-auto text-gray-300 text-6xl mb-4" />
-          <p className="text-gray-600 mb-4 text-lg font-medium">{t('cart.empty')}</p>
-          <Link to="/shop" className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition">
-            {t('cart.continueShopping')}
+          <p className="text-gray-600 mb-4 text-lg font-medium">
+            {t("cart.empty")}
+          </p>
+          <Link
+            to="/shop"
+            className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition"
+          >
+            {t("cart.continueShopping")}
           </Link>
         </div>
       </div>
@@ -516,26 +693,43 @@ const CheckoutPage = () => {
   }
 
   const selectedAddress = addressList.find((a) => a._id === selectedAddressId);
-  const inp = 'w-full border border-gray-300 px-3 py-2 text-sm rounded focus:outline-none focus:border-green-500 bg-white';
+  const inp =
+    "w-full border border-gray-300 px-3 py-2 text-sm rounded focus:outline-none focus:border-green-500 bg-white";
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 lg:py-10">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wide">{t('checkout.title')}</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 uppercase tracking-wide">
+          {t("checkout.title")}
+        </h1>
 
         {/* Step Progress */}
         <div className="flex items-center mb-8">
           {STEP_KEYS.map((key, i) => (
             <div key={key} className="flex items-center flex-1">
               <div className="flex items-center gap-2">
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
-                  i < step ? 'bg-green-600 text-white' : i === step ? 'bg-gray-900 text-white' : 'bg-gray-200 text-gray-500'
-                }`}>
-                  {i < step ? '✓' : i + 1}
+                <div
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                    i < step
+                      ? "bg-green-600 text-white"
+                      : i === step
+                        ? "bg-gray-900 text-white"
+                        : "bg-gray-200 text-gray-500"
+                  }`}
+                >
+                  {i < step ? "✓" : i + 1}
                 </div>
-                <span className={`text-sm font-medium hidden sm:block ${i === step ? 'text-gray-900' : 'text-gray-400'}`}>{t(key)}</span>
+                <span
+                  className={`text-sm font-medium hidden sm:block ${i === step ? "text-gray-900" : "text-gray-400"}`}
+                >
+                  {t(key)}
+                </span>
               </div>
-              {i < STEP_KEYS.length - 1 && <div className={`flex-1 h-0.5 mx-2 ${i < step ? 'bg-green-600' : 'bg-gray-200'}`} />}
+              {i < STEP_KEYS.length - 1 && (
+                <div
+                  className={`flex-1 h-0.5 mx-2 ${i < step ? "bg-green-600" : "bg-gray-200"}`}
+                />
+              )}
             </div>
           ))}
         </div>
@@ -543,53 +737,92 @@ const CheckoutPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* ── Left column ── */}
           <div className="lg:col-span-2 space-y-4">
-
             {/* STEP 0 — Address */}
             {step === 0 && (
               <div className="bg-white border border-gray-200 p-5 rounded-lg">
                 <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-green-600" /> {t('checkout.deliveryAddress')}
+                  <MapPin className="w-5 h-5 text-green-600" />{" "}
+                  {t("checkout.deliveryAddress")}
                 </h2>
                 {addressList.length > 0 && !showAddressForm && (
                   <div className="space-y-3 mb-4">
-                    {addressList.filter((a) => a.status !== false).map((addr) => (
-                      <label key={addr._id} className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
-                        selectedAddressId === addr._id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}>
-                        <input type="radio" name="address" checked={selectedAddressId === addr._id}
-                          onChange={() => setSelectedAddressId(addr._id)} className="mt-1" />
-                        <div>
-                          <div className="font-medium text-sm text-gray-900">
-                            {addr.fullName || addr.address_line}
-                            {addr.label && <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{addr.label}</span>}
-                            {addr.is_primary && <span className="ml-2 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">{t('checkout.primary')}</span>}
+                    {addressList
+                      .filter((a) => a.status !== false)
+                      .map((addr) => (
+                        <label
+                          key={addr._id}
+                          className={`flex items-start gap-3 p-3 border rounded-lg cursor-pointer transition-colors ${
+                            selectedAddressId === addr._id
+                              ? "border-green-500 bg-green-50"
+                              : "border-gray-200 hover:border-gray-300"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="address"
+                            checked={selectedAddressId === addr._id}
+                            onChange={() => setSelectedAddressId(addr._id)}
+                            className="mt-1"
+                          />
+                          <div>
+                            <div className="font-medium text-sm text-gray-900">
+                              {addr.fullName || addr.address_line}
+                              {addr.label && (
+                                <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">
+                                  {addr.label}
+                                </span>
+                              )}
+                              {addr.is_primary && (
+                                <span className="ml-2 text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                                  {t("checkout.primary")}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-xs text-gray-500 mt-0.5">
+                              {addr.address_line}
+                              {addr.address_line_2
+                                ? `, ${addr.address_line_2}`
+                                : ""}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {addr.lga ? `${addr.lga}, ` : ""}
+                              {addr.city}, {addr.state}
+                            </div>
+                            <div className="text-xs text-gray-400">
+                              {addr.mobile || addr.phone}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-500 mt-0.5">
-                            {addr.address_line}{addr.address_line_2 ? `, ${addr.address_line_2}` : ''}
-                          </div>
-                          <div className="text-xs text-gray-500">
-                            {addr.lga ? `${addr.lga}, ` : ''}{addr.city}, {addr.state}
-                          </div>
-                          <div className="text-xs text-gray-400">{addr.mobile || addr.phone}</div>
-                        </div>
-                      </label>
-                    ))}
+                        </label>
+                      ))}
                   </div>
                 )}
-                {showAddressForm
-                  ? <AddressForm onSave={handleSaveAddress} saving={addressSaving} />
-                  : <button onClick={() => setShowAddressForm(true)}
-                      className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700 mb-4">
-                      <Plus className="w-4 h-4" /> {t('checkout.addNewAddress')}
-                    </button>
-                }
+                {showAddressForm ? (
+                  <AddressForm
+                    onSave={handleSaveAddress}
+                    saving={addressSaving}
+                  />
+                ) : (
+                  <button
+                    onClick={() => setShowAddressForm(true)}
+                    className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700 mb-4"
+                  >
+                    <Plus className="w-4 h-4" /> {t("checkout.addNewAddress")}
+                  </button>
+                )}
                 {!showAddressForm && (
-                  <button onClick={() => {
-                    if (!selectedAddressId) { toast.error(t('checkout.selectDeliveryAddress')); return; }
-                    loadShipping(selectedAddressId);
-                    setStep(1);
-                  }} className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
-                    {t('checkout.continueToShipping')} <ChevronRight className="w-4 h-4" />
+                  <button
+                    onClick={() => {
+                      if (!selectedAddressId) {
+                        toast.error(t("checkout.selectDeliveryAddress"));
+                        return;
+                      }
+                      loadShipping(selectedAddressId);
+                      setStep(1);
+                    }}
+                    className="mt-4 w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                  >
+                    {t("checkout.continueToShipping")}{" "}
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 )}
               </div>
@@ -599,51 +832,101 @@ const CheckoutPage = () => {
             {step === 1 && (
               <div className="bg-white border border-gray-200 p-5 rounded-lg">
                 <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-                  <Truck className="w-5 h-5 text-green-600" /> {t('checkout.shippingMethod')}
+                  <Truck className="w-5 h-5 text-green-600" />{" "}
+                  {t("checkout.shippingMethod")}
                 </h2>
                 {selectedAddress && (
                   <p className="text-xs text-gray-500 mb-4 flex items-center gap-1.5">
                     <MapPin className="w-3.5 h-3.5 text-green-500" />
-                    {t('checkout.deliveringTo')}: <strong>{selectedAddress.lga ? `${selectedAddress.lga}, ` : ''}{selectedAddress.state}</strong>
+                    {t("checkout.deliveringTo")}:{" "}
+                    <strong>
+                      {selectedAddress.lga ? `${selectedAddress.lga}, ` : ""}
+                      {selectedAddress.state}
+                    </strong>
                   </p>
                 )}
                 {shippingLoading ? (
-                  <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-green-600" /></div>
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="w-6 h-6 animate-spin text-green-600" />
+                  </div>
                 ) : shippingMethods.length === 0 ? (
                   <div className="py-6 text-center text-gray-500">
                     <Truck className="w-10 h-10 text-gray-200 mx-auto mb-2" />
-                    <p className="text-sm">{t('checkout.noShippingOptionsAvailable')}</p>
-                    <button onClick={() => setStep(0)} className="text-green-600 text-sm mt-2 hover:underline">← {t('checkout.changeAddress')}</button>
+                    <p className="text-sm">
+                      {t("checkout.noShippingOptionsAvailable")}
+                    </p>
+                    <button
+                      onClick={() => setStep(0)}
+                      className="text-green-600 text-sm mt-2 hover:underline"
+                    >
+                      ← {t("checkout.changeAddress")}
+                    </button>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {shippingMethods.map((method) => (
-                      <label key={method._id} className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
-                        selectedMethod?._id === method._id ? 'border-green-500 bg-green-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}>
-                        <input type="radio" checked={selectedMethod?._id === method._id}
-                          onChange={() => setSelectedMethod(method)} className="mt-1" />
+                      <label
+                        key={method._id}
+                        className={`flex items-start gap-3 p-4 border rounded-lg cursor-pointer transition-colors ${
+                          selectedMethod?._id === method._id
+                            ? "border-green-500 bg-green-50"
+                            : "border-gray-200 hover:border-gray-300"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          checked={selectedMethod?._id === method._id}
+                          onChange={() => setSelectedMethod(method)}
+                          className="mt-1"
+                        />
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              {method.type === 'pickup' ? <Store className="w-4 h-4 text-amber-600" /> : <Truck className="w-4 h-4 text-green-600" />}
-                              <span className="font-semibold text-sm text-gray-900">{method.name}</span>
+                              {method.type === "pickup" ? (
+                                <Store className="w-4 h-4 text-amber-600" />
+                              ) : (
+                                <Truck className="w-4 h-4 text-green-600" />
+                              )}
+                              <span className="font-semibold text-sm text-gray-900">
+                                {method.name}
+                              </span>
                             </div>
                             <span className="text-sm font-bold">
-                              {method.cost === 0 ? <span className="text-green-600">{t('checkout.free')}</span> : formatPrice(method.cost)}
+                              {method.cost === 0 ? (
+                                <span className="text-green-600">
+                                  {t("checkout.free")}
+                                </span>
+                              ) : (
+                                formatPrice(method.cost)
+                              )}
                             </span>
                           </div>
-                          {method.estimatedDays && <p className="text-xs text-gray-500 mt-0.5">{t('checkout.estBusinessDays', { count: method.estimatedDays })}</p>}
+                          {method.estimatedDays && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {t("checkout.estBusinessDays", {
+                                count: method.estimatedDays,
+                              })}
+                            </p>
+                          )}
                         </div>
                       </label>
                     ))}
                   </div>
                 )}
                 <div className="flex gap-3 mt-5">
-                  <button onClick={() => setStep(0)} className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition">← {t('common.back')}</button>
-                  <button onClick={() => setStep(2)} disabled={!selectedMethod}
-                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
-                    {t('checkout.continueToPayment')} <ChevronRight className="w-4 h-4" />
+                  <button
+                    onClick={() => setStep(0)}
+                    className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition"
+                  >
+                    ← {t("common.back")}
+                  </button>
+                  <button
+                    onClick={() => setStep(2)}
+                    disabled={!selectedMethod}
+                    className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                  >
+                    {t("checkout.continueToPayment")}{" "}
+                    <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
               </div>
@@ -653,41 +936,97 @@ const CheckoutPage = () => {
             {step === 2 && (
               <div className="bg-white border border-gray-200 p-5 rounded-lg">
                 <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-                  <CreditCard className="w-5 h-5 text-green-600" /> {t('checkout.contactAndPayment')}
+                  <CreditCard className="w-5 h-5 text-green-600" />{" "}
+                  {t("checkout.contactAndPayment")}
                 </h2>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.fullNameLabel')} *</label>
-                      <input value={contact.name} onChange={(e) => setContact((p) => ({ ...p, name: e.target.value }))} className={inp} placeholder={t('checkout.yourFullName')} />
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        {t("checkout.fullNameLabel")} *
+                      </label>
+                      <input
+                        value={contact.name}
+                        onChange={(e) =>
+                          setContact((p) => ({ ...p, name: e.target.value }))
+                        }
+                        className={inp}
+                        placeholder={t("checkout.yourFullName")}
+                      />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.phoneShort')} *</label>
-                      <input value={contact.phone} onChange={(e) => setContact((p) => ({ ...p, phone: e.target.value }))} className={inp} placeholder="+234 801 234 5678" />
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        {t("checkout.phoneShort")} *
+                      </label>
+                      <input
+                        value={contact.phone}
+                        onChange={(e) =>
+                          setContact((p) => ({ ...p, phone: e.target.value }))
+                        }
+                        className={inp}
+                        placeholder="+234 801 234 5678"
+                      />
                     </div>
                     <div className="sm:col-span-2">
-                      <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.emailLabel')} *</label>
-                      <input type="email" value={contact.email} onChange={(e) => setContact((p) => ({ ...p, email: e.target.value }))} className={inp} placeholder="your@email.com" />
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">
+                        {t("checkout.emailLabel")} *
+                      </label>
+                      <input
+                        type="email"
+                        value={contact.email}
+                        onChange={(e) =>
+                          setContact((p) => ({ ...p, email: e.target.value }))
+                        }
+                        className={inp}
+                        placeholder="your@email.com"
+                      />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-2">{t('checkout.paymentMethod')} *</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      {t("checkout.paymentMethod")} *
+                    </label>
                     <div className="space-y-2">
                       {/* Phase 4: Show Paystack only if enabled for this country */}
                       {hasPaystack && (
                         <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
-                          <input type="radio" value="paystack" checked={contact.paymentMethod === 'paystack'}
-                            onChange={() => setContact((p) => ({ ...p, paymentMethod: 'paystack' }))} />
-                          <span className="text-sm">💳 {t('checkout.payOnlinePaystack')}</span>
+                          <input
+                            type="radio"
+                            value="paystack"
+                            checked={contact.paymentMethod === "paystack"}
+                            onChange={() =>
+                              setContact((p) => ({
+                                ...p,
+                                paymentMethod: "paystack",
+                              }))
+                            }
+                          />
+                          <span className="text-sm">
+                            💳 {t("checkout.payOnlinePaystack")}
+                          </span>
                         </label>
                       )}
                       {/* Show Stripe for all countries */}
                       {hasStripe && (
                         <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
-                          <input type="radio" value="stripe" checked={contact.paymentMethod === 'stripe'}
-                            onChange={() => setContact((p) => ({ ...p, paymentMethod: 'stripe' }))} />
-                          <span className="text-sm">💳 {hasPaystack ? t('checkout.payWithStripeIntl') : t('checkout.payWithCardStripe')}</span>
+                          <input
+                            type="radio"
+                            value="stripe"
+                            checked={contact.paymentMethod === "stripe"}
+                            onChange={() =>
+                              setContact((p) => ({
+                                ...p,
+                                paymentMethod: "stripe",
+                              }))
+                            }
+                          />
+                          <span className="text-sm">
+                            💳{" "}
+                            {hasPaystack
+                              ? t("checkout.payWithStripeIntl")
+                              : t("checkout.payWithCardStripe")}
+                          </span>
                         </label>
                       )}
                       {/* Country-scoped: Bank Transfer only shown when
@@ -701,9 +1040,20 @@ const CheckoutPage = () => {
                           with no bank transfer configured at all. */}
                       {bankTransferAvailable && (
                         <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
-                          <input type="radio" value="bank_transfer" checked={contact.paymentMethod === 'bank_transfer'}
-                            onChange={() => setContact((p) => ({ ...p, paymentMethod: 'bank_transfer' }))} />
-                          <span className="text-sm">🏦 {t('checkout.manualBankTransfer')}</span>
+                          <input
+                            type="radio"
+                            value="bank_transfer"
+                            checked={contact.paymentMethod === "bank_transfer"}
+                            onChange={() =>
+                              setContact((p) => ({
+                                ...p,
+                                paymentMethod: "bank_transfer",
+                              }))
+                            }
+                          />
+                          <span className="text-sm">
+                            🏦 {t("checkout.manualBankTransfer")}
+                          </span>
                         </label>
                       )}
                     </div>
@@ -711,17 +1061,29 @@ const CheckoutPage = () => {
 
                   {/* Gift card redemption — Paystack, Stripe, and Bank Transfer */}
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-2">{t('checkout.giftCardLabel')}</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-2">
+                      {t("checkout.giftCardLabel")}
+                    </label>
                     {giftCardApplied ? (
                       <div className="flex items-center justify-between p-3 border border-green-300 bg-green-50 rounded-lg">
                         <div className="text-sm">
-                          <span className="font-mono font-semibold text-green-700">{giftCardApplied.code}</span>
+                          <span className="font-mono font-semibold text-green-700">
+                            {giftCardApplied.code}
+                          </span>
                           <span className="text-green-700 ml-2">
-                            {t('checkout.giftCardAppliedAmount', { amount: formatPrice ? formatPrice(giftCardApplied.appliedAmount) : giftCardApplied.appliedAmount })}
+                            {t("checkout.giftCardAppliedAmount", {
+                              amount: formatPrice
+                                ? formatPrice(giftCardApplied.appliedAmount)
+                                : giftCardApplied.appliedAmount,
+                            })}
                           </span>
                         </div>
-                        <button type="button" onClick={handleRemoveGiftCard} className="text-xs text-red-600 hover:underline">
-                          {t('checkout.remove')}
+                        <button
+                          type="button"
+                          onClick={handleRemoveGiftCard}
+                          className="text-xs text-red-600 hover:underline"
+                        >
+                          {t("checkout.remove")}
                         </button>
                       </div>
                     ) : (
@@ -729,7 +1091,7 @@ const CheckoutPage = () => {
                         <input
                           value={giftCardCode}
                           onChange={(e) => setGiftCardCode(e.target.value)}
-                          placeholder={t('checkout.giftCardPlaceholder')}
+                          placeholder={t("checkout.giftCardPlaceholder")}
                           className={inp}
                         />
                         <button
@@ -738,24 +1100,47 @@ const CheckoutPage = () => {
                           disabled={giftCardChecking || !giftCardCode.trim()}
                           className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50 whitespace-nowrap"
                         >
-                          {giftCardChecking ? <Loader2 className="w-4 h-4 animate-spin" /> : t('checkout.apply')}
+                          {giftCardChecking ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            t("checkout.apply")
+                          )}
                         </button>
                       </div>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">{t('checkout.orderNotes')}</label>
-                    <textarea value={contact.notes} rows={3} className={inp + ' resize-none'}
-                      onChange={(e) => setContact((p) => ({ ...p, notes: e.target.value }))}
-                      placeholder={t('checkout.specialInstructions')} />
+                    <label className="block text-xs font-semibold text-gray-700 mb-1">
+                      {t("checkout.orderNotes")}
+                    </label>
+                    <textarea
+                      value={contact.notes}
+                      rows={3}
+                      className={inp + " resize-none"}
+                      onChange={(e) =>
+                        setContact((p) => ({ ...p, notes: e.target.value }))
+                      }
+                      placeholder={t("checkout.specialInstructions")}
+                    />
                   </div>
 
                   <div className="flex gap-3">
-                    <button onClick={() => setStep(1)} className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition">← {t('common.back')}</button>
-                    <button onClick={() => setStep(3)} disabled={!contact.name || !contact.email || !contact.phone}
-                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
-                      {t('checkout.reviewOrder')} <ChevronRight className="w-4 h-4" />
+                    <button
+                      onClick={() => setStep(1)}
+                      className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition"
+                    >
+                      ← {t("common.back")}
+                    </button>
+                    <button
+                      onClick={() => setStep(3)}
+                      disabled={
+                        !contact.name || !contact.email || !contact.phone
+                      }
+                      className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                    >
+                      {t("checkout.reviewOrder")}{" "}
+                      <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -766,7 +1151,8 @@ const CheckoutPage = () => {
             {step === 3 && (
               <div className="bg-white border border-gray-200 p-5 rounded-lg">
                 <h2 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2">
-                  <FileText className="w-5 h-5 text-green-600" /> {t('checkout.reviewYourOrder')}
+                  <FileText className="w-5 h-5 text-green-600" />{" "}
+                  {t("checkout.reviewYourOrder")}
                 </h2>
 
                 {/* Items */}
@@ -775,15 +1161,30 @@ const CheckoutPage = () => {
                     const product = item.productId;
                     const price = item.selectedPrice || product?.price || 0;
                     return (
-                      <div key={item._id} className="flex items-center gap-3 py-3 border-b border-gray-100">
+                      <div
+                        key={item._id}
+                        className="flex items-center gap-3 py-3 border-b border-gray-100"
+                      >
                         <div className="w-12 h-12 bg-gray-100 rounded overflow-hidden shrink-0">
-                          {product?.image?.[0] && <img src={product.image[0]} alt={product.name} className="w-full h-full object-contain" />}
+                          {product?.image?.[0] && (
+                            <img
+                              src={product.image[0]}
+                              alt={product.name}
+                              className="w-full h-full object-contain"
+                            />
+                          )}
                         </div>
                         <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-900 truncate">{product?.name}</p>
-                          <p className="text-xs text-gray-500">{t('checkout.qty')}: {item.quantity}</p>
+                          <p className="text-sm font-medium text-gray-900 truncate">
+                            {product?.name}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {t("checkout.qty")}: {item.quantity}
+                          </p>
                         </div>
-                        <p className="text-sm font-bold">{formatPrice(price * item.quantity)}</p>
+                        <p className="text-sm font-bold">
+                          {formatPrice(price * item.quantity)}
+                        </p>
                       </div>
                     );
                   })}
@@ -792,52 +1193,125 @@ const CheckoutPage = () => {
                 {/* Address summary */}
                 {selectedAddress && (
                   <div className="mb-3 p-3 bg-gray-50 rounded-lg text-sm">
-                    <p className="font-semibold text-gray-700 mb-1 flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {t('checkout.deliveringTo')}:</p>
-                    <p className="text-gray-700 font-medium">{selectedAddress.fullName || contact.name}</p>
-                    <p className="text-gray-600">
-                      {selectedAddress.address_line}{selectedAddress.address_line_2 ? `, ${selectedAddress.address_line_2}` : ''},
-                      {selectedAddress.lga ? ` ${selectedAddress.lga},` : ''} {selectedAddress.city}, {selectedAddress.state}
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />{" "}
+                      {t("checkout.deliveringTo")}:
                     </p>
-                    <p className="text-gray-500 text-xs mt-0.5">{selectedAddress.mobile || selectedAddress.phone || contact.phone}</p>
+                    <p className="text-gray-700 font-medium">
+                      {selectedAddress.fullName || contact.name}
+                    </p>
+                    <p className="text-gray-600">
+                      {selectedAddress.address_line}
+                      {selectedAddress.address_line_2
+                        ? `, ${selectedAddress.address_line_2}`
+                        : ""}
+                      ,{selectedAddress.lga ? ` ${selectedAddress.lga},` : ""}{" "}
+                      {selectedAddress.city}, {selectedAddress.state}
+                    </p>
+                    <p className="text-gray-500 text-xs mt-0.5">
+                      {selectedAddress.mobile ||
+                        selectedAddress.phone ||
+                        contact.phone}
+                    </p>
                   </div>
                 )}
 
                 {/* Shipping summary */}
                 {selectedMethod && (
                   <div className="mb-3 p-3 bg-gray-50 rounded-lg text-sm">
-                    <p className="font-semibold text-gray-700 mb-1 flex items-center gap-1"><Truck className="w-3.5 h-3.5" /> {t('checkout.shipping')}:</p>
-                    <p className="text-gray-600">{selectedMethod.name} — {shippingCost === 0 ? <span className="text-green-600 font-semibold">{t('checkout.free')}</span> : formatPrice(shippingCost)}</p>
+                    <p className="font-semibold text-gray-700 mb-1 flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5" /> {t("checkout.shipping")}
+                      :
+                    </p>
+                    <p className="text-gray-600">
+                      {selectedMethod.name} —{" "}
+                      {shippingCost === 0 ? (
+                        <span className="text-green-600 font-semibold">
+                          {t("checkout.free")}
+                        </span>
+                      ) : (
+                        formatPrice(shippingCost)
+                      )}
+                    </p>
                   </div>
                 )}
 
                 {/* Contact summary */}
                 <div className="mb-4 p-3 bg-gray-50 rounded-lg text-sm">
-                  <p className="font-semibold text-gray-700 mb-1">{t('checkout.contactAndPayment')}:</p>
-                  <p className="text-gray-600">{contact.name} · {contact.email} · {contact.phone}</p>
+                  <p className="font-semibold text-gray-700 mb-1">
+                    {t("checkout.contactAndPayment")}:
+                  </p>
+                  <p className="text-gray-600">
+                    {contact.name} · {contact.email} · {contact.phone}
+                  </p>
                   <p className="text-gray-500 text-xs mt-0.5">
-                    {contact.paymentMethod === 'paystack' ? '💳 Paystack' : contact.paymentMethod === 'bank_transfer' ? `🏦 ${t('checkout.bankTransfer')}` : '💳 Stripe'}
+                    {contact.paymentMethod === "paystack"
+                      ? "💳 Paystack"
+                      : contact.paymentMethod === "bank_transfer"
+                        ? `🏦 ${t("checkout.bankTransfer")}`
+                        : "💳 Stripe"}
                   </p>
                 </div>
 
                 {/* Terms */}
                 <label className="flex items-start gap-3 cursor-pointer mb-5">
-                  <input type="checkbox" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.target.checked)}
-                    className="mt-1 w-4 h-4 accent-green-600" />
+                  <input
+                    type="checkbox"
+                    checked={agreeToTerms}
+                    onChange={(e) => setAgreeToTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 accent-green-600"
+                  />
                   <span className="text-sm text-gray-600">
-                    {t('checkout.iAgreeToThe')}{' '}
-                    <Link to="/terms-and-conditions" target="_blank" className="text-green-600 underline">{t('checkout.termsConditions')}</Link>,{' '}
-                    <Link to="/privacy-policy" target="_blank" className="text-green-600 underline">{t('footer.privacyPolicy')}</Link>, {t('common.and')}{' '}
-                    <Link to="/refund-policy" target="_blank" className="text-green-600 underline">{t('checkout.refundPolicy')}</Link>.
+                    {t("checkout.iAgreeToThe")}{" "}
+                    <Link
+                      to="/terms-and-conditions"
+                      target="_blank"
+                      className="text-green-600 underline"
+                    >
+                      {t("checkout.termsConditions")}
+                    </Link>
+                    ,{" "}
+                    <Link
+                      to="/privacy-policy"
+                      target="_blank"
+                      className="text-green-600 underline"
+                    >
+                      {t("footer.privacyPolicy")}
+                    </Link>
+                    , {t("common.and")}{" "}
+                    <Link
+                      to="/refund-policy"
+                      target="_blank"
+                      className="text-green-600 underline"
+                    >
+                      {t("checkout.refundPolicy")}
+                    </Link>
+                    .
                   </span>
                 </label>
 
                 <div className="flex gap-3">
-                  <button onClick={() => setStep(2)} className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition">← {t('common.back')}</button>
-                  <button onClick={handleSubmit} disabled={submitting || !agreeToTerms}
-                    className="flex-1 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition">
-                    {submitting
-                      ? <><Loader2 className="w-4 h-4 animate-spin" /> {t('checkout.processing')}</>
-                      : <>{t('checkout.placeOrder')} — {formatPrice(payableTotal)}</>}
+                  <button
+                    onClick={() => setStep(2)}
+                    className="flex-1 border border-gray-300 text-gray-700 font-semibold py-3 rounded-lg hover:bg-gray-50 transition"
+                  >
+                    ← {t("common.back")}
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    disabled={submitting || !agreeToTerms}
+                    className="flex-1 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />{" "}
+                        {t("checkout.processing")}
+                      </>
+                    ) : (
+                      <>
+                        {t("checkout.placeOrder")} — {formatPrice(payableTotal)}
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -847,34 +1321,52 @@ const CheckoutPage = () => {
           {/* ── Right: Order Summary ── */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-200 p-5 rounded-lg sticky top-4 space-y-4">
-              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wide">{t('checkout.orderSummary')}</h3>
-              <CartAdjuster items={cartItem} onUpdate={handleCartUpdate} onRemove={handleCartRemove} formatPrice={formatPrice} />
+              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-wide">
+                {t("checkout.orderSummary")}
+              </h3>
+              <CartAdjuster
+                items={cartItem}
+                onUpdate={handleCartUpdate}
+                onRemove={handleCartRemove}
+                formatPrice={formatPrice}
+              />
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-gray-600">
-                  <span>{t('checkout.subtotalItems', { count: cartItem.length })}</span>
+                  <span>
+                    {t("checkout.subtotalItems", { count: cartItem.length })}
+                  </span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
                 {selectedMethod && (
                   <div className="flex justify-between text-gray-600">
-                    <span>{t('checkout.shipping')}</span>
-                    <span>{shippingCost === 0 ? <span className="text-green-600 font-semibold">{t('checkout.free')}</span> : formatPrice(shippingCost)}</span>
+                    <span>{t("checkout.shipping")}</span>
+                    <span>
+                      {shippingCost === 0 ? (
+                        <span className="text-green-600 font-semibold">
+                          {t("checkout.free")}
+                        </span>
+                      ) : (
+                        formatPrice(shippingCost)
+                      )}
+                    </span>
                   </div>
                 )}
               </div>
               <div className="border-t border-gray-200 pt-3">
                 {giftCardApplied && (
                   <div className="flex justify-between text-green-600 text-sm mb-1">
-                    <span>{t('checkout.giftCardDiscount')}</span>
+                    <span>{t("checkout.giftCardDiscount")}</span>
                     <span>-{formatPrice(giftCardDiscount)}</span>
                   </div>
                 )}
                 <div className="flex justify-between font-bold text-gray-900 text-base">
-                  <span>{t('checkout.total')}</span>
+                  <span>{t("checkout.total")}</span>
                   <span>{formatPrice(payableTotal)}</span>
                 </div>
               </div>
               <div className="flex items-center justify-center gap-2 text-xs text-gray-400 pt-2 border-t border-gray-100">
-                <FaShieldAlt className="text-green-500" /> {t('checkout.secureEncrypted')}
+                <FaShieldAlt className="text-green-500" />{" "}
+                {t("checkout.secureEncrypted")}
               </div>
             </div>
           </div>

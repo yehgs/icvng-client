@@ -13,8 +13,13 @@ import { FaSearch, FaChevronRight } from "react-icons/fa";
 import { useFilterState } from "../hooks/useFilterState.js";
 import { useUrlFilters } from "../hooks/useUrlFilters.js";
 import { useDispatch } from "react-redux";
-import { setCompatibleSystemFilter, setCategoryFilter, setBrandFilter } from "../store/filterSlice";
+import {
+  setCompatibleSystemFilter,
+  setCategoryFilter,
+  setBrandFilter,
+} from "../store/filterSlice";
 import { useCountry } from "../context/CountryContext";
+import { buildProductSearchParams } from "@yehgs/icvng-core/catalog";
 
 const EnhancedShopPage = () => {
   const { t } = useCountry();
@@ -68,24 +73,30 @@ const EnhancedShopPage = () => {
     const brandName = searchParams.get("brandName") || "";
 
     // Sync into Redux for the sidebar filter to reflect correctly
-    dispatch(setCompatibleSystemFilter({
-      compatibleSystemId: csId,
-      compatibleSystemName: csName,
-      compatibleSystemSlug: "",
-    }));
+    dispatch(
+      setCompatibleSystemFilter({
+        compatibleSystemId: csId,
+        compatibleSystemName: csName,
+        compatibleSystemSlug: "",
+      }),
+    );
 
-    dispatch(setCategoryFilter({
-      categoryId: catId,
-      categoryName: catName,
-      categorySlug: "",
-    }));
+    dispatch(
+      setCategoryFilter({
+        categoryId: catId,
+        categoryName: catName,
+        categorySlug: "",
+      }),
+    );
 
-    dispatch(setBrandFilter({
-      brandId,
-      brandName,
-      brandSlug: "",
-      replace: true,
-    }));
+    dispatch(
+      setBrandFilter({
+        brandId,
+        brandName,
+        brandSlug: "",
+        replace: true,
+      }),
+    );
 
     // Skip on initial mount — that's handled by the mount useEffect above
     // to avoid a race condition where both effects fetch simultaneously and
@@ -119,7 +130,11 @@ const EnhancedShopPage = () => {
         if (catId) overrides.category = catId;
         if (brandId) overrides.brand = [brandId];
 
-        fetchProducts(true, urlSearch, Object.keys(overrides).length > 0 ? overrides : null);
+        fetchProducts(
+          true,
+          urlSearch,
+          Object.keys(overrides).length > 0 ? overrides : null,
+        );
       }
     };
     initialLoad();
@@ -161,7 +176,10 @@ const EnhancedShopPage = () => {
     // If the search term change matches the current URL q param,
     // it was already handled by the searchParams effect — skip
     const urlQ = searchParams.get("q") || "";
-    if (activeFilters.search === urlQ && activeFilters.search === prevQRef.current) {
+    if (
+      activeFilters.search === urlQ &&
+      activeFilters.search === prevQRef.current
+    ) {
       // This change was triggered by our URL sync — don't double-fetch
       return;
     }
@@ -201,7 +219,11 @@ const EnhancedShopPage = () => {
 
   // Fetch products with current filters
   // filterOverrides: pass URL-resolved values directly to bypass Redux timing lag
-  const fetchProducts = async (resetPage = false, urlSearchOverride = null, filterOverrides = null) => {
+  const fetchProducts = async (
+    resetPage = false,
+    urlSearchOverride = null,
+    filterOverrides = null,
+  ) => {
     try {
       setLoading(true);
       const currentPage = resetPage ? 1 : page;
@@ -215,7 +237,8 @@ const EnhancedShopPage = () => {
         sortValue = "";
       }
 
-      const searchTerm = urlSearchOverride !== null ? urlSearchOverride : activeFilters.search;
+      const searchTerm =
+        urlSearchOverride !== null ? urlSearchOverride : activeFilters.search;
 
       // Merge Redux state with any direct overrides (overrides win — no timing lag)
       const merged = {
@@ -229,26 +252,20 @@ const EnhancedShopPage = () => {
         blend: activeFilters.blend,
         minPrice: activeFilters.minPrice,
         maxPrice: activeFilters.maxPrice,
+        sort: sortValue,
         ...(filterOverrides || {}),
       };
 
+      // buildProductSearchParams (shared with the mobile app via
+      // @yehgs/icvng-core/catalog) owns the undefined-stripping/
+      // normalization rules — see its own comments for why an empty array
+      // or empty string isn't the same as an absent filter to the server.
       const response = await Axios({
         ...SummaryApi.searchProduct,
-        data: {
+        data: buildProductSearchParams(merged, {
           search: searchTerm,
           page: currentPage,
-          productType: merged.productType?.length > 0 ? merged.productType : undefined,
-          category: merged.category || undefined,
-          subCategory: merged.subCategory || undefined,
-          brand: merged.brand?.length > 0 ? merged.brand : undefined,
-          compatibleSystem: merged.compatibleSystem || undefined,
-          roastLevel: merged.roastLevel?.length > 0 ? merged.roastLevel : undefined,
-          intensity: merged.intensity?.length > 0 ? merged.intensity : undefined,
-          blend: merged.blend?.length > 0 ? merged.blend : undefined,
-          minPrice: merged.minPrice || undefined,
-          maxPrice: merged.maxPrice || undefined,
-          sort: sortValue,
-        },
+        }),
       });
 
       const { data: responseData } = response;
@@ -284,8 +301,10 @@ const EnhancedShopPage = () => {
       subCategory: filters.subCategory || undefined,
       brand: filters.brand?.length > 0 ? filters.brand : undefined,
       compatibleSystem: filters.compatibleSystem || undefined,
-      productType: filters.productType?.length > 0 ? filters.productType : undefined,
-      roastLevel: filters.roastLevel?.length > 0 ? filters.roastLevel : undefined,
+      productType:
+        filters.productType?.length > 0 ? filters.productType : undefined,
+      roastLevel:
+        filters.roastLevel?.length > 0 ? filters.roastLevel : undefined,
       intensity: filters.intensity?.length > 0 ? filters.intensity : undefined,
       blend: filters.blend?.length > 0 ? filters.blend : undefined,
       minPrice: filters.minPrice || undefined,
@@ -368,7 +387,10 @@ const EnhancedShopPage = () => {
                 <div>
                   <h1 className="text-xl font-bold">{urlState.pageTitle}</h1>
                   <p className="text-gray-600 text-sm">
-                    {t('shop.showingProducts', { count: products.length, total: totalCount })}
+                    {t("shop.showingProducts", {
+                      count: products.length,
+                      total: totalCount,
+                    })}
                   </p>
                 </div>
 
@@ -382,7 +404,7 @@ const EnhancedShopPage = () => {
                       type="text"
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
-                      placeholder={t('shop.searchPlaceholder')}
+                      placeholder={t("shop.searchPlaceholder")}
                       className="w-full md:w-64 pr-10 pl-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
                     />
                     <button
@@ -401,7 +423,7 @@ const EnhancedShopPage = () => {
                 hasMore={page < totalPage}
                 loader={
                   <div className="text-center py-4">
-                    {t('shop.loadingMore')}
+                    {t("shop.loadingMore")}
                   </div>
                 }
               >
@@ -426,12 +448,14 @@ const EnhancedShopPage = () => {
                 <div className="flex flex-col justify-center items-center w-full mx-auto py-10">
                   <img
                     src={noDataImage}
-                    alt={t('shop.noResultsAlt')}
+                    alt={t("shop.noResultsAlt")}
                     className="w-full h-full max-w-xs max-h-xs block"
                   />
-                  <p className="font-semibold my-2">{t('shop.noProductsFound')}</p>
+                  <p className="font-semibold my-2">
+                    {t("shop.noProductsFound")}
+                  </p>
                   <p className="text-gray-500 text-center">
-                    {t('shop.adjustFilters')}
+                    {t("shop.adjustFilters")}
                   </p>
                 </div>
               )}

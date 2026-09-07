@@ -1,19 +1,3 @@
-import { createSlice } from "@reduxjs/toolkit";
-
-const initialState = {
-    cart : []
-}
-
-const cartSlice = createSlice({
-    name : "cartItem",
-    initialState : initialState,
-    reducers : {
-        handleAddItemCart : (state,action)=>{
-           state.cart = [...action.payload]
-        },
-    }
-})
-
-export const { handleAddItemCart } = cartSlice.actions
-
-export default cartSlice.reducer
+// client/src/store/cartProduct.js
+// Thin re-export shim — see userSlice.js in this same folder for why.
+export * from "@yehgs/icvng-core/store";

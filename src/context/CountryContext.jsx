@@ -23,6 +23,7 @@ import React, {
   useMemo,
 } from "react";
 import Axios from "../utils/Axios.js";
+import { endpoints as coreEndpoints } from "@yehgs/icvng-core/api";
 import {
   translate,
   detectLanguage,
@@ -99,10 +100,15 @@ export function CountryProvider({ children }) {
           // languages (Arabic) so the whole page mirrors correctly instead
           // of just individual translated strings sitting backwards.
           document.documentElement.lang = lang;
-          document.documentElement.dir = RTL_LANGUAGES.includes(lang) ? "rtl" : "ltr";
+          document.documentElement.dir = RTL_LANGUAGES.includes(lang)
+            ? "rtl"
+            : "ltr";
         }
       } catch (err) {
-        console.warn("[CountryProvider] Could not load country config:", err.message);
+        console.warn(
+          "[CountryProvider] Could not load country config:",
+          err.message,
+        );
         // Keep defaults — app still works
       } finally {
         setLoading(false);
@@ -119,15 +125,17 @@ export function CountryProvider({ children }) {
       // is the safe fallback).
       try {
         const payRes = await Axios({
-          url: "/api/bank-transfer-settings/available",
-          method: "get",
+          ...coreEndpoints.getBankTransferAvailability,
         });
         if (payRes.data?.success) {
           setHasBankTransfer(!!payRes.data.data?.bankTransfer);
           setBankTransferDetails(payRes.data.data?.bankTransferDetails || null);
         }
       } catch (err) {
-        console.warn("[CountryProvider] Could not load payment-method availability:", err.message);
+        console.warn(
+          "[CountryProvider] Could not load payment-method availability:",
+          err.message,
+        );
       }
     }
 
@@ -149,14 +157,19 @@ export function CountryProvider({ children }) {
   // (changeCurrency in GlobalProvider) intentionally does NOT reload — prices
   // convert client-side from data already in memory, so there's nothing
   // stale to re-fetch.
-  const setLanguage = useCallback((lang) => {
-    if (!SUPPORTED_LANGUAGES.includes(lang)) return;
-    if (lang === language) return; // already active — no-op, don't reload for nothing
-    saveLanguage(lang);
-    document.documentElement.lang = lang;
-    document.documentElement.dir = RTL_LANGUAGES.includes(lang) ? "rtl" : "ltr";
-    window.location.reload();
-  }, [language]);
+  const setLanguage = useCallback(
+    (lang) => {
+      if (!SUPPORTED_LANGUAGES.includes(lang)) return;
+      if (lang === language) return; // already active — no-op, don't reload for nothing
+      saveLanguage(lang);
+      document.documentElement.lang = lang;
+      document.documentElement.dir = RTL_LANGUAGES.includes(lang)
+        ? "rtl"
+        : "ltr";
+      window.location.reload();
+    },
+    [language],
+  );
 
   // ── Translation function ──────────────────────────────────────────────────
   // DB-backed UI-copy overrides (see i18n/index.js's applyDbOverrides /
@@ -177,7 +190,7 @@ export function CountryProvider({ children }) {
   const t = useCallback(
     (key, params) => translate(language, key, params),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [language, i18nRevision]
+    [language, i18nRevision],
   );
 
   // ── Currency formatting ───────────────────────────────────────────────────
@@ -198,17 +211,17 @@ export function CountryProvider({ children }) {
         return `${country.currency?.symbol || ""}${(amount ?? 0).toFixed(decimals)}`;
       }
     },
-    [country]
+    [country],
   );
 
   // ── Payment helpers ───────────────────────────────────────────────────────
   const hasPaystack = useMemo(
     () => country.payment?.availableProviders?.includes("paystack") ?? false,
-    [country]
+    [country],
   );
   const hasStripe = useMemo(
     () => country.payment?.availableProviders?.includes("stripe") ?? true,
-    [country]
+    [country],
   );
 
   // ── Context value ─────────────────────────────────────────────────────────
@@ -241,15 +254,22 @@ export function CountryProvider({ children }) {
       loading,
     }),
     [
-      country, allCountries, language, setLanguage, t,
-      formatPrice, hasPaystack, hasStripe, hasBankTransfer, bankTransferDetails, loading,
-    ]
+      country,
+      allCountries,
+      language,
+      setLanguage,
+      t,
+      formatPrice,
+      hasPaystack,
+      hasStripe,
+      hasBankTransfer,
+      bankTransferDetails,
+      loading,
+    ],
   );
 
   return (
-    <CountryContext.Provider value={value}>
-      {children}
-    </CountryContext.Provider>
+    <CountryContext.Provider value={value}>{children}</CountryContext.Provider>
   );
 }
 

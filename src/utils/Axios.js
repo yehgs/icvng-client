@@ -1,85 +1,48 @@
 // client/src/utils/Axios.js
-import axios from 'axios';
-import SummaryApi, { baseURL } from '../common/SummaryApi';
+//
+// Thin web-specific wrapper around @yehgs/icvng-core's createApiClient.
+// The auth/refresh-token interceptor logic now lives in core (identical
+// behavior); this file only supplies the two things that are genuinely
+// web-specific: a localStorage-backed token adapter, and the
+// X-Storefront-Host / X-Language headers the country-detection middleware
+// (server/middleware/countryDetect.js) reads for this SPA.
+import { createApiClient, createStorageAdapter } from "@yehgs/icvng-core/api";
+import { baseURL } from "../common/SummaryApi";
 
-const Axios = axios.create({
-  baseURL: baseURL,
-  withCredentials: true,
+const tokenStorage = createStorageAdapter({
+  getItem: (key) => localStorage.getItem(key),
+  setItem: (key, value) => localStorage.setItem(key, value),
+  removeItem: (key) => localStorage.removeItem(key),
 });
 
-// Attach access token + storefront hostname to every request
-Axios.interceptors.request.use(
-  async (config) => {
-    const accessToken = localStorage.getItem('accesstoken');
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
-    }
-    // The API runs on one shared domain across every country deployment,
-    // so req.headers.host on the server is always the API's own host —
-    // never the storefront's (i-coffee.tg, i-coffee.bj, etc). Without this,
-    // countryDetect middleware can never resolve anything but the default
-    // country. Send the actual browser hostname so it can.
-    if (typeof window !== 'undefined' && window.location?.hostname) {
-      config.headers['X-Storefront-Host'] = window.location.host; // includes :port for local dev
-    }
-    // Active UI language (kept in sync with i18n's saved preference) — lets
-    // language-aware endpoints (category structure, country config, etc.)
-    // localize their response instead of always returning English.
-    const savedLanguage = localStorage.getItem('icvng_language');
-    if (savedLanguage) {
-      config.headers['X-Language'] = savedLanguage;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
+// Exported so Login.jsx/Register.jsx can pass the exact same adapter
+// instance into @yehgs/icvng-core/auth's login()/register() — those
+// write tokens the same way this file's own interceptor reads them back.
+export { tokenStorage };
 
-// On 401: try to refresh the access token using the stored refresh token
-Axios.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const originRequest = error.config;
+const getExtraHeaders = () => {
+  const headers = {};
 
-    if (error.response?.status === 401 && !originRequest._retry) {
-      originRequest._retry = true;
-
-      const refreshToken = localStorage.getItem('refreshToken');
-      if (refreshToken) {
-        const newAccessToken = await refreshAccessToken(refreshToken);
-        if (newAccessToken) {
-          localStorage.setItem('accesstoken', newAccessToken);
-          originRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-          return Axios(originRequest);
-        }
-      }
-    }
-
-    return Promise.reject(error);
+  // The API runs on one shared domain across every country deployment, so
+  // req.headers.host on the server is always the API's own host — never the
+  // storefront's (i-coffee.tg, i-coffee.bj, etc). Without this,
+  // countryDetect middleware can never resolve anything but the default
+  // country. Send the actual browser hostname so it can.
+  if (typeof window !== "undefined" && window.location?.hostname) {
+    headers["X-Storefront-Host"] = window.location.host; // includes :port for local dev
   }
-);
 
-const refreshAccessToken = async (refreshToken) => {
-  try {
-    const response = await Axios({
-      ...SummaryApi.refreshToken,
-      headers: {
-        Authorization: `Bearer ${refreshToken}`,
-      },
-    });
-
-    // Server returns either data.accessToken or data.accesstoken — handle both
-    const token =
-      response.data?.data?.accessToken ||
-      response.data?.data?.accesstoken;
-
-    if (token) {
-      localStorage.setItem('accesstoken', token);
-    }
-    return token || null;
-  } catch (error) {
-    console.error('Token refresh failed:', error?.response?.status);
-    return null;
+  // Active UI language (kept in sync with i18n's saved preference) — lets
+  // language-aware endpoints (category structure, country config, etc.)
+  // localize their response instead of always returning English.
+  const savedLanguage = localStorage.getItem("icvng_language");
+  if (savedLanguage) {
+    headers["X-Language"] = savedLanguage;
   }
+
+  return headers;
 };
+
+const Axios = createApiClient({ baseURL, tokenStorage, getExtraHeaders });
 
 export default Axios;

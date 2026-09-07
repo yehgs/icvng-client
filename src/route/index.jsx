@@ -5,6 +5,7 @@ import App from "../App";
 import Home from "../pages/Home";
 const SearchPage = lazy(() => import("../pages/SearchPage"));
 const Login = lazy(() => import("../pages/Login"));
+const VerifyEmail = lazy(() => import("../pages/VerifyEmail"));
 const Register = lazy(() => import("../pages/Register"));
 const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
 const OtpVerification = lazy(() => import("../pages/OtpVerification"));
@@ -89,6 +90,10 @@ const router = createBrowserRouter([
       {
         path: "register",
         element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><Register  /></Suspense>,
+      },
+      {
+        path: "verify-email",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><VerifyEmail  /></Suspense>,
       },
       {
         // Phase 4: Google OAuth callback landing page

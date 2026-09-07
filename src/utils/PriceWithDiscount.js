@@ -1,5 +1,3 @@
-export const pricewithDiscount = (price,dis = 1)=>{
-    const discountAmout = Math.ceil((Number(price) * Number(dis)) / 100)
-    const actualPrice = Number(price) - Number(discountAmout)
-    return actualPrice
-}
+// client/src/utils/PriceWithDiscount.js
+// Thin re-export shim — see getApplicablePrice.js in this same folder.
+export { pricewithDiscount } from "@yehgs/icvng-core/pricing";

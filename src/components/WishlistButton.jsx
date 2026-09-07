@@ -1,16 +1,21 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { FaHeart, FaRegHeart } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
-import toast from 'react-hot-toast';
-import Axios from '../utils/Axios';
-import SummaryApi from '../common/SummaryApi';
-import { updateWishlistCount } from '../utils/eventUtils';
+import React, { useState, useEffect, useCallback } from "react";
+import { FaHeart, FaRegHeart } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import toast from "react-hot-toast";
+import Axios from "../utils/Axios";
+import SummaryApi from "../common/SummaryApi";
+import { updateWishlistCount } from "../utils/eventUtils";
+import {
+  checkWishlistStatus,
+  toggleWishlistOnServer,
+  toggleWishlistGuest,
+} from "@yehgs/icvng-core/wishlist";
 
 // Module-level cache so each productId is only checked once per page load,
 // even when multiple WishlistButton instances mount simultaneously.
 const statusCache = new Map();
 
-const WishlistButton = ({ product, className = '', iconOnly = false }) => {
+const WishlistButton = ({ product, className = "", iconOnly = false }) => {
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const user = useSelector((state) => state.user);
@@ -22,7 +27,7 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
 
     if (!isLoggedIn) {
       try {
-        const local = JSON.parse(localStorage.getItem('wishlist') || '[]');
+        const local = JSON.parse(localStorage.getItem("wishlist") || "[]");
         setIsFavorite(local.some((item) => item._id === product._id));
       } catch {
         setIsFavorite(false);
@@ -41,16 +46,19 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
     // Mark as pending to prevent concurrent duplicate requests
     statusCache.set(pid, false);
 
-    Axios({ ...SummaryApi.checkWishlist(pid) })
-      .then((res) => {
-        const val = Boolean(res.data?.isInWishlist);
-        statusCache.set(pid, val);
-        setIsFavorite(val);
-      })
-      .catch(() => {
+    checkWishlistStatus({
+      apiClient: Axios,
+      endpoints: SummaryApi,
+      productId: pid,
+    }).then((result) => {
+      if (result.success) {
+        statusCache.set(pid, result.isInWishlist);
+        setIsFavorite(result.isInWishlist);
+      } else {
         // Silently swallow — don't show toast or console error on page load
         statusCache.delete(pid);
-      });
+      }
+    });
   }, [isLoggedIn, product?._id]); // eslint-disable-line
 
   const handleToggleWishlist = useCallback(
@@ -61,49 +69,46 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
       setLoading(true);
       try {
         if (isLoggedIn) {
-          const res = await Axios({
-            ...SummaryApi.toggleWishlist,
-            data: { productId: product._id },
+          const result = await toggleWishlistOnServer({
+            apiClient: Axios,
+            endpoints: SummaryApi,
+            productId: product._id,
           });
 
-          if (res.data?.success) {
-            const added = res.data.action === 'added';
-            setIsFavorite(added);
-            statusCache.set(product._id, added);
+          if (result.success) {
+            setIsFavorite(result.added);
+            statusCache.set(product._id, result.added);
             toast.success(
-              added
+              result.added
                 ? `${product.name} added to wishlist`
-                : `${product.name} removed from wishlist`
+                : `${product.name} removed from wishlist`,
             );
             updateWishlistCount();
+          } else {
+            toast.error(result.message);
           }
         } else {
           // Guest — localStorage only
-          const wishlist = JSON.parse(localStorage.getItem('wishlist') || '[]');
-          const already = wishlist.some((i) => i._id === product._id);
-
-          if (already) {
-            localStorage.setItem(
-              'wishlist',
-              JSON.stringify(wishlist.filter((i) => i._id !== product._id))
-            );
-            setIsFavorite(false);
-            toast.success(`${product.name} removed from wishlist`);
-          } else {
-            localStorage.setItem('wishlist', JSON.stringify([...wishlist, product]));
-            setIsFavorite(true);
-            toast.success(`${product.name} added to wishlist`);
-          }
+          const wishlist = JSON.parse(localStorage.getItem("wishlist") || "[]");
+          const { list, added } = toggleWishlistGuest(wishlist, product);
+          localStorage.setItem("wishlist", JSON.stringify(list));
+          setIsFavorite(added);
+          toast.success(
+            added
+              ? `${product.name} added to wishlist`
+              : `${product.name} removed from wishlist`,
+          );
           updateWishlistCount();
         }
       } catch (error) {
-        const msg = error?.response?.data?.message || 'Failed to update wishlist';
+        const msg =
+          error?.response?.data?.message || "Failed to update wishlist";
         toast.error(msg);
       } finally {
         setLoading(false);
       }
     },
-    [isLoggedIn, product]
+    [isLoggedIn, product],
   );
 
   if (iconOnly) {
@@ -111,8 +116,8 @@ const WishlistButton = ({ product, className = '', iconOnly = false }) => {
       <button
         onClick={handleToggleWishlist}
         className={`flex items-center justify-center ${className}`}
-        title={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'}
-        aria-label={isFavorite ? 'Remove from wishlist' : 'Add to wishlist'}
+        title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+        aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
         disabled={loading}
       >
         {loading ? (

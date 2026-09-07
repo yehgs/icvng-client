@@ -45,6 +45,7 @@
     "react-select-country-list": "^2.2.3",
     "react-type-animation": "^3.2.0",
     "react-use": "^17.6.0",
+    "@yehgs/icvng-core": "file:./calstins-icvng-core-0.9.1.tgz",
     "sweetalert2": "^11.14.0"
   },
   "devDependencies": {

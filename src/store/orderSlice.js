@@ -1,19 +1,3 @@
-import { createSlice } from '@reduxjs/toolkit';
-
-const initialValue = {
-  order: [],
-};
-
-const orderSlice = createSlice({
-  name: 'order',
-  initialState: initialValue,
-  reducers: {
-    setOrder: (state, action) => {
-      state.order = [...action.payload];
-    },
-  },
-});
-
-export const { setOrder } = orderSlice.actions;
-
-export default orderSlice.reducer;
+// client/src/store/orderSlice.js
+// Thin re-export shim — see userSlice.js in this same folder for why.
+export * from "@yehgs/icvng-core/store";
