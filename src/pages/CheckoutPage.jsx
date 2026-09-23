@@ -305,13 +305,14 @@ const CheckoutPage = () => {
     selectedCurrency,
     formatPrice,
     convertPrice,
-    getPaymentMethod,
     exchangeRates,
   } = useCurrency();
   // Phase 4: country-aware payment availability
   const {
     hasPaystack,
     hasStripe,
+    hasCinetPay,
+    defaultProvider,
     hasBankTransfer,
     bankTransferDetails,
     countryCode,
@@ -338,13 +339,15 @@ const CheckoutPage = () => {
   const [shippingMethods, setShippingMethods] = useState([]);
   const [selectedMethod, setSelectedMethod] = useState(null);
   const [shippingLoading, setShippingLoading] = useState(false);
-  // Default payment method: paystack for NG, stripe for others
+  // Default payment method: the server-decided defaultProvider — the
+  // country's own indigenous gateway when it has one active (CinetPay for
+  // TG/BJ, Paystack for NG), Stripe otherwise. See CountryContext.jsx.
   const [contact, setContact] = useState({
     name: "",
     email: "",
     phone: "",
     notes: "",
-    paymentMethod: hasPaystack ? "paystack" : "stripe",
+    paymentMethod: defaultProvider,
   });
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -367,10 +370,10 @@ const CheckoutPage = () => {
     if (contact.paymentMethod === "bank_transfer" && !bankTransferAvailable) {
       setContact((p) => ({
         ...p,
-        paymentMethod: hasPaystack ? "paystack" : "stripe",
+        paymentMethod: defaultProvider,
       }));
     }
-  }, [bankTransferAvailable, hasPaystack]);
+  }, [bankTransferAvailable, defaultProvider]);
 
   // Redirect if not logged in (shouldn't reach here — cart drawer blocks it)
   useEffect(() => {
@@ -613,8 +616,16 @@ const CheckoutPage = () => {
           });
         }
       } else {
-        // Paystack (NGN) or Stripe (international)
-        const paymentMethod = getPaymentMethod();
+        // Paystack / CinetPay / Stripe — whichever the shopper picked via
+        // the radio buttons below. (Previously this called
+        // getPaymentMethod(), which derives the method from currency alone
+        // and ignores contact.paymentMethod entirely — harmless while
+        // Paystack was NG/NGN-only, since getPaymentMethod already only
+        // returns "paystack" in exactly that case, but it would have
+        // silently ignored a CinetPay selection and always fallen through
+        // to Stripe. contact.paymentMethod is the actual source of truth
+        // the UI shows the shopper.)
+        const paymentMethod = contact.paymentMethod;
         const convertedSubTotal = convertPrice(subtotal);
         const convertedShipping = convertPrice(shippingCost);
         const convertedTotal = convertPrice(total);
@@ -1007,6 +1018,32 @@ const CheckoutPage = () => {
                           </span>
                         </label>
                       )}
+                      {/* Country-scoped indigenous gateway (CinetPay for
+                          Togo/Benin today) — only rendered when that
+                          country's own MANAGER (or IT/DIRECTOR) has
+                          configured and activated it in Admin → Settings →
+                          Payment Gateway. No active gateway for the
+                          country → this option simply doesn't appear and
+                          Stripe is the only choice, same fallback rule
+                          Bank Transfer already follows. */}
+                      {hasCinetPay && (
+                        <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
+                          <input
+                            type="radio"
+                            value="cinetpay"
+                            checked={contact.paymentMethod === "cinetpay"}
+                            onChange={() =>
+                              setContact((p) => ({
+                                ...p,
+                                paymentMethod: "cinetpay",
+                              }))
+                            }
+                          />
+                          <span className="text-sm">
+                            💳 {t("checkout.payOnlineCinetPay")}
+                          </span>
+                        </label>
+                      )}
                       {/* Show Stripe for all countries */}
                       {hasStripe && (
                         <label className="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:border-green-400 transition">
@@ -1023,7 +1060,7 @@ const CheckoutPage = () => {
                           />
                           <span className="text-sm">
                             💳{" "}
-                            {hasPaystack
+                            {hasPaystack || hasCinetPay
                               ? t("checkout.payWithStripeIntl")
                               : t("checkout.payWithCardStripe")}
                           </span>

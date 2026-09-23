@@ -279,6 +279,7 @@ export default {
     "phoneShort": "电话",
     "emailLabel": "电子邮件",
     "payOnlinePaystack": "在线支付（卡 / 银行，通过 Paystack）",
+    "payOnlineCinetPay": "在线支付（Mobile Money / 银行卡，通过 CinetPay）",
     "payWithStripeIntl": "使用 Stripe 支付（国际卡）",
     "payWithCardStripe": "使用卡片支付（Stripe）",
     "manualBankTransfer": "手动银行转账",

@@ -279,6 +279,7 @@ export default {
     "phoneShort": "Téléphone",
     "emailLabel": "E-mail",
     "payOnlinePaystack": "Payer en ligne (carte / banque via Paystack)",
+    "payOnlineCinetPay": "Payer en ligne (Mobile Money / carte via CinetPay)",
     "payWithStripeIntl": "Payer avec Stripe (carte internationale)",
     "payWithCardStripe": "Payer par carte (Stripe)",
     "manualBankTransfer": "Virement bancaire manuel",

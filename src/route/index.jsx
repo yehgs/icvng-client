@@ -49,6 +49,7 @@ const SingleBlogPost = lazy(() => import("../pages/SingleBlogPost.jsx"));
 const PaymentSuccessPage = lazy(() => import("../pages/PaymentSuccessPage"));
 const PaymentCancelPage = lazy(() => import("../pages/PaymentCancelPage"));
 const PaystackCallbackPage = lazy(() => import("../pages/PaystackCallbackPage"));
+const CinetpayCallbackPage = lazy(() => import("../pages/CinetpayCallbackPage"));
 const GiftCardBuyPage = lazy(() => import("../pages/GiftCardBuyPage"));
 const GiftCardBalancePage = lazy(() => import("../pages/GiftCardBalancePage"));
 const GiftCardPaystackCallbackPage = lazy(() => import("../pages/GiftCardPaystackCallbackPage"));
@@ -234,6 +235,10 @@ const router = createBrowserRouter([
       {
         path: "/payment/paystack/callback",
         element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><PaystackCallbackPage  /></Suspense>,
+      },
+      {
+        path: "/payment/cinetpay/callback",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CinetpayCallbackPage  /></Suspense>,
       },
       {
         path: "gift-cards/buy",

@@ -48,6 +48,7 @@ const DEFAULT_COUNTRY_CONFIG = {
   seo: { siteName: "I-Coffee Nigeria", tld: ".ng" },
   payment: {
     availableProviders: ["stripe", "paystack"],
+    defaultProvider: "paystack",
     currency: "NGN",
     stripePublicKey: null,
     paystackPublicKey: null,
@@ -223,6 +224,23 @@ export function CountryProvider({ children }) {
     () => country.payment?.availableProviders?.includes("stripe") ?? true,
     [country],
   );
+  // CinetPay — country-scoped indigenous gateway (Togo/Benin today), added
+  // per-country in Admin → Settings → Payment Gateway by that country's own
+  // MANAGER or by IT/DIRECTOR. Same shape as hasPaystack: server-derived,
+  // never assumed from the country code on the client.
+  const hasCinetPay = useMemo(
+    () => country.payment?.availableProviders?.includes("cinetpay") ?? false,
+    [country],
+  );
+  // Which provider checkout should preselect. The server decides this
+  // (config/paymentRouter.js#getPaymentConfig): the country's own
+  // indigenous gateway when one is active (CinetPay for TG/BJ, Paystack
+  // for NG), Stripe otherwise. Falls back to the old paystack/stripe-only
+  // rule if an older cached country payload has no defaultProvider field.
+  const defaultProvider = useMemo(
+    () => country.payment?.defaultProvider || (hasPaystack ? "paystack" : "stripe"),
+    [country, hasPaystack],
+  );
 
   // ── Context value ─────────────────────────────────────────────────────────
   const value = useMemo(
@@ -245,6 +263,8 @@ export function CountryProvider({ children }) {
       // Payment
       hasPaystack,
       hasStripe,
+      hasCinetPay,
+      defaultProvider,
       hasBankTransfer,
       bankTransferDetails,
       paymentProviders: country.payment?.availableProviders || ["stripe"],
@@ -262,6 +282,8 @@ export function CountryProvider({ children }) {
       formatPrice,
       hasPaystack,
       hasStripe,
+      hasCinetPay,
+      defaultProvider,
       hasBankTransfer,
       bankTransferDetails,
       loading,

@@ -288,6 +288,7 @@ const en = {
     phoneShort: "Phone",
     emailLabel: "Email",
     payOnlinePaystack: "Pay Online (Card / Bank via Paystack)",
+    payOnlineCinetPay: "Pay Online (Mobile Money / Card via CinetPay)",
     payWithStripeIntl: "Pay with Stripe (International Card)",
     payWithCardStripe: "Pay with Card (Stripe)",
     manualBankTransfer: "Manual Bank Transfer",

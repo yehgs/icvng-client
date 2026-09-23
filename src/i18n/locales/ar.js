@@ -279,6 +279,7 @@ export default {
     "phoneShort": "رقم الهاتف",
     "emailLabel": "البريد الإلكتروني",
     "payOnlinePaystack": "الدفع عبر الإنترنت (بطاقة / بنك عبر Paystack)",
+    "payOnlineCinetPay": "الدفع عبر الإنترنت (محفظة موبايل / بطاقة عبر CinetPay)",
     "payWithStripeIntl": "ادفع عبر Stripe (بطاقة دولية)",
     "payWithCardStripe": "ادفع بالبطاقة (Stripe)",
     "manualBankTransfer": "تحويل بنكي يدوي",

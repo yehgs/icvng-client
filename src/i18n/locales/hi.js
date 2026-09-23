@@ -279,6 +279,7 @@ export default {
     "phoneShort": "फोन",
     "emailLabel": "ईमेल",
     "payOnlinePaystack": "ऑनलाइन भुगतान (कार्ड / बैंक via Paystack)",
+    "payOnlineCinetPay": "ऑनलाइन भुगतान (मोबाइल मनी / कार्ड via CinetPay)",
     "payWithStripeIntl": "Stripe से भुगतान (अंतरराष्ट्रीय कार्ड)",
     "payWithCardStripe": "कार्ड से भुगतान (Stripe)",
     "manualBankTransfer": "मैनुअल बैंक ट्रांसफर",
