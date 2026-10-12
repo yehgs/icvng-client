@@ -257,7 +257,7 @@ const SearchInput = () => {
                       )}
                       {product.roastLevel && (
                         <span className="mr-3">
-                          Roast: {product.roastLevel}
+                          {t('storefront.roastLabel', { level: product.roastLevel })}
                         </span>
                       )}
                     </div>
@@ -295,8 +295,8 @@ const SearchInput = () => {
                         ? product.price5weeksDelivery
                         : product.price3weeksDelivery;
                       const deliveryLabel = isMachine
-                        ? "5wk delivery"
-                        : "3wk delivery";
+                        ? t("product.fiveWeeksDelivery")
+                        : t("product.twoWeeksDelivery");
 
                       if (deliveryPrice > 0) {
                         return (
@@ -322,13 +322,9 @@ const SearchInput = () => {
               </div>
             </>
           ) : searchQuery.length > 2 ? (
-            <div className="p-4 text-center text-gray-500">
-              No products found
-            </div>
+            <div className="p-4 text-center text-gray-500">\n\1{t('shop.noProductsFound')}\n            </div>
           ) : (
-            <div className="p-4 text-center text-gray-500">
-              Type at least 3 characters to search
-            </div>
+            <div className="p-4 text-center text-gray-500">\n\1{t('storefront.typeAtLeast3')}\n            </div>
           )}
         </div>
       )}

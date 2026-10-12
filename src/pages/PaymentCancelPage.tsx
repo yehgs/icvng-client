@@ -7,9 +7,11 @@ import {
   FaRedo,
   FaHome,
 } from 'react-icons/fa';
+import { useCountry } from '../context/CountryContext';
 
 const PaymentCancelPage = () => {
   const navigate = useNavigate();
+  const { t } = useCountry();
 
   const handleRetryPayment = () => {
     navigate('/checkout');
@@ -25,7 +27,7 @@ const PaymentCancelPage = () => {
 
   const handleContactSupport = () => {
     window.location.href =
-      'mailto:customercare@i-coffee.ng?subject=Payment Issue - Need Help';
+      `mailto:customercare@i-coffee.ng?subject=${encodeURIComponent(t('paymentCancel.mailSubject'))}`;
   };
 
   return (
@@ -37,27 +39,26 @@ const PaymentCancelPage = () => {
             <FaTimesCircle className="text-red-500 text-5xl" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">
-            Payment Cancelled
+            {t('paymentCancel.title')}
           </h1>
-          <p className="text-red-100 text-lg">Your payment was not completed</p>
+          <p className="text-red-100 text-lg">{t('paymentCancel.subtitle')}</p>
         </div>
 
         {/* Content */}
         <div className="p-8">
           <div className="mb-8">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">
-              What happened?
+              {t('paymentCancel.whatHappened')}
             </h2>
             <div className="space-y-3 text-gray-600">
               <p>
-                Your payment process was interrupted or cancelled. This could
-                happen due to:
+                {t('paymentCancel.interrupted')}
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>You clicked the back or cancel button</li>
-                <li>Your payment session expired</li>
-                <li>There was an issue with your payment method</li>
-                <li>The payment window was closed</li>
+                <li>{t('paymentCancel.reasonBack')}</li>
+                <li>{t('paymentCancel.reasonExpired')}</li>
+                <li>{t('paymentCancel.reasonMethod')}</li>
+                <li>{t('paymentCancel.reasonClosed')}</li>
               </ul>
             </div>
           </div>
@@ -67,9 +68,8 @@ const PaymentCancelPage = () => {
             <p className="text-green-800 text-sm flex items-start gap-2">
               <FaQuestionCircle className="mt-1 flex-shrink-0" />
               <span>
-                <strong>Don't worry!</strong> Your cart items are still saved.
-                No charges were made to your account. You can try again whenever
-                you're ready.
+                <strong>{t('paymentCancel.dontWorry')}</strong>{' '}
+                {t('paymentCancel.reassurance')}
               </span>
             </p>
           </div>
@@ -81,7 +81,7 @@ const PaymentCancelPage = () => {
               className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               <FaRedo />
-              Try Payment Again
+              {t('paymentCancel.tryAgain')}
             </button>
 
             <button
@@ -89,7 +89,7 @@ const PaymentCancelPage = () => {
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2 shadow-md"
             >
               <FaShoppingCart />
-              Back to Cart
+              {t('paymentCancel.backToCart')}
             </button>
 
             <button
@@ -97,26 +97,26 @@ const PaymentCancelPage = () => {
               className="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-4 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
             >
               <FaHome />
-              Back to Home
+              {t('paymentCancel.backToHome')}
             </button>
           </div>
 
           {/* Help Section */}
           <div className="mt-8 border-t pt-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">
-              Need Help?
+              {t('paymentCancel.needHelp')}
             </h3>
 
             <div className="space-y-4">
               <div className="p-4 bg-blue-50 rounded-lg">
                 <h4 className="font-semibold text-gray-800 mb-2">
-                  Common Solutions:
+                  {t('paymentCancel.commonSolutions')}
                 </h4>
                 <ul className="text-sm text-gray-600 space-y-2">
-                  <li>• Check if your card has sufficient funds</li>
-                  <li>• Ensure your card is enabled for online transactions</li>
-                  <li>• Try using a different payment method</li>
-                  <li>• Clear your browser cache and try again</li>
+                  <li>• {t('paymentCancel.tipFunds')}</li>
+                  <li>• {t('paymentCancel.tipOnline')}</li>
+                  <li>• {t('paymentCancel.tipOtherMethod')}</li>
+                  <li>• {t('paymentCancel.tipCache')}</li>
                 </ul>
               </div>
 
@@ -125,11 +125,11 @@ const PaymentCancelPage = () => {
                 className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-3 px-6 rounded-lg transition-colors flex items-center justify-center gap-2"
               >
                 <FaQuestionCircle />
-                Contact Customer Support
+                {t('paymentCancel.contactSupport')}
               </button>
 
               <div className="text-center text-sm text-gray-500">
-                <p>Available 24/7 via email:</p>
+                <p>{t('paymentCancel.availableEmail')}</p>
                 <a
                   href="mailto:customercare@i-coffee.ng"
                   className="text-blue-600 hover:underline font-medium"

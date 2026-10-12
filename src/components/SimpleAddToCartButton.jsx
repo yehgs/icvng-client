@@ -6,8 +6,10 @@ import AxiosToastError from '../utils/AxiosToastError';
 import { useGlobalContext } from '../provider/GlobalProvider';
 import { FaShoppingCart } from 'react-icons/fa';
 import ProductRequestModal from './ProductRequestModal';
+import { useCountry } from '../context/CountryContext';
 
 const SimpleAddToCartButton = ({ data }) => {
+  const { t } = useCountry();
   const [loading, setLoading] = useState(false);
   const [showRequestModal, setShowRequestModal] = useState(false);
   const { fetchCartItem } = useGlobalContext();
@@ -54,9 +56,7 @@ const SimpleAddToCartButton = ({ data }) => {
         <button
           onClick={handleRequestClick}
           className="w-full bg-secondary-200 hover:bg-secondary-100 text-white text-sm font-medium py-2 px-3 rounded-md transition flex items-center justify-center"
-        >
-          Request
-        </button>
+        >\n\1{t('storefront.request')}\n        </button>
       ) : (
         <button
           onClick={handleAddToCart}
@@ -67,7 +67,7 @@ const SimpleAddToCartButton = ({ data }) => {
             <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></div>
           ) : (
             <>
-              <FaShoppingCart className="mr-1" /> Add
+              \1 {t('common.add')}
             </>
           )}
         </button>

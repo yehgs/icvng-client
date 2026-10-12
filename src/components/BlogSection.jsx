@@ -124,13 +124,13 @@ const BlogSection = () => {
         />
         <div className="absolute top-4 left-4">
           <span className="inline-block px-3 py-1 bg-amber-600 text-white text-xs font-semibold rounded-full">
-            {post.category?.name || "Blog"}
+            {post.category?.name || t("blog.title")}
           </span>
         </div>
         {post.featured && (
           <div className="absolute top-4 right-4">
             <span className="inline-block px-3 py-1 bg-red-600 text-white text-xs font-semibold rounded-full">
-              Featured
+              {t('blog.featured')}
             </span>
           </div>
         )}
@@ -149,7 +149,7 @@ const BlogSection = () => {
           </div>
           <div className="flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            <span>{post.readTime} min read</span>
+            <span>{t('blog.minRead', { count: post.readTime })}</span>
           </div>
         </div>
 
@@ -163,7 +163,7 @@ const BlogSection = () => {
 
         <div className="flex items-center justify-between">
           <div className="flex items-center text-amber-700 font-medium group-hover:text-amber-800 transition-colors">
-            <span className="text-sm">Read More</span>
+            <span className="text-sm">{t('blog.readMore')}</span>
             <ArrowRight
               size={16}
               className="ml-1 group-hover:translate-x-1 transition-transform duration-300"
@@ -244,10 +244,10 @@ const BlogSection = () => {
           <div className="text-center py-12">
             <Coffee className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">
-              No blog posts available
+              {t('blog.noPostsAvailable')}
             </h3>
             <p className="text-gray-500">
-              Check back soon for exciting coffee stories and insights!
+              {t('blog.checkBackSoon')}
             </p>
           </div>
         )}

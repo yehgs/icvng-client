@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import CardProduct from "./CardProduct";
+import { useCountry } from '../context/CountryContext.jsx';
 
 const CategoryFilterProductCarousel = ({
   products = [],
@@ -8,6 +9,7 @@ const CategoryFilterProductCarousel = ({
   title = "Products by Category",
   itemsPerSlide = 10,
 }) => {
+  const { t } = useCountry();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -122,9 +124,7 @@ const CategoryFilterProductCarousel = ({
                 : "bg-gray-100 hover:bg-gray-200 text-gray-800"
             } transition-colors`}
             onClick={() => setSelectedCategory("all")}
-          >
-            All Products
-          </button>
+          >\n\1{t('homeSections.allProducts')}\n          </button>
           {categories &&
             categories.length > 0 &&
             categories.map((cat) => (
@@ -196,9 +196,7 @@ const CategoryFilterProductCarousel = ({
             </div>
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
-              <p className="text-gray-500">
-                No products found in this category.
-              </p>
+              <p className="text-gray-500">\n\1{t('storefront.noProductsInCategory')}\n              </p>
             </div>
           )}
         </div>
@@ -209,14 +207,14 @@ const CategoryFilterProductCarousel = ({
             <button
               className="absolute left-0 top-1/2 transform -translate-y-1/2 -translate-x-1 md:-translate-x-4 bg-white shadow rounded-full p-2 hover:bg-gray-100 transition-colors z-10"
               onClick={prevSlide}
-              aria-label="Previous slide"
+              aria-label={t('homeSections.previousSlide')}
             >
               <ChevronLeft size={20} className="text-gray-700" />
             </button>
             <button
               className="absolute right-0 top-1/2 transform -translate-y-1/2 translate-x-1 md:translate-x-4 bg-white shadow rounded-full p-2 hover:bg-gray-100 transition-colors z-10"
               onClick={nextSlide}
-              aria-label="Next slide"
+              aria-label={t('homeSections.nextSlide')}
             >
               <ChevronRight size={20} className="text-gray-700" />
             </button>
@@ -234,7 +232,7 @@ const CategoryFilterProductCarousel = ({
               className={`w-2 h-2 rounded-full ${
                 currentSlide === index ? "bg-green-700" : "bg-gray-300"
               } transition-colors`}
-              aria-label={`Go to slide ${index + 1}`}
+              aria-label={t('storefront.goToSlide', { number: index + 1 })}
             />
           ))}
         </div>

@@ -507,7 +507,7 @@ const ProductDisplayPage = () => {
                   >
                     <img
                       src={img}
-                      alt={`${translatedData.name} - view ${index + 1}`}
+                      alt={t('productPage.imageViewAlt', { name: translatedData.name, number: index + 1 })}
                       className="w-full h-full object-contain"
                     />
                   </div>
@@ -551,7 +551,7 @@ const ProductDisplayPage = () => {
               )}
               {data.featured && (
                 <span className="inline-block bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded-full mt-2">
-                  Featured Product
+                  {t('productPage.featuredProduct')}
                 </span>
               )}
               <div className="flex items-center mt-2">
@@ -691,7 +691,7 @@ const ProductDisplayPage = () => {
                                 {cartLoading ? (
                                   <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-green-700 mx-auto" />
                                 ) : (
-                                  `${optionQty} in cart`
+                                  t('productPage.inCart', { count: optionQty })
                                 )}
                               </div>
                               <button
@@ -734,13 +734,13 @@ const ProductDisplayPage = () => {
                     detail and is never shown to customers. */}
                 <div className="flex items-center text-sm">
                   {onlineStock > 0 || (isPartnerProduct && partnerQty > 0) ? (
-                    <span className="text-green-600">In Stock</span>
+                    <span className="text-green-600">{t('productPage.inStockBadge')}</span>
                   ) : null}
                 </div>
 
                 {data.discount > 0 && (
                   <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium inline-block">
-                    {data.discount}% OFF — Save{" "}
+                    {t('productPage.offSave', { percent: data.discount })}{" "}
                     {formatPrice(
                       (getSelectedPrice(selectedPriceOption) * data.discount) /
                         100,
@@ -925,7 +925,7 @@ const ProductDisplayPage = () => {
             {activeTab === "additionalInfo" && data.additionalInfo && (
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <h3 className="font-medium mb-2">Product Details</h3>
+                  <h3 className="font-medium mb-2">{t('productPage.productDetails')}</h3>
                   <div
                     dangerouslySetInnerHTML={{ __html: translatedData.additionalInfo }}
                   />
@@ -945,7 +945,7 @@ const ProductDisplayPage = () => {
         {/* ── Related Products ── */}
         {data.relatedProducts && data.relatedProducts.length > 0 && (
           <div className="mt-12">
-            <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
+            <h2 className="text-2xl font-bold mb-6">{t('productPage.youMayAlsoLike')}</h2>
             <p className="text-gray-500">
               Related products component would be rendered here
             </p>

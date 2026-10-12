@@ -1,6 +1,6 @@
 /* =============================================
    CART DRAWER — Z-INDEX
-   Sits above tawk's default 2,000,000,000.
+   Sits above all other page layers.
    ============================================= */
 .cart-drawer-backdrop {
   position: fixed !important;
@@ -8,19 +8,3 @@
   z-index: 2000000001 !important;
 }
 
-/* =============================================
-   TAWK.TO — FORCE BEHIND CART DRAWER
-   When .cart-drawer-backdrop is in the DOM, demote every
-   tawk element via CSS. The JS hook also calls
-   Tawk_API.hideWidget() for belt-and-suspenders coverage.
-   ============================================= */
-body:has(.cart-drawer-backdrop) [id*="tawk"],
-body:has(.cart-drawer-backdrop) [class*="tawk"],
-body:has(.cart-drawer-backdrop) #tawk-bubble-container,
-body:has(.cart-drawer-backdrop) .tawkchat-container,
-body:has(.cart-drawer-backdrop) .widget-visible,
-body:has(.cart-drawer-backdrop) iframe[src*="tawk.to"],
-body:has(.cart-drawer-backdrop) iframe[id*="tawk"],
-body:has(.cart-drawer-backdrop) iframe[name*="tawk"] {
-  z-index: 1 !important;
-}

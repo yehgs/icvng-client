@@ -9,6 +9,7 @@ import { useDispatch } from 'react-redux';
 import { setUserDetails } from '../store/userSlice';
 import fetchUserDetails from '../utils/fetchUserDetails';
 import Loading from './Loading';
+import { useCountry } from '../context/CountryContext';
 
 const AuthModal = ({
   isOpen,
@@ -19,6 +20,7 @@ const AuthModal = ({
   message = null,
   redirectReason = null,
 }) => {
+  const { t } = useCountry();
   const [currentMode, setCurrentMode] = useState(mode);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -55,7 +57,7 @@ const AuthModal = ({
       }
 
       if (response.data.success) {
-        toast.success('Login successful!');
+        toast.success(t('authModal.loginSuccess'));
         localStorage.setItem('accesstoken', response.data.data.accesstoken);
         localStorage.setItem('refreshToken', response.data.data.refreshToken);
 
@@ -78,12 +80,12 @@ const AuthModal = ({
     e.preventDefault();
 
     if (registerData.password !== registerData.confirmPassword) {
-      toast.error('Password and confirm password must be the same');
+      toast.error(t('authModal.passwordsMustMatch'));
       return;
     }
 
     if (registerData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long');
+      toast.error(t('authModal.passwordMin6'));
       return;
     }
 
@@ -104,7 +106,7 @@ const AuthModal = ({
       }
 
       if (response.data.success) {
-        toast.success('Registration successful!');
+        toast.success(t('authModal.registrationSuccess'));
 
         // Automatically log in after registration
         try {
@@ -121,16 +123,16 @@ const AuthModal = ({
             dispatch(setUserDetails(userDetails.data));
 
             setRegisterData({ name: '', email: '', password: '', confirmPassword: '' });
-            toast.success('Account created and logged in successfully!');
+            toast.success(t('authModal.accountCreatedLoggedIn'));
 
             if (onSuccess) onSuccess(userDetails.data);
             onClose();
           } else {
-            toast.success('Account created! Please sign in.');
+            toast.success(t('authModal.accountCreatedSignIn'));
             switchMode('login');
           }
         } catch (loginError) {
-          toast.success('Account created! Please sign in.');
+          toast.success(t('authModal.accountCreatedSignIn'));
           switchMode('login');
         }
       }
@@ -151,11 +153,11 @@ const AuthModal = ({
 
   const getAlertMessage = () => {
     const alerts = {
-      checkout: { color: 'blue', message: 'Please sign in to continue with checkout.' },
-      wishlist: { color: 'pink', message: 'Please sign in to access your wishlist.' },
-      compare: { color: 'purple', message: 'Please sign in to access your compare list.' },
-      order: { color: 'green', message: 'Please sign in to place your order.' },
-      profile: { color: 'indigo', message: 'Please sign in to access your profile.' },
+      checkout: { color: 'blue', message: t('authModal.alertCheckout') },
+      wishlist: { color: 'pink', message: t('authModal.alertWishlist') },
+      compare: { color: 'purple', message: t('authModal.alertCompare') },
+      order: { color: 'green', message: t('authModal.alertOrder') },
+      profile: { color: 'indigo', message: t('authModal.alertProfile') },
     };
     return alerts[redirectReason] || null;
   };
@@ -170,7 +172,7 @@ const AuthModal = ({
         {/* Header */}
         <div className="flex justify-between items-center p-6 border-b">
           <h2 className="text-xl font-semibold text-gray-800">
-            {title || (currentMode === 'login' ? 'Welcome Back' : 'Join I-Coffee')}
+            {title || (currentMode === 'login' ? t('authModal.welcomeBack') : t('authModal.joinBrand'))}
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 transition-colors">
             <FaTimes size={20} />
@@ -196,13 +198,13 @@ const AuthModal = ({
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 currentMode === 'login' ? 'bg-white text-secondary-200 shadow-sm' : 'text-gray-600 hover:text-gray-800'
               }`}>
-              Sign In
+              {t('authModal.signIn')}
             </button>
             <button onClick={() => switchMode('register')}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
                 currentMode === 'register' ? 'bg-white text-secondary-200 shadow-sm' : 'text-gray-600 hover:text-gray-800'
               }`}>
-              Create Account
+              {t('authModal.createAccount')}
             </button>
           </div>
 
@@ -210,16 +212,16 @@ const AuthModal = ({
           {currentMode === 'login' && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <label htmlFor="login-email" className="block text-sm font-medium text-gray-700 mb-1">{t('authModal.emailAddress')}</label>
                 <input type="email" id="login-email" name="email" value={loginData.email}
-                  onChange={handleLoginChange} required placeholder="Enter your email"
+                  onChange={handleLoginChange} required placeholder={t('authModal.enterEmail')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-200 focus:border-transparent" />
               </div>
               <div>
-                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label htmlFor="login-password" className="block text-sm font-medium text-gray-700 mb-1">{t('authModal.password')}</label>
                 <div className="relative">
                   <input type={showPassword ? 'text' : 'password'} id="login-password" name="password"
-                    value={loginData.password} onChange={handleLoginChange} required placeholder="Enter your password"
+                    value={loginData.password} onChange={handleLoginChange} required placeholder={t('authModal.enterPassword')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-200 focus:border-transparent pr-10" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -234,8 +236,8 @@ const AuthModal = ({
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}>
                 {loading
-                  ? <div className="flex items-center justify-center"><Loading /><span className="ml-2">Signing in...</span></div>
-                  : 'Sign In'}
+                  ? <div className="flex items-center justify-center"><Loading /><span className="ml-2">{t('authModal.signingIn')}</span></div>
+                  : t('authModal.signIn')}
               </button>
             </form>
           )}
@@ -244,23 +246,23 @@ const AuthModal = ({
           {currentMode === 'register' && (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label htmlFor="register-name" className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                <label htmlFor="register-name" className="block text-sm font-medium text-gray-700 mb-1">{t('authModal.fullName')}</label>
                 <input type="text" id="register-name" name="name" value={registerData.name}
-                  onChange={handleRegisterChange} required placeholder="Enter your full name"
+                  onChange={handleRegisterChange} required placeholder={t('authModal.enterFullName')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-200 focus:border-transparent" />
               </div>
               <div>
-                <label htmlFor="register-email" className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <label htmlFor="register-email" className="block text-sm font-medium text-gray-700 mb-1">{t('authModal.emailAddress')}</label>
                 <input type="email" id="register-email" name="email" value={registerData.email}
-                  onChange={handleRegisterChange} required placeholder="Enter your email"
+                  onChange={handleRegisterChange} required placeholder={t('authModal.enterEmail')}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-200 focus:border-transparent" />
               </div>
               <div>
-                <label htmlFor="register-password" className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <label htmlFor="register-password" className="block text-sm font-medium text-gray-700 mb-1">{t('authModal.password')}</label>
                 <div className="relative">
                   <input type={showPassword ? 'text' : 'password'} id="register-password" name="password"
                     value={registerData.password} onChange={handleRegisterChange} required minLength={6}
-                    placeholder="Enter your password (min. 6 characters)"
+                    placeholder={t('authModal.enterPasswordMin')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-200 focus:border-transparent pr-10" />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -269,11 +271,11 @@ const AuthModal = ({
                 </div>
               </div>
               <div>
-                <label htmlFor="register-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <label htmlFor="register-confirm-password" className="block text-sm font-medium text-gray-700 mb-1">{t('authModal.confirmPassword')}</label>
                 <div className="relative">
                   <input type={showConfirmPassword ? 'text' : 'password'} id="register-confirm-password"
                     name="confirmPassword" value={registerData.confirmPassword} onChange={handleRegisterChange}
-                    required placeholder="Confirm your password"
+                    required placeholder={t('authModal.confirmYourPassword')}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-secondary-200 focus:border-transparent pr-10" />
                   <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="absolute inset-y-0 right-0 pr-3 flex items-center">
@@ -288,8 +290,8 @@ const AuthModal = ({
                     : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 }`}>
                 {loading
-                  ? <div className="flex items-center justify-center"><Loading /><span className="ml-2">Creating account...</span></div>
-                  : 'Create Account'}
+                  ? <div className="flex items-center justify-center"><Loading /><span className="ml-2">{t('authModal.creatingAccount')}</span></div>
+                  : t('authModal.createAccount')}
               </button>
             </form>
           )}
@@ -299,10 +301,10 @@ const AuthModal = ({
             <div className="bg-green-50 border border-green-200 rounded-lg p-3">
               <div className="flex items-center justify-center gap-2 text-sm text-green-800">
                 <FaLock className="text-green-600" />
-                <span className="font-medium">Your data is safe with us</span>
+                <span className="font-medium">{t('authModal.dataSafe')}</span>
               </div>
               <p className="text-xs text-green-700 text-center mt-1">
-                Secure and encrypted connection
+                {t('authModal.secureConnection')}
               </p>
             </div>
           </div>

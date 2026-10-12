@@ -5,8 +5,10 @@ import { DisplayPriceInNaira } from '../utils/DisplayPriceInNaira'
 import { Link } from 'react-router-dom'
 import { FaCaretRight } from "react-icons/fa";
 import { useSelector } from 'react-redux'
+import { useCountry } from '../context/CountryContext';
 
 const CartMobileLink = () => {
+  const { t } = useCountry();
     const { totalPrice, totalQty } = useGlobalContext()
     const cartItem = useSelector(state => state.cartItem.cart)
 
@@ -27,7 +29,7 @@ const CartMobileLink = () => {
                     </div>
 
                     <Link to={"/cart"} className='flex items-center gap-1'>
-                        <span className='text-sm'>View Cart</span>
+                        <span className='text-sm'>{t('storefront.viewCart')}</span>
                         <FaCaretRight/>
                     </Link>
                 </div>

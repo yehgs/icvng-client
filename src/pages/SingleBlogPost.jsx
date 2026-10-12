@@ -308,17 +308,17 @@ const SingleBlogPost = () => {
         <div className="text-center">
           <Coffee className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Post Not Found
+            {t('blog.postNotFound')}
           </h2>
           <p className="text-gray-600 mb-4">
-            The blog post you're looking for doesn't exist.
+            {t('blog.postNotFoundMessage')}
           </p>
           <Link
             to="/blog"
             className="inline-flex items-center px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Blog
+            {t('blog.backToBlog')}
           </Link>
         </div>
       </div>
@@ -332,11 +332,11 @@ const SingleBlogPost = () => {
         <div className="container mx-auto px-4 py-4">
           <nav className="flex items-center space-x-2 text-sm">
             <Link to="/" className="text-gray-500 hover:text-amber-600">
-              Home
+              {t('nav.home')}
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <Link to="/blog" className="text-gray-500 hover:text-amber-600">
-              Blog
+              {t('blog.title')}
             </Link>
             <ChevronRight className="w-4 h-4 text-gray-400" />
             <Link
@@ -359,7 +359,7 @@ const SingleBlogPost = () => {
             className="inline-flex items-center text-amber-600 hover:text-amber-700 mb-6 transition-colors"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+            {t('common.back')}
           </button>
 
           {/* Main Article */}
@@ -401,7 +401,7 @@ const SingleBlogPost = () => {
                       <div className="font-semibold text-gray-800">
                         {post.author.name}
                       </div>
-                      <div className="text-sm text-gray-600">Author</div>
+                      <div className="text-sm text-gray-600">{t('blog.authorLabel')}</div>
                     </div>
                   </div>
 
@@ -412,7 +412,7 @@ const SingleBlogPost = () => {
                     </div>
                     <div className="flex items-center gap-1">
                       <Clock className="w-4 h-4" />
-                      <span>{post.readTime} min read</span>
+                      <span>{t('blog.minRead', { count: post.readTime })}</span>
                     </div>
                     <div className="flex items-center gap-1">
                       <Eye className="w-4 h-4" />
@@ -497,7 +497,7 @@ const SingleBlogPost = () => {
               <div className="p-6 md:p-8 border-t border-gray-200">
                 <div className="flex items-center gap-3 mb-3">
                   <Tag className="w-5 h-5 text-gray-600" />
-                  <span className="font-semibold text-gray-800">Tags:</span>
+                  <span className="font-semibold text-gray-800">{t('blog.tagsLabel')}</span>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {displayPost.tags.map((tag) => (
@@ -519,7 +519,7 @@ const SingleBlogPost = () => {
           {translatedRelatedPosts.length > 0 && (
             <div className="mt-12">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                Related Articles
+                {t('blog.relatedArticles')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {translatedRelatedPosts.map((relatedPost) => (
@@ -543,7 +543,7 @@ const SingleBlogPost = () => {
                         {relatedPost.excerpt}
                       </p>
                       <div className="flex items-center text-amber-700 font-medium">
-                        <span className="text-sm">Read More</span>
+                        <span className="text-sm">{t('blog.readMore')}</span>
                         <ArrowRight
                           size={16}
                           className="ml-1 group-hover:translate-x-1 transition-transform duration-300"

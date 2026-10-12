@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Home, Coffee, Search } from 'lucide-react';
+import { useCountry } from '../context/CountryContext.jsx';
 
 /**
  * 404 Not Found Page
  * Displayed when a user navigates to a non-existent route
  */
 const NotFoundPage = () => {
+  const { t } = useCountry();
   // Go back to previous page
   const handleGoBack = () => {
     window.history.back();
@@ -29,13 +31,8 @@ const NotFoundPage = () => {
 
         {/* Error Message */}
         <h1 className="text-7xl font-bold text-amber-800 mb-4">404</h1>
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Page Not Found
-        </h2>
-        <p className="text-gray-600 mb-8">
-          Oops! The page you're looking for seems to have vanished like steam
-          from a fresh coffee.
-        </p>
+        <h2 className="text-2xl font-semibold text-gray-800 mb-4">\n\1{t('notFound.title')}\n        </h2>
+        <p className="text-gray-600 mb-8">\n\1{t('notFound.message')}\n        </p>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -43,16 +40,12 @@ const NotFoundPage = () => {
             onClick={handleGoBack}
             className="flex items-center justify-center px-6 py-3 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded-lg font-medium transition-colors"
           >
-            <ArrowLeft size={18} className="mr-2" />
-            Go Back
-          </button>
+            <ArrowLeft size={18} className="mr-2" />\n\1{t('notFound.goBack')}\n          </button>
           <Link
             to="/"
             className="flex items-center justify-center px-6 py-3 bg-amber-800 hover:bg-amber-900 text-white rounded-lg font-medium transition-colors"
           >
-            <Home size={18} className="mr-2" />
-            Home Page
-          </Link>
+            <Home size={18} className="mr-2" />\n\1{t('notFound.homePage')}\n          </Link>
         </div>
 
         {/* Additional Links */}
@@ -61,9 +54,7 @@ const NotFoundPage = () => {
             to="/shop"
             className="flex items-center text-amber-800 hover:text-amber-900 font-medium"
           >
-            <Coffee size={16} className="mr-1" />
-            Browse Products
-          </Link>
+            <Coffee size={16} className="mr-1" />\n\1{t('notFound.browseProducts')}\n          </Link>
         </div>
       </div>
     </div>

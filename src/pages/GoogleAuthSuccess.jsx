@@ -19,8 +19,10 @@ import { useDispatch } from "react-redux";
 import { setUserDetails } from "../store/userSlice";
 import fetchUserDetails from "../utils/fetchUserDetails";
 import Loading from "../components/Loading";
+import { useCountry } from '../context/CountryContext';
 
 export default function GoogleAuthSuccess() {
+  const { t } = useCountry();
   const navigate  = useNavigate();
   const location  = useLocation();
   const dispatch  = useDispatch();
@@ -38,17 +40,17 @@ export default function GoogleAuthSuccess() {
 
         if (oauthError) {
           const messages = {
-            google_access_denied: "Google sign-in was cancelled.",
-            no_email:             "No email address was returned from Google.",
-            server_error:         "Server error during sign-in. Please try again.",
+            google_access_denied: t("authFlow.googleCancelled"),
+            no_email:             t("authFlow.googleNoEmail"),
+            server_error:         t("authFlow.googleServerError"),
           };
-          setError(messages[oauthError] || "Google sign-in failed. Please try again.");
+          setError(messages[oauthError] || t("authFlow.googleFailed"));
           setTimeout(() => navigate("/login"), 3000);
           return;
         }
 
         if (!accesstoken || !refreshToken) {
-          setError("Authentication tokens missing. Please try again.");
+          setError(t("authFlow.tokensMissing"));
           setTimeout(() => navigate("/login"), 3000);
           return;
         }
@@ -72,7 +74,7 @@ export default function GoogleAuthSuccess() {
         navigate(redirectTo, { replace: true });
       } catch (err) {
         console.error("GoogleAuthSuccess error:", err);
-        setError("An unexpected error occurred. Please try logging in again.");
+        setError(t("authFlow.unexpectedError"));
         setTimeout(() => navigate("/login"), 3000);
       }
     }
@@ -84,9 +86,9 @@ export default function GoogleAuthSuccess() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4 text-center px-4">
         <div className="text-4xl">❌</div>
-        <h2 className="text-xl font-semibold text-gray-800">Sign-in failed</h2>
+        <h2 className="text-xl font-semibold text-gray-800">{t("authFlow.signInFailed")}</h2>
         <p className="text-gray-500 max-w-sm">{error}</p>
-        <p className="text-sm text-gray-400">Redirecting to login…</p>
+        <p className="text-sm text-gray-400">{t("authFlow.redirectingToLogin")}</p>
       </div>
     );
   }
@@ -94,7 +96,7 @@ export default function GoogleAuthSuccess() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center gap-4">
       <Loading />
-      <p className="text-gray-500 text-sm">Completing Google sign-in…</p>
+      <p className="text-gray-500 text-sm">{t("authFlow.completingGoogle")}</p>
     </div>
   );
 }

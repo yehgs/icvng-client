@@ -1,7 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useCountry } from '../context/CountryContext';
 
 const BrandMarquee = ({ brands = [] }) => {
+  const { t } = useCountry();
   if (!brands || brands.length === 0) {
     return (
       <div className="w-full bg-gray-50 py-1 rounded-lg">
@@ -34,7 +36,7 @@ const BrandMarquee = ({ brands = [] }) => {
             to={`/brand/${brand.slug || brand._id}`}
             className="mx-2 flex-shrink-0 bg-white rounded-lg p-2 flex items-center justify-center shadow hover:shadow-md transition-all transform hover:scale-105"
             style={{ height: '72px', width: '96px' }}
-            title={`Browse ${brand.name} products`}
+            title={t('storefront.browseBrandProducts', { brand: brand.name })}
           >
             <img loading="lazy" decoding="async"               src={brand.image || `https://dummyimage.com/200x100/eeeeee/333333&text=${brand.name}`}
               alt={brand.name}

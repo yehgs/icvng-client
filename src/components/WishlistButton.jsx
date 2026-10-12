@@ -10,12 +10,14 @@ import {
   toggleWishlistOnServer,
   toggleWishlistGuest,
 } from "@yehgs/icvng-core/wishlist";
+import { useCountry } from '../context/CountryContext.jsx';
 
 // Module-level cache so each productId is only checked once per page load,
 // even when multiple WishlistButton instances mount simultaneously.
 const statusCache = new Map();
 
 const WishlistButton = ({ product, className = "", iconOnly = false }) => {
+  const { t } = useCountry();
   const [loading, setLoading] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
   const user = useSelector((state) => state.user);
@@ -80,8 +82,8 @@ const WishlistButton = ({ product, className = "", iconOnly = false }) => {
             statusCache.set(product._id, result.added);
             toast.success(
               result.added
-                ? `${product.name} added to wishlist`
-                : `${product.name} removed from wishlist`,
+                ? t('wishlist.addedToWishlist', { name: product.name })
+                : t('wishlist.removedFromWishlist', { name: product.name }),
             );
             updateWishlistCount();
           } else {
@@ -95,14 +97,14 @@ const WishlistButton = ({ product, className = "", iconOnly = false }) => {
           setIsFavorite(added);
           toast.success(
             added
-              ? `${product.name} added to wishlist`
-              : `${product.name} removed from wishlist`,
+              ? t('wishlist.addedToWishlist', { name: product.name })
+              : t('wishlist.removedFromWishlist', { name: product.name }),
           );
           updateWishlistCount();
         }
       } catch (error) {
         const msg =
-          error?.response?.data?.message || "Failed to update wishlist";
+          error?.response?.data?.message || t('wishlist.failedToUpdate');
         toast.error(msg);
       } finally {
         setLoading(false);
@@ -116,8 +118,8 @@ const WishlistButton = ({ product, className = "", iconOnly = false }) => {
       <button
         onClick={handleToggleWishlist}
         className={`flex items-center justify-center ${className}`}
-        title={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
-        aria-label={isFavorite ? "Remove from wishlist" : "Add to wishlist"}
+        title={isFavorite ? t("product.removeFromWishlist") : t("product.addToWishlist")}
+        aria-label={isFavorite ? t("product.removeFromWishlist") : t("product.addToWishlist")}
         disabled={loading}
       >
         {loading ? (
@@ -142,12 +144,12 @@ const WishlistButton = ({ product, className = "", iconOnly = false }) => {
       ) : isFavorite ? (
         <>
           <FaHeart className="text-red-500" />
-          <span>Remove from Wishlist</span>
+          <span>{t('product.removeFromWishlist')}</span>
         </>
       ) : (
         <>
           <FaRegHeart className="text-gray-500 hover:text-red-500 transition-colors" />
-          <span>Add to Wishlist</span>
+          <span>{t('product.addToWishlist')}</span>
         </>
       )}
     </button>

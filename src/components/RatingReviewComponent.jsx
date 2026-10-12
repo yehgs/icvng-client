@@ -14,8 +14,21 @@ import SummaryApi from '../common/SummaryApi';
 import AxiosToastError from '../utils/AxiosToastError';
 import { formatDistanceToNow } from 'date-fns';
 import ConfirmBox from './ConfirmBox';
+import { useCountry } from '../context/CountryContext';
+
+// Localised "3 days ago" (date-fns' formatDistanceToNow is English-only).
+const timeAgo = (date, lang) => {
+  const diff = (new Date(date).getTime() - Date.now()) / 1000;
+  const units = [['year', 31536000], ['month', 2592000], ['day', 86400], ['hour', 3600], ['minute', 60]];
+  const rtf = new Intl.RelativeTimeFormat(lang || 'en', { numeric: 'auto' });
+  for (const [unit, secs] of units) {
+    if (Math.abs(diff) >= secs) return rtf.format(Math.round(diff / secs), unit);
+  }
+  return rtf.format(0, 'second');
+};
 
 const RatingReviewComponent = ({ productId, onRatingAdded }) => {
+  const { t, language } = useCountry();
   const [ratings, setRatings] = useState([]);
   const [userRating, setUserRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -77,12 +90,12 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
     e.preventDefault();
 
     if (!isLoggedIn) {
-      toast.error('Please login to submit a review');
+      toast.error(t('reviews.pleaseLogin'));
       return;
     }
 
     if (userRating === 0) {
-      toast.error('Please select a rating');
+      toast.error(t('reviews.pleaseRate'));
       return;
     }
 
@@ -241,8 +254,7 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
               )}
             </div>
             <div className="text-sm text-gray-500 mt-1">
-              Based on {ratings.length}{' '}
-              {ratings.length === 1 ? 'review' : 'reviews'}
+              {t('reviews.basedOn', { count: ratings.length })}
             </div>
           </div>
         </div>
@@ -256,7 +268,7 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
               onClick={startNewReview}
               className="bg-green-700 hover:bg-green-800 text-white font-medium py-2 px-4 rounded"
             >
-              Write a Review
+              {t('reviews.writeReview')}
             </button>
           ) : (
             <div className="space-y-4">
@@ -267,7 +279,7 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
                       <FaUser className="text-gray-500" />
                     </div>
                     <div>
-                      <p className="font-medium">Your Review</p>
+                      <p className="font-medium">{t('reviews.yourReview')}</p>
                       <div className="flex mt-1">
                         {renderStars(userExistingRating.rating)}
                       </div>
@@ -295,12 +307,8 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
                 )}
                 <p className="text-xs text-gray-500 mt-2">
                   {userExistingRating.updatedAt !== userExistingRating.createdAt
-                    ? `Edited ${formatDistanceToNow(
-                        new Date(userExistingRating.updatedAt)
-                      )} ago`
-                    : `Posted ${formatDistanceToNow(
-                        new Date(userExistingRating.createdAt)
-                      )} ago`}
+                    ? t('reviews.edited', { time: timeAgo(userExistingRating.updatedAt, language) })
+                    : t('reviews.posted', { time: timeAgo(userExistingRating.createdAt, language) })}
                 </p>
               </div>
             </div>
@@ -315,19 +323,19 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
           className="bg-gray-50 p-6 rounded-lg border"
         >
           <h3 className="text-lg font-semibold mb-4">
-            {isEditing ? 'Edit Your Review' : 'Write a Review'}
+            {isEditing ? t('reviews.editYourReview') : t('reviews.writeReview')}
           </h3>
 
           <div className="mb-4">
             <label className="block mb-2 text-sm font-medium">
-              Your Rating
+              {t('reviews.yourRating')}
             </label>
             {renderRatingStars()}
           </div>
 
           <div className="mb-4">
             <label htmlFor="review" className="block mb-2 text-sm font-medium">
-              Your Review (optional)
+              {t('reviews.yourReviewOptional')}
             </label>
             <textarea
               id="review"
@@ -335,7 +343,7 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
               value={review}
               onChange={(e) => setReview(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-              placeholder="Share your experience with this product..."
+              placeholder={t('reviews.sharePlaceholder')}
             ></textarea>
           </div>
 
@@ -352,12 +360,12 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
               {loading ? (
                 <>
                   <span className="animate-spin h-4 w-4 border-t-2 border-white mr-2"></span>
-                  {isEditing ? 'Updating...' : 'Submitting...'}
+                  {isEditing ? t('reviews.updating') : t('reviews.submitting')}
                 </>
               ) : isEditing ? (
-                'Update Review'
+                t('reviews.updateReview')
               ) : (
-                'Submit Review'
+                t('reviews.submitReview')
               )}
             </button>
 
@@ -366,7 +374,7 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
               onClick={() => setShowReviewForm(false)}
               className="border border-gray-300 bg-white text-gray-700 font-medium py-2 px-4 rounded"
             >
-              Cancel
+              {t('common.cancel')}
             </button>
           </div>
         </form>
@@ -376,11 +384,11 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
       {!isLoggedIn && !ratingLoading && (
         <div className="p-4 rounded-lg border bg-amber-100 text-amber-800">
           <p className="text-secondary-200">
-            Please{' '}
+            {t('reviews.pleaseLoginPrefix')}{' '}
             <a href="/login" className="font-medium underline">
-              log in
+              {t('reviews.loginLink')}
             </a>{' '}
-            to write a review.
+            {t('reviews.loginSuffix')}
           </p>
         </div>
       )}
@@ -388,7 +396,7 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
       {/* Reviews List */}
       <div className="mt-8 space-y-6">
         <h3 className="text-xl font-semibold border-b pb-2">
-          Customer Reviews
+          {t('reviews.customerReviews')}
         </h3>
 
         {ratingLoading ? (
@@ -398,7 +406,7 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
         ) : ratings.length === 0 ? (
           <div className="text-center py-8 bg-gray-50 rounded-lg">
             <p className="text-gray-500">
-              No reviews yet. Be the first to share your thoughts!
+              {t('reviews.noReviews')}
             </p>
           </div>
         ) : (
@@ -434,12 +442,8 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
 
                     <p className="text-xs text-gray-500">
                       {rating.updatedAt !== rating.createdAt
-                        ? `Edited ${formatDistanceToNow(
-                            new Date(rating.updatedAt)
-                          )} ago`
-                        : `Posted ${formatDistanceToNow(
-                            new Date(rating.createdAt)
-                          )} ago`}
+                        ? t('reviews.edited', { time: timeAgo(rating.updatedAt, language) })
+                        : t('reviews.posted', { time: timeAgo(rating.createdAt, language) })}
                     </p>
                   </div>
                 )
@@ -451,8 +455,8 @@ const RatingReviewComponent = ({ productId, onRatingAdded }) => {
       {/* Delete Confirmation */}
       {showDeleteConfirm && (
         <ConfirmBox
-          title="Delete Review"
-          message="Are you sure you want to delete your review? This action cannot be undone."
+          title={t('reviews.deleteTitle')}
+          message={t('reviews.deleteMessage')}
           close={() => setShowDeleteConfirm(false)}
           cancel={() => setShowDeleteConfirm(false)}
           confirm={handleRatingDelete}

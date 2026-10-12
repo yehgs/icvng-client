@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import { useSitePage } from '../hooks/useSitePage';
+import { useTranslation } from '../hooks/useTranslation';
 
 const TIMELINE_ICONS = { lightbulb: FaLightbulb, rocket: FaRocket, star: FaStar, users: FaUsers, award: FaAward };
 const PRINCIPLE_ICONS = { coffee: FaCoffee, handshake: FaHandshake, heart: FaHeart };
@@ -71,6 +72,7 @@ const DEFAULTS = {
 };
 
 const OurStory = () => {
+  const { t } = useTranslation();
   const { get } = useSitePage('our-story', DEFAULTS);
   const timeline = get('timeline', DEFAULT_TIMELINE);
   const principles = get('principles', DEFAULT_PRINCIPLES);
@@ -130,7 +132,7 @@ const OurStory = () => {
               <div>
                 <img
                   src={get('successStoryImage', DEFAULTS.successStoryImage)}
-                  alt="Coffee shop owner"
+                  alt={t("pageLabels.coffeeShopOwnerAlt")}
                   className="rounded-xl shadow-lg w-full"
                 />
               </div>
@@ -157,10 +159,10 @@ const OurStory = () => {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Our Journey
+              {t("pageLabels.ourJourney")}
             </h2>
             <p className="text-lg text-gray-600">
-              Key milestones in the I-Coffee story
+              {t("pageLabels.ourJourneySub")}
             </p>
           </div>
 
@@ -247,10 +249,10 @@ const OurStory = () => {
           <div className="max-w-5xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                What Drives Us
+                {t("pageLabels.whatDrivesUs")}
               </h2>
               <p className="text-lg text-gray-600">
-                The principles that guide our every decision
+                {t("pageLabels.whatDrivesUsSub")}
               </p>
             </div>
 
@@ -294,14 +296,14 @@ const OurStory = () => {
                 className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
               >
                 <FaCoffee className="mr-2" />
-                Start Shopping
+                {t("pageLabels.startShopping")}
               </Link>
               <Link
                 to="/partner-with-us"
                 className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
               >
                 <FaHandshake className="mr-2" />
-                Join Our Network
+                {t("pageLabels.joinNetwork")}
               </Link>
             </div>
           </div>

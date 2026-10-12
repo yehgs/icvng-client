@@ -416,7 +416,7 @@ const CardProduct = ({ data }) => {
         }}
         mode="login"
         title={t("product.signInToAddToCart")}
-        message="Create an account or sign in to add products to your cart."
+        message={t('storefront.signInToAddMessage')}
       />
 
       {/* Floating Actions */}
@@ -469,7 +469,7 @@ const CardProduct = ({ data }) => {
           )}
           {Boolean(data.discount) && (
             <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full">
-              {data.discount}% OFF
+              {t('storefront.percentOff', { percent: data.discount })}
             </span>
           )}
         </div>
@@ -490,7 +490,7 @@ const CardProduct = ({ data }) => {
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-gray-100">
-            <span className="text-gray-400">No image</span>
+            <span className="text-gray-400">{t('storefront.noImage')}</span>
           </div>
         )}
         {onlineStock > 0 && (
@@ -512,8 +512,8 @@ const CardProduct = ({ data }) => {
       )}
       {data.producer && (
         <div className="text-xs text-gray-500 mb-1">
-          by{" "}
-          <span className="font-medium">{data.producer.name || "Brand"}</span>
+          {t("storefront.by")}{" "}
+          <span className="font-medium">{data.producer.name || t("product.brand")}</span>
         </div>
       )}
 

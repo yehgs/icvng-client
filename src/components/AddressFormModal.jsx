@@ -3,6 +3,7 @@
 import React from 'react';
 import { X } from 'lucide-react';
 import AddressForm from './AddressForm';
+import { useCountry } from '../context/CountryContext';
 
 const AddressFormModal = ({
   isOpen,
@@ -12,10 +13,11 @@ const AddressFormModal = ({
   loading = false,
   title = null,
 }) => {
+  const { t } = useCountry();
   if (!isOpen) return null;
 
   const modalTitle =
-    title || (initialData ? 'Edit Address' : 'Add New Address');
+    title || (initialData ? t('address.editAddress') : t('address.addNewAddress'));
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -28,8 +30,8 @@ const AddressFormModal = ({
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {initialData
-                ? 'Update your address information'
-                : 'Add a new delivery address to your account'}
+                ? t('storefront.updateAddressInfo')
+                : t('storefront.addDeliveryAddress')}
             </p>
           </div>
           <button

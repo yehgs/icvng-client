@@ -2,8 +2,10 @@ import React, { useEffect, useState } from 'react'
 import SummaryApi from '../common/SummaryApi'
 import AxiosToastError from '../utils/AxiosToastError'
 import Axios from '../utils/Axios'
+import { useCountry } from '../context/CountryContext';
 
 const Product = () => {
+  const { t } = useCountry();
   const [productData,setProductData] = useState([])
   const [page,setPage] = useState(1)
   
@@ -35,9 +37,7 @@ const Product = () => {
   },[])
 
   return (
-    <div>
-      Product
-    </div>
+    <div>\n\1{t('common.product')}\n    </div>
   )
 }
 

@@ -14,11 +14,13 @@ import {
   HiChevronRight,
 } from 'react-icons/hi';
 import isAdmin from '../utils/isAdmin';
+import { useCountry } from '../context/CountryContext';
 
 const UserMenu = ({ close }) => {
   const user = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { t } = useCountry();
   const [expandedMenus, setExpandedMenus] = useState({});
 
   const handleLogout = async () => {
@@ -93,21 +95,21 @@ const UserMenu = ({ close }) => {
   ];
 
   const userMenuItems = [
-    { path: '/dashboard/myorders', label: 'My Orders' },
-    { path: '/dashboard/user-request', label: 'Your Requests' },
-    { path: '/dashboard/address', label: 'Saved Addresses' },
-    { path: '/dashboard/wishlist', label: 'Wishlist' },
-    { path: '/dashboard/track', label: 'Track Your Shipment' },
+    { path: '/dashboard/myorders', label: t('nav.myOrders') },
+    { path: '/dashboard/user-request', label: t('userMenu.yourRequests') },
+    { path: '/dashboard/address', label: t('userMenu.savedAddresses') },
+    { path: '/dashboard/wishlist', label: t('nav.wishlist') },
+    { path: '/dashboard/track', label: t('userMenu.trackShipment') },
   ];
 
   return (
     <div className="border rounded p-2 border-b-gray-500">
-      <div className="font-semibold">My Account</div>
+      <div className="font-semibold">{t('nav.myAccount')}</div>
       <div className="text-sm flex items-center gap-2">
         <span className="max-w-52 text-ellipsis line-clamp-1">
           {user.name || user.mobile}{' '}
           <span className="text-medium text-red-600">
-            {user.role === 'ADMIN' ? '(Admin)' : ''}
+            {user.role === 'ADMIN' ? t('userMenu.adminTag') : ''}
           </span>
         </span>
         <Link
@@ -158,7 +160,7 @@ const UserMenu = ({ close }) => {
         {/* User Menu Items */}
         <Divider />
         <div className="font-medium text-xs text-gray-500 px-2 py-1">
-          Personal
+          {t('userMenu.personal')}
         </div>
         {userMenuItems.map((item) => (
           <Link
@@ -176,7 +178,7 @@ const UserMenu = ({ close }) => {
           onClick={handleLogout}
           className="text-left px-2 hover:bg-red-100 hover:text-red-700 py-1 font-medium"
         >
-          Log Out
+          {t('nav.logout')}
         </button>
       </div>
     </div>

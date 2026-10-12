@@ -12,6 +12,7 @@ import {
 import ContactForm from "../components/Contactform";
 import { useSitePage } from "../hooks/useSitePage";
 import { useSocialLinks } from "../hooks/useSocialLinks";
+import { useTranslation } from "../hooks/useTranslation";
 
 // The page's original copy — Nigeria-authored, since NG was the only market
 // in mind when this page was built. Kept here as the fallback so the page
@@ -41,12 +42,42 @@ const DEFAULTS = {
   faqTeaserText: "Check out our FAQ page for quick answers to common questions",
 };
 
+// CMS content key → UI-translation key used when the CMS copy is untranslated.
+const CMS_TEXT_KEYS = {
+  heroTitle: "contactPage.heroTitle",
+  heroSubtitle: "contactPage.heroSubtitle",
+  faqTeaserTitle: "contactPage.faqTeaserTitle",
+  faqTeaserText: "contactPage.faqTeaserText",
+};
+
 const ContactUs = () => {
-  const { get } = useSitePage("contact-us", DEFAULTS);
+  const { t, language } = useTranslation();
+  const { get: getCms } = useSitePage("contact-us", DEFAULTS);
   const social = useSocialLinks();
 
+  // CMS copy wins when an editor wrote/translated it. If the value is still
+  // the untouched English default (or the CMS has only an untranslated
+  // English copy for this key), fall back to the UI-translation key so the
+  // text follows the visitor's language and stays editable on the
+  // "UI Copy Translations" admin page.
+  const get = (key, fallback) => {
+    const v = getCms(key, fallback);
+    const tKey = CMS_TEXT_KEYS[key];
+    if (tKey && language !== "en" && v === DEFAULTS[key]) return t(tKey);
+    return v;
+  };
+
+  // Business-hours lines are free text from the CMS ("Monday - Friday: …").
+  // When the CMS copy is still English, translate the day names / "Closed".
+  const localizeHours = (line) => {
+    if (language === "en" || typeof line !== "string") return line;
+    return line
+      .replace(/\b(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b/g, (d) => t(`contactPage.day${d}`))
+      .replace(/\bClosed\b/g, () => t("contactPage.closed"));
+  };
+
   const address = get("address", DEFAULTS.address);
-  const businessHours = get("businessHours", DEFAULTS.businessHours);
+  const businessHours = [].concat(get("businessHours", DEFAULTS.businessHours)).map(localizeHours);
   const landmarks = get("landmarks", DEFAULTS.landmarks);
   const phone = get("phone", DEFAULTS.phone);
   const phoneHref = get("phoneHref", `tel:${String(phone).replace(/\s+/g, "")}`);
@@ -55,24 +86,24 @@ const ContactUs = () => {
   const contactInfo = [
     {
       icon: <FaMapMarkerAlt className="text-3xl text-amber-600" />,
-      title: "Visit Us",
+      title: t("contactPage.visitUs"),
       details: Array.isArray(address) ? address : [address],
     },
     {
       icon: <FaPhone className="text-3xl text-amber-600" />,
-      title: "Call Us",
+      title: t("contactPage.callUs"),
       details: [phone],
       link: phoneHref,
     },
     {
       icon: <FaEnvelope className="text-3xl text-amber-600" />,
-      title: "Email Us",
+      title: t("contactPage.emailUs"),
       details: [email],
       link: `mailto:${email}`,
     },
     {
       icon: <FaClock className="text-3xl text-amber-600" />,
-      title: "Business Hours",
+      title: t("contactPage.businessHours"),
       details: Array.isArray(businessHours) ? businessHours : [businessHours],
     },
   ];
@@ -131,7 +162,7 @@ const ContactUs = () => {
             {/* Map Section */}
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                Find Us Here
+                {t("contactPage.findUsHere")}
               </h2>
               <div className="bg-white rounded-xl shadow-lg p-4">
                 <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
@@ -143,21 +174,21 @@ const ContactUs = () => {
                     allowFullScreen=""
                     loading="lazy"
                     referrerPolicy="no-referrer-when-downgrade"
-                    title="I-Coffee Location"
+                    title={t("contactPage.mapTitle")}
                   ></iframe>
                 </div>
 
                 <div className="mt-6 space-y-4">
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-2">
-                      Getting Here
+                      {t("contactPage.gettingHere")}
                     </h3>
                     <p className="text-gray-600 text-sm">{get("gettingHere", DEFAULTS.gettingHere)}</p>
                   </div>
 
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-2">
-                      Landmarks Nearby
+                      {t("contactPage.landmarksNearby")}
                     </h3>
                     <ul className="text-gray-600 text-sm space-y-1">
                       {landmarks.map((lm, idx) => (
@@ -171,7 +202,7 @@ const ContactUs = () => {
               {/* Social Media */}
               <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
                 <h3 className="text-xl font-semibold text-gray-800 mb-4">
-                  Follow Us on Social Media
+                  {t("contactPage.followUs")}
                 </h3>
                 <div className="flex space-x-6">
                   <a
@@ -205,7 +236,7 @@ const ContactUs = () => {
             {/* Contact Form */}
             <div>
               <h2 className="text-2xl font-bold text-gray-800 mb-6">
-                Send Us a Message
+                {t("contactPage.sendMessage")}
               </h2>
               <div className="bg-white rounded-xl shadow-lg p-8">
                 <ContactForm formType="contact" />
@@ -227,7 +258,7 @@ const ContactUs = () => {
               href="/faq"
               className="inline-block bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 rounded-lg font-semibold transition"
             >
-              View FAQ
+              {t("contactPage.viewFaq")}
             </a>
           </div>
         </div>

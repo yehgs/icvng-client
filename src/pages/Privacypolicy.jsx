@@ -122,7 +122,7 @@ const PrivacyPolicy = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Our Commitment to Your Privacy
+              {t("pageLabels.privacyCommitment")}
             </h2>
             <div className="prose max-w-none text-gray-700 space-y-4">
               {introParagraphs.map((p, idx) => <p key={idx}>{p}</p>)}
@@ -136,10 +136,10 @@ const PrivacyPolicy = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Information We Collect
+              {t("pageLabels.privacyCollect")}
             </h2>
             <p className="text-lg text-gray-600">
-              We collect information to provide better services to our users
+              {t("pageLabels.privacyCollectSub")}
             </p>
           </div>
 
@@ -177,7 +177,7 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-              How We Use Your Information
+              {t("pageLabels.privacyUse")}
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {useCards.map((card, idx) => (
@@ -198,7 +198,7 @@ const PrivacyPolicy = () => {
             <div className="flex items-center mb-6">
               <FaLock className="text-4xl text-amber-600 mr-4" />
               <h2 className="text-3xl font-bold text-gray-800">
-                How We Protect Your Data
+                {t("pageLabels.privacyProtect")}
               </h2>
             </div>
             <p className="text-gray-700 mb-6">{get("securityIntro", DEFAULTS.securityIntro)}</p>
@@ -220,7 +220,7 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-              How We Share Your Information
+              {t("pageLabels.privacyShare")}
             </h2>
             <div className="bg-white rounded-xl shadow-lg p-8">
               <div className="space-y-6">
@@ -245,10 +245,10 @@ const PrivacyPolicy = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Your Privacy Rights
+              {t("pageLabels.privacyRights")}
             </h2>
             <p className="text-lg text-gray-600">
-              You have control over your personal information
+              {t("pageLabels.privacyRightsSub")}
             </p>
           </div>
 
@@ -271,7 +271,7 @@ const PrivacyPolicy = () => {
 
           <div className="mt-8 text-center">
             <p className="text-gray-700 mb-4">
-              To exercise any of these rights, please contact us at:
+              {t("pageLabels.privacyExercise")}
             </p>
             <a
               href={`mailto:${get("rightsContactEmail", DEFAULTS.rightsContactEmail)}`}
@@ -290,7 +290,7 @@ const PrivacyPolicy = () => {
             <div className="flex items-center mb-6">
               <FaCookie className="text-4xl text-amber-600 mr-4" />
               <h2 className="text-3xl font-bold text-gray-800">
-                Cookies and Tracking
+                {t("pageLabels.privacyCookies")}
               </h2>
             </div>
             <div className="prose max-w-none text-gray-700 space-y-4">
@@ -309,7 +309,7 @@ const PrivacyPolicy = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Data Retention
+              {t("pageLabels.privacyRetention")}
             </h2>
             <div className="prose max-w-none text-gray-700 space-y-4">
               <p>{get("retentionIntro", DEFAULTS.retentionIntro)}</p>
@@ -327,7 +327,7 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Children's Privacy
+              {t("pageLabels.privacyChildren")}
             </h2>
             <p className="text-gray-700">{get("childrenText", DEFAULTS.childrenText)}</p>
           </div>
@@ -339,7 +339,7 @@ const PrivacyPolicy = () => {
         <div className="max-w-4xl mx-auto">
           <div className="bg-white rounded-xl shadow-lg p-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              International Data Transfers
+              {t("pageLabels.privacyTransfers")}
             </h2>
             {transferParagraphs.map((p, idx) => (
               <p key={idx} className={idx === 0 ? "text-gray-700 mb-4" : "text-gray-700"}>{p}</p>
@@ -353,7 +353,7 @@ const PrivacyPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
-              Updates to This Policy
+              {t("pageLabels.privacyUpdates")}
             </h2>
             <p className="text-gray-700">{get("updatesText", DEFAULTS.updatesText)}</p>
           </div>

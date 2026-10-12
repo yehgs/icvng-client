@@ -84,10 +84,10 @@ const AddToCartButton = ({ data, quantity = 1, selectedPriceOption = null }) => 
     e.preventDefault(); e.stopPropagation();
     if (!isLoggedIn) {
       updateGuestCartItem(data._id, qty + 1, selectedPriceOption || 'regular');
-      toast.success('Item added'); window.dispatchEvent(new CustomEvent('cart-updated')); return;
+      toast.success(t('product.addedToCart')); window.dispatchEvent(new CustomEvent('cart-updated')); return;
     }
     const r = await updateCartItem(cartItemDetails?._id, qty + 1);
-    if (r?.success) { toast.success('Item added'); window.dispatchEvent(new CustomEvent('cart-updated')); }
+    if (r?.success) { toast.success(t('product.addedToCart')); window.dispatchEvent(new CustomEvent('cart-updated')); }
   };
 
   const decreaseQty = async (e) => {
@@ -98,7 +98,7 @@ const AddToCartButton = ({ data, quantity = 1, selectedPriceOption = null }) => 
       window.dispatchEvent(new CustomEvent('cart-updated')); return;
     }
     if (qty === 1) { deleteCartItem(cartItemDetails?._id); }
-    else { const r = await updateCartItem(cartItemDetails?._id, qty - 1); if (r?.success) toast.success('Item removed'); }
+    else { const r = await updateCartItem(cartItemDetails?._id, qty - 1); if (r?.success) toast.success(t('cart.itemRemoved')); }
     window.dispatchEvent(new CustomEvent('cart-updated'));
   };
 
@@ -107,7 +107,7 @@ const AddToCartButton = ({ data, quantity = 1, selectedPriceOption = null }) => 
       <>
         <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowRequestModal(true); }}
           className="w-full bg-yellow-100 hover:bg-yellow-200 text-yellow-800 font-medium py-3 px-6 rounded-md transition flex items-center justify-center border border-yellow-300">
-          <FaSadTear className="mr-2" /> Not in Production - Request Notification
+          <FaSadTear className="mr-2" /> {t('storefront.notInProductionRequest')}
         </button>
         {showRequestModal && <ProductRequestModal product={data} onClose={() => setShowRequestModal(false)} isDiscontinued={true} />}
       </>
@@ -138,7 +138,7 @@ const AddToCartButton = ({ data, quantity = 1, selectedPriceOption = null }) => 
       )}
       {effectiveStock > 0 && effectiveStock <= 5 && (
         <div className="mt-2 text-center">
-          <span className="text-xs text-orange-600 font-medium">Only {effectiveStock} left in stock</span>
+          <span className="text-xs text-orange-600 font-medium">{t('storefront.onlyLeftInStock', { count: effectiveStock })}</span>
         </div>
       )}
     </div>

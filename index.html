@@ -13,8 +13,7 @@
       src/components/SiteMeta.jsx overwrites title/description/keywords/
       canonical/og:*/twitter:* with the CURRENT country's own copy, managed
       per-country in Admin → Content Management → Site Pages → "Site
-      Default (index.html)" (slug: site-index) — same pattern as Tawk.to
-      below. Run scripts/seedSiteIndexMeta.js to seed Togo/Benin/Italy (and
+      Default (index.html)" (slug: site-index) . Run scripts/seedSiteIndexMeta.js to seed Togo/Benin/Italy (and
       re-seed Nigeria) with real, distinct copy instead of relying on this
       fallback indefinitely.
     -->
@@ -72,10 +71,5 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <!--
-      Tawk.to is now loaded dynamically per country by
-      src/components/TawkWidget.jsx (Admin → Settings → Countries → Tawk.to),
-      so each market can run its own agent queue instead of one shared widget.
-    -->
   </body>
 </html>

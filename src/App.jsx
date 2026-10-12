@@ -28,8 +28,8 @@ import { FaCartShopping } from "react-icons/fa6";
 import CartMobileLink from "./components/CartMobile";
 import FomoWidget from "./components/FomoWidget";
 import SitePopupWidget from "./components/SitePopupWidget";
-import TawkWidget from "./components/TawkWidget";
 import SiteMeta from "./components/SiteMeta";
+import ChatWidget from "./components/ChatWidget";
 // Phase 2
 import CountryRedirectPopup from "./components/country/CountryRedirectPopup";
 
@@ -292,8 +292,8 @@ function App() {
       {location.pathname !== "/checkout" && <CartMobileLink />}
       <FomoWidget />
       <SitePopupWidget />
-      <TawkWidget />
       <SiteMeta />
+      <ChatWidget />
       {/* Phase 2: Country redirect suggestion popup */}
       <CountryRedirectPopup />
     </GlobalProvider>

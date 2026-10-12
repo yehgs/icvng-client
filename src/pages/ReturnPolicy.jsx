@@ -114,10 +114,10 @@ const ReturnPolicy = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Return Conditions
+              {t("pageLabels.returnConditions")}
             </h2>
             <p className="text-lg text-gray-600">
-              Please review these conditions before initiating a return
+              {t("pageLabels.returnConditionsSub")}
             </p>
           </div>
 
@@ -153,10 +153,10 @@ const ReturnPolicy = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                How to Return a Product
+                {t("pageLabels.returnHow")}
               </h2>
               <p className="text-lg text-gray-600">
-                Follow these simple steps for a hassle-free return
+                {t("pageLabels.returnHowSub")}
               </p>
             </div>
 
@@ -187,14 +187,14 @@ const ReturnPolicy = () => {
             <div className="flex items-center mb-6">
               <FaMoneyBillWave className="text-4xl text-green-600 mr-4" />
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-                Refund Processing
+                {t("pageLabels.refundProcessing")}
               </h2>
             </div>
 
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Refund Timeline
+                  {t("pageLabels.refundTimeline")}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">{get('refundTimelineText', DEFAULTS.refundTimelineText)}</p>
               </div>
@@ -234,7 +234,7 @@ const ReturnPolicy = () => {
                 <div className="flex items-center mb-6">
                   <FaCheckCircle className="text-3xl text-green-600 mr-3" />
                   <h3 className="text-2xl font-bold text-gray-800">
-                    Full Refund Eligible
+                    {t("pageLabels.fullRefundEligible")}
                   </h3>
                 </div>
                 <ul className="space-y-3">
@@ -251,7 +251,7 @@ const ReturnPolicy = () => {
                 <div className="flex items-center mb-6">
                   <FaExclamationTriangle className="text-3xl text-red-600 mr-3" />
                   <h3 className="text-2xl font-bold text-gray-800">
-                    Non-Returnable Items
+                    {t("pageLabels.nonReturnable")}
                   </h3>
                 </div>
                 <ul className="space-y-3">
@@ -275,7 +275,7 @@ const ReturnPolicy = () => {
             <div className="flex items-center mb-6">
               <FaInfoCircle className="text-3xl text-blue-600 mr-3" />
               <h2 className="text-2xl font-bold text-gray-800">
-                Important Information
+                {t("pageLabels.importantInfo")}
               </h2>
             </div>
 
@@ -323,7 +323,7 @@ const ReturnPolicy = () => {
                 to="/shop"
                 className="inline-block bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-semibold transition"
               >
-                Continue Shopping
+                {t("pageLabels.continueShopping")}
               </Link>
             </div>
           </div>
@@ -334,11 +334,10 @@ const ReturnPolicy = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-3xl font-bold text-gray-800 mb-4">
-            Still Have Questions?
+            {t("pageLabels.stillQuestions")}
           </h2>
           <p className="text-lg text-gray-600 mb-6">
-            Check our FAQ page for more information about returns, shipping, and
-            more
+            {t("pageLabels.checkFaqReturns")}
           </p>
           <Link
             to="/faq"

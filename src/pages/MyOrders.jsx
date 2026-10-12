@@ -22,7 +22,7 @@ import { useCountry } from '../context/CountryContext';
 import { useCurrency } from '../provider/GlobalProvider';
 
 const MyOrders = () => {
-  const { t } = useCountry();
+  const { t, language } = useCountry();
   const { formatPrice } = useCurrency();
   const [orderGroups, setOrderGroups] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -233,7 +233,7 @@ const MyOrders = () => {
           </div>
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-blue-600"></div>
-            <span className="ml-3 text-gray-600">Loading orders...</span>
+            <span className="ml-3 text-gray-600">{t('orders.loadingOrders')}</span>
           </div>
         </div>
       </div>
@@ -249,13 +249,13 @@ const MyOrders = () => {
             <div>
               <h1 className="text-2xl font-bold text-gray-900">{t('orders.myOrders')}</h1>
               <p className="text-gray-600 text-sm mt-1">
-                Track and manage your coffee orders
+                {t('orders.trackManage')}
               </p>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <ShoppingBag className="w-5 h-5" />
               <span>
-                {orderGroups.length} order{orderGroups.length !== 1 ? 's' : ''}
+                {t('orders.orderCount', { count: orderGroups.length })}
               </span>
             </div>
           </div>
@@ -291,10 +291,10 @@ const MyOrders = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="font-semibold text-gray-900">
-                              Order from{' '}
+                              {t('orders.orderFrom')}{' '}
                               {new Date(
                                 group.summary.createdAt
-                              ).toLocaleDateString('en-US', {
+                              ).toLocaleDateString(language || 'en', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric',
@@ -536,7 +536,7 @@ const OrderDetailsModal = ({
   getPaymentStatusLabel,
   getTrackingStatusLabel,
 }) => {
-  const { t } = useCountry();
+  const { t, language } = useCountry();
   const { formatPrice } = useCurrency();
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -549,7 +549,7 @@ const OrderDetailsModal = ({
             </div>
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                Order Details
+                {t('orders.orderDetails')}
               </h2>
               <p className="text-sm text-gray-600">{order.orderId}</p>
             </div>
@@ -568,7 +568,7 @@ const OrderDetailsModal = ({
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
               <Calendar className="w-5 h-5 text-gray-600" />
-              Order Information
+              {t('orders.orderInformation')}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg">
@@ -578,7 +578,7 @@ const OrderDetailsModal = ({
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-xs text-gray-600 mb-1">{t('orders.date')}</p>
                 <p className="font-medium text-gray-900">
-                  {new Date(order.createdAt).toLocaleDateString('en-US', {
+                  {new Date(order.createdAt).toLocaleDateString(language || 'en', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -612,7 +612,7 @@ const OrderDetailsModal = ({
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
               <Package className="w-5 h-5 text-gray-600" />
-              Product Details
+              {t('orders.productDetails')}
             </h3>
             <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
               <img
@@ -653,12 +653,12 @@ const OrderDetailsModal = ({
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <Navigation className="w-5 h-5 text-gray-600" />
-                Tracking Information
+                {t('orders.trackingInformation')}
               </h3>
               <div className="p-4 bg-blue-50 rounded-lg space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-900">
-                    Tracking Number:
+                    {t('orders.trackingNumber')}
                   </span>
                   <span className="font-mono text-sm text-blue-600">
                     {order.tracking_number}
@@ -668,7 +668,7 @@ const OrderDetailsModal = ({
                   <>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-900">
-                        Status:
+                        {t('orders.statusColon')}
                       </span>
                       <span
                         className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded-full ${getTrackingStatusColor(
@@ -681,7 +681,7 @@ const OrderDetailsModal = ({
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium text-gray-900">
-                        Carrier:
+                        {t('orders.carrierColon')}
                       </span>
                       <span className="text-sm text-gray-900">
                         {tracking.carrier.name}
@@ -690,7 +690,7 @@ const OrderDetailsModal = ({
                     {tracking.estimatedDelivery && (
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-gray-900">
-                          Est. Delivery:
+                          {t('orders.estDeliveryColon')}
                         </span>
                         <span className="text-sm text-gray-900">
                           {new Date(
@@ -710,7 +710,7 @@ const OrderDetailsModal = ({
             <div>
               <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-gray-600" />
-                Delivery Address
+                {t('orders.deliveryAddress')}
               </h3>
               <div className="p-4 bg-gray-50 rounded-lg space-y-2">
                 <p className="text-sm text-gray-900">
@@ -736,7 +736,7 @@ const OrderDetailsModal = ({
           <div>
             <h3 className="text-lg font-medium text-gray-900 mb-3 flex items-center gap-2">
               <CreditCard className="w-5 h-5 text-gray-600" />
-              Payment Details
+              {t('orders.paymentDetails')}
             </h3>
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50 p-3 rounded-lg">
@@ -765,7 +765,7 @@ const OrderDetailsModal = ({
             onClick={onClose}
             className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors font-medium"
           >
-            Close
+            {t('common.close')}
           </button>
         </div>
       </div>

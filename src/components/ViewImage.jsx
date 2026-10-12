@@ -1,7 +1,9 @@
 import React from 'react'
 import { IoClose } from 'react-icons/io5'
+import { useCountry } from '../context/CountryContext';
 
 const ViewImage = ({url,close}) => {
+  const { t } = useCountry();
   return (
     <div className='fixed top-0 bottom-0 right-0 left-0 bg-neutral-900 bg-opacity-70 flex justify-center items-center z-50 p-4'>
         <div className='w-full max-w-md max-h-[80vh] p-4 bg-white'>
@@ -10,7 +12,7 @@ const ViewImage = ({url,close}) => {
             </button>
             <img 
                 src={url}
-                alt='full screen'
+                alt={t('storefront.fullScreenImage')}
                 className='w-full h-full object-scale-down'
             />
         </div>

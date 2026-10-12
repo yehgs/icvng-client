@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
+import { useCountry } from '../context/CountryContext.jsx';
 
 // Maps the current route to one of the page keys the admin picks from when
 // targeting a popup (see popup.model.js `displayPages`). Kept intentionally
@@ -25,6 +26,7 @@ const pageKeyFor = (pathname) => {
 const SESSION_KEY_PREFIX = "popup_seen_";
 
 const SitePopupWidget = () => {
+  const { t } = useCountry();
   const location = useLocation();
   const [popup, setPopup] = useState(null);
   const [popupArr, setPopupArr] = useState([]); // wrapped for the translation hook
@@ -126,7 +128,7 @@ const SitePopupWidget = () => {
         <button
           onClick={close}
           className="absolute top-3 right-3 z-10 bg-white/90 hover:bg-white text-gray-600 hover:text-gray-900 rounded-full p-1.5 shadow"
-          aria-label="Close"
+          aria-label={t('common.close')}
         >
           <X className="w-4 h-4" />
         </button>
@@ -144,7 +146,7 @@ const SitePopupWidget = () => {
                 href={popup.ctaLink}
                 className="inline-block mt-3 px-6 py-2.5 rounded-lg bg-[#7B3F1C] text-white text-sm font-semibold hover:bg-[#6a3517] transition-colors"
               >
-                {ctaText || "Learn more"}
+                {ctaText || t("storefront.learnMore")}
               </a>
             )}
           </div>

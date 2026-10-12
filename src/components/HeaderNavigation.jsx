@@ -5,6 +5,7 @@ import { useSelector } from "react-redux";
 import { useCountry } from "../context/CountryContext";
 import {
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   X,
   ShoppingBag,
@@ -237,9 +238,7 @@ function CompatCategoryMegaMenu({
             {/* Product brands — vertical list below the compatible brand */}
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {productBrands.length === 0 ? (
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>
-                  No brands
-                </span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>{t('storefront.noBrands')}</span>
               ) : (
                 productBrands.map((pb) => (
                   <button
@@ -328,6 +327,7 @@ function MegaMenu({
   onSubcategoryClick,
   onBrandClick,
 }) {
+  const { t } = useCountry();
   if (!category || !rect) return null;
 
   return (
@@ -559,7 +559,7 @@ function MegaMenu({
           ))}
         </div>
       ) : (
-        <p style={{ color: "#9ca3af", fontSize: 14 }}>No items available</p>
+        <p style={{ color: "#9ca3af", fontSize: 14 }}>{t('storefront.noItemsAvailable')}</p>
       )}
     </div>
   );
@@ -702,6 +702,10 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
   const [isMobile, setIsMobile] = useState(false);
   const menuRef = useRef(null);
   const hideTimer = useRef(null);
+  // Desktop category strip: tracks whether more items sit off-screen so we
+  // can show an animated "keeps going" cue on that edge.
+  const stripRef = useRef(null);
+  const [overflow, setOverflow] = useState({ left: false, right: false });
 
   const categoryStructure = useSelector(
     (state) => state.product.categoryStructure,
@@ -719,6 +723,46 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  const updateOverflow = React.useCallback(() => {
+    const el = stripRef.current;
+    if (!el) return;
+    const rtl = document.documentElement.dir === "rtl";
+    const max = el.scrollWidth - el.clientWidth;
+    // scrollLeft is 0 → negative in RTL; normalise to "distance from start".
+    const pos = Math.abs(el.scrollLeft);
+    const hasOverflow = max > 2;
+    const atStart = pos <= 2;
+    const atEnd = pos >= max - 2;
+    setOverflow((prev) => {
+      const next = {
+        left: hasOverflow && (rtl ? !atEnd : !atStart),
+        right: hasOverflow && (rtl ? !atStart : !atEnd),
+      };
+      return prev.left === next.left && prev.right === next.right ? prev : next;
+    });
+  }, []);
+
+  useEffect(() => {
+    const el = stripRef.current;
+    if (!el) return undefined;
+    updateOverflow();
+    const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(updateOverflow) : null;
+    ro?.observe(el);
+    if (el.firstElementChild) ro?.observe(el.firstElementChild);
+    window.addEventListener("resize", updateOverflow);
+    return () => {
+      ro?.disconnect();
+      window.removeEventListener("resize", updateOverflow);
+    };
+  }, [updateOverflow, categoryStructure, loadingCategoryStructure, mobileMenuOnly]);
+
+  const scrollStrip = (dir) => {
+    const el = stripRef.current;
+    if (!el) return;
+    const rtl = document.documentElement.dir === "rtl";
+    el.scrollBy({ left: dir * (rtl ? -1 : 1) * Math.max(200, el.clientWidth * 0.6), behavior: "smooth" });
+  };
 
   useEffect(() => {
     const open = () => setVerticalMenuActive(true);
@@ -807,9 +851,31 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
         <div className="bg-gray-100 border-b border-gray-200">
           <div className="container mx-auto px-4">
             <div className="flex items-center w-full">
-              {/* Scrollable category nav strip */}
+              {/* Scrollable category nav strip (+ animated overflow cues) */}
+              <div className="relative flex-1 min-w-0">
+              {overflow.left && (
+                <button
+                  type="button"
+                  aria-label={t("header.scrollMenuBack")}
+                  onClick={() => scrollStrip(-1)}
+                  className="nav-overflow-cue nav-overflow-cue--start"
+                >
+                  <ChevronLeft size={18} className="nav-overflow-chevron nav-overflow-chevron--back" />
+                </button>
+              )}
+              {overflow.right && (
+                <button
+                  type="button"
+                  aria-label={t("header.scrollMenuForward")}
+                  onClick={() => scrollStrip(1)}
+                  className="nav-overflow-cue nav-overflow-cue--end"
+                >
+                  <ChevronRight size={18} className="nav-overflow-chevron nav-overflow-chevron--forward" />
+                </button>
+              )}
               <div
-                className="flex-1"
+                ref={stripRef}
+                onScroll={updateOverflow}
                 style={{
                   overflowX: "auto",
                   overflowY: "visible",
@@ -822,7 +888,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                 >
                   {loadingCategoryStructure ? (
                     <div className="py-3 px-4 text-sm text-gray-400">
-                      Loading...
+                      {t("common.loading")}
                     </div>
                   ) : (
                     categoryStructure.map((category) => {
@@ -847,6 +913,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                     })
                   )}
                 </div>
+              </div>
               </div>
             </div>
           </div>
@@ -1025,9 +1092,7 @@ const HeaderNavigation = ({ mobileMenuOnly = false }) => {
                               </div>
                             ))
                           ) : (
-                            <div className="p-4 pl-8 text-xs text-gray-400">
-                              No items
-                            </div>
+                            <div className="p-4 pl-8 text-xs text-gray-400">{t('storefront.noItems')}</div>
                           )}
                         </div>
                       ))}

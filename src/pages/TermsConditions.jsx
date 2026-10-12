@@ -147,10 +147,10 @@ const TermsConditions = () => {
           <div className="max-w-4xl mx-auto text-center">
             <FaFileContract className="text-6xl mx-auto mb-6" />
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              Terms & Conditions
+              {t("pageLabels.termsHeading")}
             </h1>
             <p className="text-xl text-gray-300">
-              Please read these terms carefully before using our platform
+              {t("pageLabels.termsSubtitle")}
             </p>
             <p className="text-sm text-gray-400 mt-4">{get('lastUpdated', DEFAULTS.lastUpdated)}</p>
           </div>

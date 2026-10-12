@@ -12,7 +12,7 @@
  * country; any other content.manage-holding role, e.g. a foreign Manager,
  * edits only their own country — see controllers/sitePage.controller.js).
  *
- * Mounted once at the app root (see App.jsx, next to <TawkWidget />) so it
+ * Mounted once at the app root (see App.jsx) so it
  * applies on every route as the baseline. Any page that calls
  * useSeoMeta({ title, description, ... }) with its own values overrides
  * these afterward (React effect ordering — page-level hooks run after this

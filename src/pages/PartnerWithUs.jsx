@@ -122,7 +122,7 @@ const PartnerWithUs = () => {
               }
               className="bg-white text-amber-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-amber-50 transition inline-flex items-center"
             >
-              Apply Now <FaArrowRight className="ml-2" />
+              {t("pageLabels.applyNow")}{" "} <FaArrowRight className="ml-2" />
             </button>
           </div>
         </div>
@@ -133,11 +133,10 @@ const PartnerWithUs = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Why Partner With Us?
+            {t("pageLabels.whyPartner")}
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Join a platform that's revolutionizing the coffee industry in
-            Nigeria
+            {t("pageLabels.whyPartnerSub")}
           </p>
         </div>
 
@@ -167,10 +166,10 @@ const PartnerWithUs = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              How It Works
+              {t("pageLabels.howItWorks")}
             </h2>
             <p className="text-lg text-gray-600">
-              Simple steps to start selling on I-Coffee
+              {t("pageLabels.howItWorksSub")}
             </p>
           </div>
 
@@ -199,7 +198,7 @@ const PartnerWithUs = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="max-w-4xl mx-auto bg-gradient-to-br from-amber-50 to-blue-50 rounded-xl p-8 md:p-12">
           <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
-            What You Get
+            {t("pageLabels.whatYouGet")}
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             {keyFeatures.map((feature, index) => (
@@ -219,17 +218,17 @@ const PartnerWithUs = () => {
             <div className="text-center mb-8">
               <FaFileContract className="text-5xl text-amber-600 mx-auto mb-4" />
               <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                Supplier Agreement
+                {t("pageLabels.supplierAgreement")}
               </h2>
               <p className="text-gray-600 mb-6">
-                Our partnership is built on transparency and mutual benefit
+                {t("pageLabels.supplierAgreementSub")}
               </p>
             </div>
 
             <div className="bg-gray-50 rounded-xl p-8 space-y-6">
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Key Terms
+                  {t("pageLabels.keyTerms")}
                 </h3>
                 <ul className="space-y-2 text-gray-600">
                   {keyTerms.map((term, idx) => (
@@ -245,7 +244,7 @@ const PartnerWithUs = () => {
                 onClick={() => setShowAgreement(!showAgreement)}
                 className="text-amber-600 hover:text-amber-700 font-medium flex items-center"
               >
-                {showAgreement ? "Hide" : "View"} Full Agreement Details
+                {showAgreement ? t("pageLabels.hideAgreement") : t("pageLabels.viewAgreement")}
                 <FaArrowRight className="ml-2" />
               </button>
 
@@ -253,7 +252,7 @@ const PartnerWithUs = () => {
                 <div className="bg-white rounded-lg p-6 border border-gray-200 space-y-4 text-sm text-gray-700">
                   <div>
                     <h4 className="font-semibold mb-2">
-                      Supplier Responsibilities:
+                      {t("pageLabels.supplierResponsibilitiesColon")}
                     </h4>
                     <ul className="list-disc list-inside space-y-1 ml-2">
                       {supplierResponsibilities.map((item, idx) => (
@@ -264,7 +263,7 @@ const PartnerWithUs = () => {
 
                   <div>
                     <h4 className="font-semibold mb-2">
-                      Platform Responsibilities:
+                      {t("pageLabels.platformResponsibilitiesColon")}
                     </h4>
                     <ul className="list-disc list-inside space-y-1 ml-2">
                       {platformResponsibilities.map((item, idx) => (
@@ -284,11 +283,10 @@ const PartnerWithUs = () => {
         <div className="max-w-3xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Apply to Become a Supplier
+              {t("pageLabels.applySupplier")}
             </h2>
             <p className="text-lg text-gray-600">
-              Fill out the form below and our team will get back to you within
-              48 hours
+              {t("pageLabels.applySupplierSub")}
             </p>
           </div>
 

@@ -195,21 +195,21 @@ const PreFooter = () => {
                 <a href={footerBanner.link} className="block">
                   <img
                     src={footerBanner.image}
-                    alt={footerBanner.title || "Footer Banner"}
+                    alt={footerBanner.title || t("storefront.footerBanner")}
                     className="w-full h-auto rounded-lg hover:opacity-90 transition-opacity"
                   />
                 </a>
               ) : (
                 <img
                   src={footerBanner.image}
-                  alt={footerBanner.title || "Footer Banner"}
+                  alt={footerBanner.title || t("storefront.footerBanner")}
                   className="w-full h-auto rounded-lg"
                 />
               )
             ) : (
               <img
                 src={banner1}
-                alt="Coffee mix"
+                alt={t('storefront.coffeeMixAlt')}
                 className="w-full h-auto rounded-lg"
               />
             )}

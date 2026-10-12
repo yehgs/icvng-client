@@ -36,7 +36,7 @@ const LANGUAGES = SUPPORTED_LANGUAGES.map((code) => ({
 const LanguageSelector = ({ className = "" }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const { language, setLanguage } = useCountry();
+  const { language, setLanguage, t } = useCountry();
 
   const current = LANGUAGES.find((l) => l.code === language) || LANGUAGES[0];
 
@@ -61,7 +61,7 @@ const LanguageSelector = ({ className = "" }) => {
         type="button"
         className="inline-flex items-center justify-center w-full px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
         onClick={() => setIsOpen((p) => !p)}
-        aria-label="Select language"
+        aria-label={t('storefront.selectLanguage')}
       >
         <span className="mr-1.5"><FlagIcon code={current.code} className="w-5 h-4 rounded-sm" /></span>
         <span className="uppercase">{current.code}</span>

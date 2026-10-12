@@ -132,10 +132,10 @@ const ShippingPolicy = () => {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-              Shipping Methods
+              {t("pageLabels.shippingMethods")}
             </h2>
             <p className="text-lg text-gray-600">
-              Choose the delivery option that works best for you
+              {t("pageLabels.shippingMethodsSub")}
             </p>
           </div>
 
@@ -158,7 +158,7 @@ const ShippingPolicy = () => {
                       <FaClock className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                       <div>
                         <div className="font-semibold text-gray-800">
-                          Domestic Delivery
+                          {t("pageLabels.domesticDelivery")}
                         </div>
                         <div className="text-gray-600">{method.delivery}</div>
                       </div>
@@ -167,7 +167,7 @@ const ShippingPolicy = () => {
                       <FaGlobeAfrica className="text-amber-600 mr-3 mt-1 flex-shrink-0" />
                       <div>
                         <div className="font-semibold text-gray-800">
-                          International Delivery
+                          {t("pageLabels.internationalDelivery")}
                         </div>
                         <div className="text-gray-600">{method.intDelivery}</div>
                       </div>
@@ -189,10 +189,10 @@ const ShippingPolicy = () => {
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-12">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-                Delivery Timeframes
+                {t("pageLabels.deliveryTimeframes")}
               </h2>
               <p className="text-lg text-gray-600">
-                Estimated delivery times by location
+                {t("pageLabels.deliveryTimeframesSub")}
               </p>
             </div>
 
@@ -218,7 +218,7 @@ const ShippingPolicy = () => {
                       <div className="flex items-center">
                         <FaCheckCircle className="text-amber-600 mr-2" />
                         <span className="text-gray-700">
-                          Free shipping on {zone.freeShipping}
+                          {t("pageLabels.freeShippingOn")}{" "} {zone.freeShipping}
                         </span>
                       </div>
                     )}
@@ -237,28 +237,28 @@ const ShippingPolicy = () => {
             <div className="flex items-center mb-6">
               <FaBox className="text-4xl text-amber-600 mr-4" />
               <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-                Order Processing & Packaging
+                {t("pageLabels.processingPackaging")}
               </h2>
             </div>
 
             <div className="space-y-6">
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Processing Time
+                  {t("pageLabels.processingTime")}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">{get("processingTimeText", DEFAULTS.processingTimeText)}</p>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Careful Packaging
+                  {t("pageLabels.carefulPackaging")}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">{get("packagingText", DEFAULTS.packagingText)}</p>
               </div>
 
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-3">
-                  Tracking Information
+                  {t("pageLabels.trackingInfo")}
                 </h3>
                 <p className="text-gray-600 leading-relaxed">{get("trackingText", DEFAULTS.trackingText)}</p>
               </div>
@@ -272,7 +272,7 @@ const ShippingPolicy = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-              Shipping Costs
+              {t("pageLabels.shippingCosts")}
             </h2>
             <div className="bg-white rounded-xl shadow-lg p-8">
               <ul className="space-y-4 text-gray-700">
@@ -294,7 +294,7 @@ const ShippingPolicy = () => {
           <div className="grid md:grid-cols-2 gap-8">
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                Supplier Responsibilities
+                {t("pageLabels.supplierResponsibilities")}
               </h3>
               <ul className="space-y-3">
                 {supplierResponsibilities.map((item, idx) => (
@@ -308,7 +308,7 @@ const ShippingPolicy = () => {
 
             <div className="bg-white rounded-xl shadow-lg p-8">
               <h3 className="text-2xl font-bold text-gray-800 mb-6">
-                Customer Responsibilities
+                {t("pageLabels.customerResponsibilities")}
               </h3>
               <ul className="space-y-3">
                 {customerResponsibilities.map((item, idx) => (
@@ -331,7 +331,7 @@ const ShippingPolicy = () => {
               <FaExclamationTriangle className="text-4xl text-yellow-600 mr-4 flex-shrink-0" />
               <div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                  Important Information
+                  {t("pageLabels.importantInfo")}
                 </h2>
                 <ul className="space-y-3 text-gray-700">
                   {importantNotes.map((note, idx) => (

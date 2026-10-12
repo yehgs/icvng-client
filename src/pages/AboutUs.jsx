@@ -82,7 +82,7 @@ const AboutUs = () => {
     { iconKey: 'truck', title: t('about.featDeliveryTitle'), description: t('about.featDeliveryDesc') },
     { iconKey: 'shield', title: t('about.featSecureTitle'), description: t('about.featSecureDesc') },
     { iconKey: 'leaf', title: t('about.featSustainTitle'), description: t('about.featSustainDesc') },
-    { iconKey: 'star', title: t('about.featSupportTitle'), description: '24/7 dedicated support team ready to assist with your queries.' },
+    { iconKey: 'star', title: t('about.featSupportTitle'), description: t('pageLabels.supportDesc') },
     { iconKey: 'rocket', title: t('about.featEasyTitle'), description: t('about.featEasyDesc') },
   ];
 
@@ -131,7 +131,7 @@ const AboutUs = () => {
               <div>
                 <img
                   src={get('whoWeAreImage', DEFAULTS.whoWeAreImage)}
-                  alt="Coffee beans"
+                  alt={t("pageLabels.coffeeBeansAlt")}
                   className="rounded-xl shadow-lg w-full h-auto"
                 />
               </div>
@@ -149,10 +149,10 @@ const AboutUs = () => {
       <div className="container mx-auto px-4 py-16">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-800 mb-4">
-            Our Core Values
+            {t("pageLabels.coreValues")}
           </h2>
           <p className="text-lg text-gray-600">
-            The principles that guide everything we do
+            {t("pageLabels.coreValuesSub")}
           </p>
         </div>
 
@@ -182,10 +182,10 @@ const AboutUs = () => {
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Our Impact
+              {t("pageLabels.ourImpact")}
             </h2>
             <p className="text-lg text-amber-100">
-              Numbers that reflect our growth and commitment
+              {t("pageLabels.ourImpactSub")}
             </p>
           </div>
 
@@ -215,7 +215,7 @@ const AboutUs = () => {
             {t('about.whyChooseTitle')}
           </h2>
           <p className="text-lg text-gray-600">
-            What makes us Nigeria's preferred coffee marketplace
+            {t("pageLabels.whyPreferred")}
           </p>
         </div>
 
@@ -252,7 +252,7 @@ const AboutUs = () => {
               <div className="text-center mb-8">
                 <FaLeaf className="text-5xl text-amber-600 mx-auto mb-4" />
                 <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                  Our Commitment to You
+                  {t("pageLabels.commitmentToYou")}
                 </h2>
               </div>
 
@@ -278,14 +278,14 @@ const AboutUs = () => {
                 className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
               >
                 <FaCoffee className="mr-2" />
-                Shop Now
+                {t("pageLabels.shopNow")}
               </Link>
               <Link
                 to="/partner-with-us"
                 className="bg-white hover:bg-gray-100 text-gray-800 px-8 py-4 rounded-lg font-semibold text-lg transition inline-flex items-center justify-center"
               >
                 <FaHandshake className="mr-2" />
-                Become a Partner
+                {t("pageLabels.becomePartner")}
               </Link>
             </div>
           </div>

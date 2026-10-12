@@ -293,9 +293,9 @@ const ComparePage = () => {
       <div className="rounded-2xl bg-gradient-to-r from-green-50 via-white to-amber-50 border border-green-100 p-5 mb-6">
         <div className="flex flex-wrap justify-between items-center gap-4">
           <div>
-            <div className="flex items-center gap-2 text-green-700 text-xs font-bold uppercase tracking-wider"><FaCheck /> Smart comparison</div>
+            <div className="flex items-center gap-2 text-green-700 text-xs font-bold uppercase tracking-wider"><FaCheck /> {t('compare.smartComparison')}</div>
             <h1 className="text-2xl font-bold text-gray-800 mt-1">{t('compare.title')}</h1>
-            <p className="text-sm text-gray-600 mt-1">Compare the details that matter before you buy.</p>
+            <p className="text-sm text-gray-600 mt-1">{t('compare.compareSubtitle')}</p>
           </div>
           <div className="flex items-center gap-2">
             <div className="rounded-full bg-white border px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm">{compareItems.length}/4 slots</div>
@@ -312,9 +312,9 @@ const ComparePage = () => {
         </div>
         {compareItems.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-            <div className="rounded-xl bg-white/90 border border-green-100 p-3"><div className="text-xs text-gray-500">Best value</div><div className="font-bold text-green-700 mt-1">{compareItems.find(i => i._id === lowestPriceId)?.name || '—'}</div></div>
-            <div className="rounded-xl bg-white/90 border border-amber-100 p-3"><div className="text-xs text-gray-500">Highest rated</div><div className="font-bold text-amber-700 mt-1">{highestRatingItem?.name || '—'}</div></div>
-            <div className="rounded-xl bg-white/90 border border-blue-100 p-3"><div className="text-xs text-gray-500">Available now</div><div className="font-bold text-blue-700 mt-1">{availableCount} of {compareItems.length}</div></div>
+            <div className="rounded-xl bg-white/90 border border-green-100 p-3"><div className="text-xs text-gray-500">{t('compare.bestValue')}</div><div className="font-bold text-green-700 mt-1">{compareItems.find(i => i._id === lowestPriceId)?.name || '—'}</div></div>
+            <div className="rounded-xl bg-white/90 border border-amber-100 p-3"><div className="text-xs text-gray-500">{t('compare.highestRated')}</div><div className="font-bold text-amber-700 mt-1">{highestRatingItem?.name || '—'}</div></div>
+            <div className="rounded-xl bg-white/90 border border-blue-100 p-3"><div className="text-xs text-gray-500">{t('compare.availableNow')}</div><div className="font-bold text-blue-700 mt-1">{t('compare.availableOf', { count: availableCount, total: compareItems.length })}</div></div>
           </div>
         )}
       </div>
@@ -388,8 +388,8 @@ const ComparePage = () => {
                             </p>
                           )}
                           <div className="flex flex-wrap justify-center gap-1 mt-2">
-                            {item._id === lowestPriceId && <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-[10px] font-bold">BEST VALUE</span>}
-                            {item._id === highestRatingItem?._id && <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">TOP RATED</span>}
+                            {item._id === lowestPriceId && <span className="px-2 py-1 rounded-full bg-green-100 text-green-800 text-[10px] font-bold">{t('compare.badgeBestValue')}</span>}
+                            {item._id === highestRatingItem?._id && <span className="px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">{t('compare.badgeTopRated')}</span>}
                           </div>
                         </div>
 

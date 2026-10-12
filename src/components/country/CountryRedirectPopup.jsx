@@ -102,7 +102,7 @@ export default function CountryRedirectPopup() {
                    animate-slide-up"
         role="dialog"
         aria-modal="true"
-        aria-label="Country suggestion"
+        aria-label={t('storefront.countrySuggestion')}
       >
         {/* Coloured top bar */}
         <div className="h-1 bg-gradient-to-r from-amber-700 to-amber-500" />

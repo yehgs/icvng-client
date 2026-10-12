@@ -268,9 +268,7 @@ const CategoryFilterSection = () => {
               </div>
             ) : (
               <div className="text-center py-12 bg-gray-50 rounded-lg">
-                <p className="text-gray-500">
-                  No products found in this category.
-                </p>
+                <p className="text-gray-500">\n\1{t('storefront.noProductsInCategory')}\n                </p>
               </div>
             )}
           </div>
@@ -306,7 +304,7 @@ const CategoryFilterSection = () => {
                 className={`w-2 h-2 rounded-full ${
                   currentSlide === index ? "bg-green-700" : "bg-gray-300"
                 } transition-colors`}
-                aria-label={`Go to slide ${index + 1}`}
+                aria-label={t('storefront.goToSlide', { number: index + 1 })}
               />
             ))}
           </div>
@@ -319,7 +317,7 @@ const CategoryFilterSection = () => {
               onClick={handleSeeMore}
               className="inline-flex items-center px-6 py-3 bg-green-700 text-white font-medium rounded-lg hover:bg-green-800 transition-colors shadow-md hover:shadow-lg"
             >
-              <span>See More {selectedCategoryName}</span>
+              <span>{t('storefront.seeMore', { name: selectedCategoryName })}</span>
               <ChevronRight size={18} className="ml-2" />
             </button>
           </div>

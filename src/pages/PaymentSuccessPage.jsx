@@ -17,7 +17,9 @@ const PaymentSuccessPage = () => {
   const { fetchCartItem, fetchOrder } = useGlobalContext();
 
   const orderDetails = location.state?.orderDetails;
-  const paymentMethod = location.state?.paymentMethod || 'Card Payment';
+  const rawPaymentMethod = location.state?.paymentMethod || 'Card Payment';
+  const paymentMethod =
+    { 'Card Payment': t('paymentSuccess.methodCard'), 'Gift Card': t('paymentSuccess.methodGiftCard') }[rawPaymentMethod] || rawPaymentMethod;
 
   useEffect(() => {
     // Refresh cart and orders when component mounts

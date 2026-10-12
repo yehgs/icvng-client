@@ -208,7 +208,7 @@ const FomoWidget = () => {
             setDismissed(true);
           }}
           className="absolute top-1.5 right-1.5 text-gray-400 hover:text-gray-600 p-0.5"
-          aria-label="Dismiss"
+          aria-label={t('storefront.dismiss')}
         >
           <X className="w-3.5 h-3.5" />
         </button>

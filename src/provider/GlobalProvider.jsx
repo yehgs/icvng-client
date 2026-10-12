@@ -100,6 +100,7 @@ const GlobalProvider = ({ children }) => {
     country: activeCountry,
     formatPrice: countryFormatPrice,
     hasPaystack,
+    t,
   } = useCountry();
 
   // Default selected currency to the active country's native currency —
@@ -112,11 +113,11 @@ const GlobalProvider = ({ children }) => {
   // dynamically from the country config so new markets work with zero code
   // changes here.
   const CURRENCY_CATALOG = [
-    { code: "NGN", name: "Nigerian Naira", symbol: "₦" },
-    { code: "USD", name: "US Dollar", symbol: "$" },
-    { code: "EUR", name: "Euro", symbol: "€" },
-    { code: "GBP", name: "British Pound", symbol: "£" },
-    { code: "XOF", name: "CFA Franc", symbol: "CFA" },
+    { code: "NGN", name: t("currencyNames.NGN"), symbol: "₦" },
+    { code: "USD", name: t("currencyNames.USD"), symbol: "$" },
+    { code: "EUR", name: t("currencyNames.EUR"), symbol: "€" },
+    { code: "GBP", name: t("currencyNames.GBP"), symbol: "£" },
+    { code: "XOF", name: t("currencyNames.XOF"), symbol: "CFA" },
   ];
   const knownCodes = CURRENCY_CATALOG.map((c) => c.code);
   const catalog = knownCodes.includes(defaultCurrency)
@@ -204,9 +205,7 @@ const GlobalProvider = ({ children }) => {
       // Matches the original exactly: only toast on the bulk-endpoint
       // success path, never after the per-item fallback loop.
       if (!usedFallback && migratedCount > 0) {
-        toast.success(
-          `${migratedCount} cart item${migratedCount > 1 ? "s" : ""} added to your account`,
-        );
+        toast.success(t("common.cartItemsMerged", { count: migratedCount }));
       }
     } finally {
       setIsMerging(false);
@@ -286,7 +285,7 @@ const GlobalProvider = ({ children }) => {
   const isInCompare = (id) => compareItems.some((i) => i._id === id);
   const addToCompare = (p) => {
     if (compareItems.length >= 4) {
-      toast.error("You can only compare up to 4 products");
+      toast.error(t("compare.maxProducts"));
       return false;
     }
     if (!isInCompare(p._id)) {
