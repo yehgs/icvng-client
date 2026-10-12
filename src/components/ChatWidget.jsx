@@ -166,7 +166,7 @@ export default function ChatWidget() {
     <div className="fixed z-[9990] bottom-20 sm:bottom-5 right-4 rtl:right-auto rtl:left-4 font-sans" data-testid="chat-widget">
       {open && (
         <div className="fixed inset-0 sm:static sm:w-[370px] sm:h-[540px] sm:mb-3 bg-white rounded-none sm:rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-3 bg-[#4a2c17] text-white">
+          <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-br from-[#d97706] to-[#ea580c] text-white">
             {agent?.image ? <img src={agent.image} alt="" className="w-9 h-9 rounded-full object-cover bg-white/20" />
               : <div className="w-9 h-9 rounded-full bg-white/15 grid place-items-center">{conv?.humanInvolved ? <UserRound className="w-5 h-5" /> : <Bot className="w-5 h-5" />}</div>}
             <div className="min-w-0 flex-1">
@@ -184,8 +184,8 @@ export default function ChatWidget() {
               const mine = m.senderType === "visitor";
               return (
                 <div key={m.seq} className={`flex ${mine ? "justify-end" : "justify-start"}`}>
-                  {!mine && m.senderType === "agent" && (m.sender?.image ? <img src={m.sender.image} alt="" className="w-6 h-6 rounded-full object-cover mr-1.5 mt-1" /> : <div className="w-6 h-6 rounded-full bg-[#4a2c17] text-white text-[10px] grid place-items-center mr-1.5 mt-1">{(m.sender?.name || "?")[0]}</div>)}
-                  <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${mine ? "bg-[#4a2c17] text-white rounded-br-sm" : "bg-white text-gray-800 border border-gray-200 rounded-bl-sm"}`}>
+                  {!mine && m.senderType === "agent" && (m.sender?.image ? <img src={m.sender.image} alt="" className="w-6 h-6 rounded-full object-cover mr-1.5 mt-1" /> : <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#d97706] to-[#ea580c] text-white text-[10px] grid place-items-center mr-1.5 mt-1">{(m.sender?.name || "?")[0]}</div>)}
+                  <div className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm whitespace-pre-wrap break-words ${mine ? "bg-gradient-to-br from-[#d97706] to-[#ea580c] text-white rounded-br-sm" : "bg-white text-gray-800 border border-gray-200 rounded-bl-sm"}`}>
                     {m.senderType === "agent" && <div className="text-[10px] text-gray-400 mb-0.5">{m.sender?.name} · {m.sender?.role}</div>}
                     {m.text}
                   </div>
@@ -202,7 +202,7 @@ export default function ChatWidget() {
                 <input type="email" className="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm" placeholder={t("chat.email")} value={contact.email} onChange={(e) => setContact({ ...contact, email: e.target.value })} />
                 <input type="tel" className="w-full border border-gray-300 rounded-lg px-2.5 py-1.5 text-sm" placeholder={t("chat.whatsapp")} value={contact.whatsapp} onChange={(e) => setContact({ ...contact, whatsapp: e.target.value })} />
                 <div className="flex gap-2">
-                  <button type="submit" className="flex-1 bg-[#4a2c17] text-white rounded-lg py-1.5 text-sm">{t("chat.saveContact")}</button>
+                  <button type="submit" className="flex-1 bg-gradient-to-br from-[#d97706] to-[#ea580c] text-white rounded-lg py-1.5 text-sm">{t("chat.saveContact")}</button>
                   <button type="button" onClick={() => { store.current.contactDismissed = true; write(store.current); setShowContact(false); }} className="px-3 text-sm text-gray-500">{t("chat.skip")}</button>
                 </div>
               </form>
@@ -215,7 +215,7 @@ export default function ChatWidget() {
                   <div><div className="text-xs text-gray-600 mb-1">{t("chat.rateTitle")}</div>
                     <div className="flex justify-center gap-1">{[1, 2, 3, 4, 5].map((s) => <button key={s} onClick={() => rate(s)} aria-label={`${s}`}><Star className="w-6 h-6 text-amber-400 hover:fill-amber-400" /></button>)}</div></div>
                 ) : <div className="text-xs text-green-700">{t("chat.rateThanks")}</div>}
-                <button onClick={newChat} className="text-sm underline text-[#4a2c17]">{t("chat.startNew")}</button>
+                <button onClick={newChat} className="text-sm underline text-[#c2410c]">{t("chat.startNew")}</button>
               </div>
             )}
             {err && <div className="text-xs text-red-600 text-center">{err}</div>}
@@ -225,12 +225,12 @@ export default function ChatWidget() {
           {!closed && (
             <div className="border-t border-gray-200 bg-white p-2">
               {conv && !conv.humanInvolved && (
-                <button onClick={callHuman} disabled={busy} className="mb-1.5 text-[11px] text-[#4a2c17] underline">{t("chat.talkToPerson")}</button>
+                <button onClick={callHuman} disabled={busy} className="mb-1.5 text-[11px] text-[#c2410c] underline">{t("chat.talkToPerson")}</button>
               )}
               <div className="flex items-end gap-2">
                 <textarea rows={1} value={text} maxLength={2000} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-                  placeholder={t("chat.placeholder")} className="flex-1 resize-none border border-gray-300 rounded-xl px-3 py-2 text-sm max-h-28 focus:outline-none focus:ring-2 focus:ring-[#4a2c17]/30" />
-                <button onClick={send} disabled={busy || !text.trim() || !conv} aria-label={t("chat.send")} className="w-10 h-10 rounded-full bg-[#4a2c17] text-white grid place-items-center disabled:opacity-40">
+                  placeholder={t("chat.placeholder")} className="flex-1 resize-none border border-gray-300 rounded-xl px-3 py-2 text-sm max-h-28 focus:outline-none focus:ring-2 focus:ring-[#ea580c]/30" />
+                <button onClick={send} disabled={busy || !text.trim() || !conv} aria-label={t("chat.send")} className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d97706] to-[#ea580c] text-white grid place-items-center disabled:opacity-40">
                   {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                 </button>
               </div>
@@ -240,7 +240,7 @@ export default function ChatWidget() {
       )}
 
       {!open && (
-        <button onClick={() => setOpen(true)} aria-label={t("chat.open")} className="relative w-14 h-14 rounded-full bg-[#4a2c17] text-white shadow-xl grid place-items-center hover:scale-105 transition-transform">
+        <button onClick={() => setOpen(true)} aria-label={t("chat.open")} className="relative w-14 h-14 rounded-full bg-gradient-to-br from-[#d97706] to-[#ea580c] text-white shadow-xl shadow-orange-500/40 ring-4 ring-white grid place-items-center hover:scale-105 transition-transform">
           <MessageCircle className="w-7 h-7" />
           {unread > 0 && <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-red-600 text-[11px] grid place-items-center">{unread}</span>}
         </button>
