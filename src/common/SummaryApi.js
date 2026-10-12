@@ -7,6 +7,18 @@ import { endpoints } from "@yehgs/icvng-core/api";
 
 export const baseURL = import.meta.env.VITE_API_URL;
 
-const SummaryApi = endpoints;
+// Gift-card purchase via CinetPay (Togo/Benin). Defined here, not in the core
+// package, so it ships without a core release.
+const SummaryApi = {
+  ...endpoints,
+  purchaseGiftCardCinetpay: {
+    url: "/api/gift-card/purchase/cinetpay",
+    method: "post",
+  },
+  verifyGiftCardCinetpay: {
+    url: "/api/gift-card/purchase/cinetpay/verify", // + /:reference
+    method: "get",
+  },
+};
 
 export default SummaryApi;

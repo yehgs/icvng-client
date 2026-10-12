@@ -8,14 +8,21 @@ import AxiosToastError from '../utils/AxiosToastError';
 import { useCountry } from '../context/CountryContext.jsx';
 import { useTranslation } from '../hooks/useTranslation';
 
-const PRESET_AMOUNTS_NGN = [5000, 10000, 25000, 50000];
-const PRESET_AMOUNTS_OTHER = [10, 25, 50, 100];
+// Presets and minimums per currency (must match AMOUNT_LIMITS on the server).
+const PRESETS = {
+  NGN: [5000, 10000, 25000, 50000],
+  XOF: [5000, 10000, 25000, 50000],
+  XAF: [5000, 10000, 25000, 50000],
+};
+const PRESETS_DEFAULT = [10, 25, 50, 100];
+const MIN_AMOUNT = { NGN: 1000, XOF: 2000, XAF: 2000 };
 
 const GiftCardBuyPage = () => {
   const { t } = useTranslation();
-  const { hasPaystack, hasStripe, country, formatPrice } = useCountry();
+  const { hasPaystack, hasStripe, hasCinetPay, country, formatPrice } = useCountry();
   const currency = country?.currency?.code || 'NGN';
-  const presets = currency === 'NGN' ? PRESET_AMOUNTS_NGN : PRESET_AMOUNTS_OTHER;
+  const presets = PRESETS[currency] || PRESETS_DEFAULT;
+  const minAmount = MIN_AMOUNT[currency] || 5;
 
   const [amount, setAmount] = useState(presets[1]);
   const [customAmount, setCustomAmount] = useState('');
@@ -31,6 +38,10 @@ const GiftCardBuyPage = () => {
       toast.error(t('giftCardBuy.amountRequired'));
       return;
     }
+    if (finalAmount < minAmount) {
+      toast.error(`${t('giftCardBuy.amountRequired')} (min ${formatPrice ? formatPrice(minAmount) : minAmount})`);
+      return;
+    }
     if (!form.recipientEmail) {
       toast.error(t('giftCardBuy.recipientEmailRequired'));
       return;
@@ -43,7 +54,13 @@ const GiftCardBuyPage = () => {
     setSubmitting(true);
     try {
       const payload = { amount: finalAmount, ...form };
-      if (hasPaystack && currency === 'NGN') {
+      if (hasCinetPay && currency !== 'NGN') {
+        // Togo / Benin — same local gateway as checkout.
+        const res = await Axios({ ...SummaryApi.purchaseGiftCardCinetpay, data: payload });
+        if (res.data.success) {
+          window.location.href = res.data.data.paymentUrl;
+        }
+      } else if (hasPaystack && currency === 'NGN') {
         const res = await Axios({ ...SummaryApi.purchaseGiftCardPaystack, data: payload });
         if (res.data.success) {
           window.location.href = res.data.data.authorizationUrl;

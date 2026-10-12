@@ -1,71 +1,73 @@
 //client/src/route/index.jsx
 import { createBrowserRouter } from "react-router-dom";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyRetry } from "../utils/lazyRetry.js";
 import App from "../App";
 import Home from "../pages/Home";
-const SearchPage = lazy(() => import("../pages/SearchPage"));
-const Login = lazy(() => import("../pages/Login"));
-const VerifyEmail = lazy(() => import("../pages/VerifyEmail"));
-const Register = lazy(() => import("../pages/Register"));
-const ForgotPassword = lazy(() => import("../pages/ForgotPassword"));
-const OtpVerification = lazy(() => import("../pages/OtpVerification"));
-const ResetPassword = lazy(() => import("../pages/ResetPassword"));
-const UserMenuMobile = lazy(() => import("../pages/UserMenuMobile"));
+const SearchPage = lazyRetry(() => import("../pages/SearchPage"));
+const Login = lazyRetry(() => import("../pages/Login"));
+const VerifyEmail = lazyRetry(() => import("../pages/VerifyEmail"));
+const Register = lazyRetry(() => import("../pages/Register"));
+const ForgotPassword = lazyRetry(() => import("../pages/ForgotPassword"));
+const OtpVerification = lazyRetry(() => import("../pages/OtpVerification"));
+const ResetPassword = lazyRetry(() => import("../pages/ResetPassword"));
+const UserMenuMobile = lazyRetry(() => import("../pages/UserMenuMobile"));
 import Dashboard from "../layouts/Dashboard";
-const Profile = lazy(() => import("../pages/Profile"));
-const MyOrders = lazy(() => import("../pages/MyOrders"));
-const Address = lazy(() => import("../pages/Address"));
-const CategoryPage = lazy(() => import("../pages/CategoryPage"));
-const BrandPage = lazy(() => import("../pages/BrandPage"));
-const SliderPage = lazy(() => import("../pages/SliderPage"));
-const CoffeeRoastAreas = lazy(() => import("../components/CoffeeRoastAreas"));
-const SubCategoryPage = lazy(() => import("../pages/SubCategoryPage"));
-const UploadProduct = lazy(() => import("../pages/UploadProduct"));
-const ProductAdmin = lazy(() => import("../pages/ProductAdmin"));
+const Profile = lazyRetry(() => import("../pages/Profile"));
+const MyOrders = lazyRetry(() => import("../pages/MyOrders"));
+const Address = lazyRetry(() => import("../pages/Address"));
+const CategoryPage = lazyRetry(() => import("../pages/CategoryPage"));
+const BrandPage = lazyRetry(() => import("../pages/BrandPage"));
+const SliderPage = lazyRetry(() => import("../pages/SliderPage"));
+const CoffeeRoastAreas = lazyRetry(() => import("../components/CoffeeRoastAreas"));
+const SubCategoryPage = lazyRetry(() => import("../pages/SubCategoryPage"));
+const UploadProduct = lazyRetry(() => import("../pages/UploadProduct"));
+const ProductAdmin = lazyRetry(() => import("../pages/ProductAdmin"));
 import AdminPermision from "../layouts/AdminPermision";
-const ProductDisplayPage = lazy(() => import("../pages/ProductDisplayPage"));
-const CartMobile = lazy(() => import("../pages/CartMobile"));
-const CheckoutPage = lazy(() => import("../pages/CheckoutPage"));
-const Success = lazy(() => import("../pages/Success"));
-const Cancel = lazy(() => import("../pages/Cancel"));
+const ProductDisplayPage = lazyRetry(() => import("../pages/ProductDisplayPage"));
+const CartMobile = lazyRetry(() => import("../pages/CartMobile"));
+const CheckoutPage = lazyRetry(() => import("../pages/CheckoutPage"));
+const Success = lazyRetry(() => import("../pages/Success"));
+const Cancel = lazyRetry(() => import("../pages/Cancel"));
 // Phase 4: Google OAuth callback page
-const GoogleAuthSuccess = lazy(() => import("../pages/GoogleAuthSuccess"));
-const Attributes = lazy(() => import("../components/Attributes"));
-const Tags = lazy(() => import("../components/Tags"));
-const WishlistPage = lazy(() => import("../pages/WishListPage"));
-const ShopPage = lazy(() => import("../pages/EnhancedShopPage"));
-const CategoryDetailPage = lazy(() => import("../components/CategoryDetailPage"));
-const NotFoundPage = lazy(() => import("../components/NotFoundPage"));
-const ProductRequestPage = lazy(() => import("../pages/ProductRequestPage"));
-const UserProductRequests = lazy(() => import("../pages/UserProductRequests.jsx"));
-const AdminRatingsPage = lazy(() => import("../pages/AdminRatingsPage.jsx"));
-const BannerAdmin = lazy(() => import("../pages/BannerAdmin.jsx"));
-const WishListPage = lazy(() => import("../pages/WishListPage.jsx"));
-const ComparePage = lazy(() => import("../pages/ComparePage.jsx"));
-const BankTransferInstructionsPage = lazy(() => import("../pages/BankTransferInstructionPage.jsx"));
-const TrackingPage = lazy(() => import("../pages/TrackingPage"));
-const BlogPage = lazy(() => import("../pages/BlogPage.jsx"));
-const SingleBlogPost = lazy(() => import("../pages/SingleBlogPost.jsx"));
-const PaymentSuccessPage = lazy(() => import("../pages/PaymentSuccessPage"));
-const PaymentCancelPage = lazy(() => import("../pages/PaymentCancelPage"));
-const PaystackCallbackPage = lazy(() => import("../pages/PaystackCallbackPage"));
-const CinetpayCallbackPage = lazy(() => import("../pages/CinetpayCallbackPage"));
-const GiftCardBuyPage = lazy(() => import("../pages/GiftCardBuyPage"));
-const GiftCardBalancePage = lazy(() => import("../pages/GiftCardBalancePage"));
-const GiftCardPaystackCallbackPage = lazy(() => import("../pages/GiftCardPaystackCallbackPage"));
-const GiftCardStripeCallbackPage = lazy(() => import("../pages/GiftCardStripeCallbackPage"));
+const GoogleAuthSuccess = lazyRetry(() => import("../pages/GoogleAuthSuccess"));
+const Attributes = lazyRetry(() => import("../components/Attributes"));
+const Tags = lazyRetry(() => import("../components/Tags"));
+const WishlistPage = lazyRetry(() => import("../pages/WishListPage"));
+const ShopPage = lazyRetry(() => import("../pages/EnhancedShopPage"));
+const CategoryDetailPage = lazyRetry(() => import("../components/CategoryDetailPage"));
+const NotFoundPage = lazyRetry(() => import("../components/NotFoundPage"));
+const ProductRequestPage = lazyRetry(() => import("../pages/ProductRequestPage"));
+const UserProductRequests = lazyRetry(() => import("../pages/UserProductRequests.jsx"));
+const AdminRatingsPage = lazyRetry(() => import("../pages/AdminRatingsPage.jsx"));
+const BannerAdmin = lazyRetry(() => import("../pages/BannerAdmin.jsx"));
+const WishListPage = lazyRetry(() => import("../pages/WishListPage.jsx"));
+const ComparePage = lazyRetry(() => import("../pages/ComparePage.jsx"));
+const BankTransferInstructionsPage = lazyRetry(() => import("../pages/BankTransferInstructionPage.jsx"));
+const TrackingPage = lazyRetry(() => import("../pages/TrackingPage"));
+const BlogPage = lazyRetry(() => import("../pages/BlogPage.jsx"));
+const SingleBlogPost = lazyRetry(() => import("../pages/SingleBlogPost.jsx"));
+const PaymentSuccessPage = lazyRetry(() => import("../pages/PaymentSuccessPage"));
+const PaymentCancelPage = lazyRetry(() => import("../pages/PaymentCancelPage"));
+const PaystackCallbackPage = lazyRetry(() => import("../pages/PaystackCallbackPage"));
+const CinetpayCallbackPage = lazyRetry(() => import("../pages/CinetpayCallbackPage"));
+const GiftCardBuyPage = lazyRetry(() => import("../pages/GiftCardBuyPage"));
+const GiftCardBalancePage = lazyRetry(() => import("../pages/GiftCardBalancePage"));
+const GiftCardPaystackCallbackPage = lazyRetry(() => import("../pages/GiftCardPaystackCallbackPage"));
+const GiftCardCinetpayCallbackPage = lazyRetry(() => import("../pages/GiftCardCinetpayCallbackPage"));
+const GiftCardStripeCallbackPage = lazyRetry(() => import("../pages/GiftCardStripeCallbackPage"));
 
 // New Pages
-const PartnerWithUs = lazy(() => import("../pages/PartnerWithUs"));
-const AboutUs = lazy(() => import("../pages/AboutUs.jsx"));
-const OurStory = lazy(() => import("../pages/Ourstory.jsx"));
-const ReturnPolicy = lazy(() => import("../pages/ReturnPolicy"));
-const ContactUs = lazy(() => import("../pages/Contactus.jsx"));
-const FAQ = lazy(() => import("../pages/Faq.jsx"));
-const ShippingPolicy = lazy(() => import("../pages/ShippingPolicy"));
-const TermsConditions = lazy(() => import("../pages/TermsConditions"));
-const PrivacyPolicy = lazy(() => import("../pages/Privacypolicy.jsx"));
-const AdminBlogManagement = lazy(() => import("../pages/admin/AdminBlogManagement"));
+const PartnerWithUs = lazyRetry(() => import("../pages/PartnerWithUs"));
+const AboutUs = lazyRetry(() => import("../pages/AboutUs.jsx"));
+const OurStory = lazyRetry(() => import("../pages/Ourstory.jsx"));
+const ReturnPolicy = lazyRetry(() => import("../pages/ReturnPolicy"));
+const ContactUs = lazyRetry(() => import("../pages/Contactus.jsx"));
+const FAQ = lazyRetry(() => import("../pages/Faq.jsx"));
+const ShippingPolicy = lazyRetry(() => import("../pages/ShippingPolicy"));
+const TermsConditions = lazyRetry(() => import("../pages/TermsConditions"));
+const PrivacyPolicy = lazyRetry(() => import("../pages/Privacypolicy.jsx"));
+const AdminBlogManagement = lazyRetry(() => import("../pages/admin/AdminBlogManagement"));
 
 const router = createBrowserRouter([
   {
@@ -255,6 +257,10 @@ const router = createBrowserRouter([
       {
         path: "gift-cards/stripe/callback",
         element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><GiftCardStripeCallbackPage  /></Suspense>,
+      },
+{
+        path: "gift-cards/cinetpay/callback",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><GiftCardCinetpayCallbackPage  /></Suspense>,
       },
       // Dashboard Routes
       {
