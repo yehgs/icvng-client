@@ -11,6 +11,11 @@ export const baseURL = import.meta.env.VITE_API_URL;
 // package, so it ships without a core release.
 const SummaryApi = {
   ...endpoints,
+  // Banner landing pages (training / machine rental) -> emailed via Resend, not stored
+  submitBookingRequest: {
+    url: "/api/booking-requests",
+    method: "post",
+  },
   purchaseGiftCardCinetpay: {
     url: "/api/gift-card/purchase/cinetpay",
     method: "post",

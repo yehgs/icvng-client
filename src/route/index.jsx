@@ -59,6 +59,8 @@ const GiftCardStripeCallbackPage = lazyRetry(() => import("../pages/GiftCardStri
 
 // New Pages
 const PartnerWithUs = lazyRetry(() => import("../pages/PartnerWithUs"));
+const BookBaristaTraining = lazyRetry(() => import("../pages/BookBaristaTraining"));
+const RentCoffeeMachine = lazyRetry(() => import("../pages/RentCoffeeMachine"));
 const AboutUs = lazyRetry(() => import("../pages/AboutUs.jsx"));
 const OurStory = lazyRetry(() => import("../pages/Ourstory.jsx"));
 const ReturnPolicy = lazyRetry(() => import("../pages/ReturnPolicy"));
@@ -126,6 +128,15 @@ const router = createBrowserRouter([
       {
         path: "shop",
         element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><ShopPage  /></Suspense>,
+      },
+      // Banner landing pages (registration + calendar booking)
+      {
+        path: "book-barista-training",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><BookBaristaTraining /></Suspense>,
+      },
+      {
+        path: "rent-coffee-machine",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><RentCoffeeMachine /></Suspense>,
       },
       // Company & Information Pages
       {
