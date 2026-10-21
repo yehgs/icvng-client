@@ -84,6 +84,10 @@ const ShopFilter = ({ onApplyFilters, initialFilters = {} }) => {
     { value: '8/10', label: '8' },
     { value: '9/10', label: '9' },
     { value: '10/10', label: '10 - Very Strong' },
+    { value: '10/13', label: '10/13' },
+    { value: '11/13', label: '11/13' },
+    { value: '12/13', label: '12/13' },
+    { value: '13/13', label: '13/13' },
   ];
 
   const blendOptions = [

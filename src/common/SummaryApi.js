@@ -11,7 +11,7 @@ export const baseURL = import.meta.env.VITE_API_URL;
 // package, so it ships without a core release.
 const SummaryApi = {
   ...endpoints,
-  // Banner landing pages (training / machine rental) -> emailed via Resend, not stored
+  // Banner landing pages (training / machine rental) -> saved for the Nigeria team + emailed via Resend
   submitBookingRequest: {
     url: "/api/booking-requests",
     method: "post",

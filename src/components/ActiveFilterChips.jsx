@@ -53,7 +53,12 @@ const ActiveFilterChips = ({
     }
 
     if (type === "intensity") {
-      return t("shop.chipIntensityValue", { value: value.split("/")[0] });
+      const [num, max] = value.split("/");
+      // Keep the short "Intensity 7" form for the /10 scale; show the full
+      // ratio for the /13 scale so 10/10 and 10/13 stay distinguishable.
+      return t("shop.chipIntensityValue", {
+        value: max === "13" ? value : num,
+      });
     }
 
     if (type === "category" && categoryMap[value]) {

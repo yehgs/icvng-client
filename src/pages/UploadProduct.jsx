@@ -502,8 +502,10 @@ const UploadProduct = () => {
               onChange={handleChange}
             >
               <option value={null}>Select Intensity</option>
-              {[...Array(10)].map((_, i) => {
-                const value = `${i + 1}/10`;
+              {[
+                ...Array.from({ length: 10 }, (_, i) => `${i + 1}/10`),
+                ...Array.from({ length: 4 }, (_, i) => `${i + 10}/13`),
+              ].map((value) => {
                 return (
                   <option key={value} value={value}>
                     {value}

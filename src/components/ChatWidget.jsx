@@ -39,7 +39,7 @@ export default function ChatWidget() {
   const openRef = useRef(false);
   openRef.current = open;
 
-  const headers = () => ({ "x-chat-token": store.current.token || "" });
+  const headers = () => ({ "x-chat-token": store.current.token || "", "x-language": language });
   const merge = useCallback((incoming) => {
     if (!incoming?.length) return;
     setMsgs((m) => {
