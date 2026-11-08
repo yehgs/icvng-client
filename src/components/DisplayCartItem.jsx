@@ -10,6 +10,8 @@ import imageEmpty from '../assets/empty_cart.webp';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useCountry } from '../context/CountryContext';
+import { useCampaign } from '../context/CampaignContext';
+import { lineCampaignInfo } from '../utils/campaignPrices';
 
 // ─── "Almost there!" modal — exactly like the reference app ──────────────────
 function AuthRequiredModal({ onClose, navigate, close }) {
@@ -60,6 +62,7 @@ const DisplayCartItem = ({ close }) => {
 
   const { formatPrice } = useCurrency();
   const { t } = useCountry();
+  const { offsetMs: campaignOffsetMs } = useCampaign();
   const cartItem = useSelector((state) => state.cartItem.cart);
   const navigate = useNavigate();
   const [loadingItems, setLoadingItems] = useState({});
@@ -165,7 +168,7 @@ const DisplayCartItem = ({ close }) => {
   // ─── Render a server cart item ────────────────────────────────────────────────
   const renderServerItem = (item, index) => {
     const priceOption = item.priceOption || 'regular';
-    const displayPrice = item.selectedPrice || item?.productId?.btcPrice || item?.productId?.price || 0;
+    const displayPrice = lineCampaignInfo(item, campaignOffsetMs)?.unit ?? (item.selectedPrice || item?.productId?.btcPrice || item?.productId?.price || 0);
     const key = item._id;
     const isLoading = loadingItems[key];
     return (

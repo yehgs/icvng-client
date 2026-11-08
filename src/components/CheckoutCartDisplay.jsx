@@ -12,12 +12,15 @@ import {
 import { useGlobalContext, useCurrency } from '../provider/GlobalProvider';
 import { useSelector } from 'react-redux';
 import { pricewithDiscount } from '../utils/PriceWithDiscount';
+import { useCampaign } from '../context/CampaignContext';
+import { lineCampaignInfo } from '../utils/campaignPrices';
 import toast from 'react-hot-toast';
 import AxiosToastError from '../utils/AxiosToastError';
 import { useCountry } from '../context/CountryContext';
 
 const CheckoutCartDisplay = () => {
   const { t } = useCountry();
+  const { offsetMs: campaignOffsetMs } = useCampaign();
   const {
     isLoggedIn,
     updateCartItem,
@@ -116,8 +119,8 @@ const CheckoutCartDisplay = () => {
   // Calculate item price based on price option
   const getItemPrice = (item) => {
     if (isLoggedIn && item.productId) {
-      // Use selectedPrice from backend (already calculated)
-      return item.selectedPrice || item.productId.price;
+      // A live campaign price (server-computed) wins; else the backend-calculated line price.
+      return lineCampaignInfo(item, campaignOffsetMs)?.unit ?? (item.selectedPrice || item.productId.price);
     } else if (!isLoggedIn) {
       // For guest cart, calculate based on price option
       const priceOption = item.priceOption || 'regular';
@@ -143,6 +146,8 @@ const CheckoutCartDisplay = () => {
   // Get item original price (before discount)
   const getItemOriginalPrice = (item) => {
     if (isLoggedIn && item.productId) {
+      const camp = lineCampaignInfo(item, campaignOffsetMs);
+      if (camp) return camp.original;
       const priceOption = item.priceOption || 'regular';
       if (priceOption === '3weeks' && item.productId.price3weeksDelivery > 0) {
         return item.productId.price3weeksDelivery;
@@ -168,6 +173,9 @@ const CheckoutCartDisplay = () => {
   // Get item discount
   const getItemDiscount = (item) => {
     if (isLoggedIn && item.productId) {
+      // Campaign pricing replaces the standing discount for this line (they never stack).
+      const camp = lineCampaignInfo(item, campaignOffsetMs);
+      if (camp) return Math.max(1, Math.round(camp.campaign.discountPercentage || 0));
       return item.productId.discount || 0;
     } else if (!isLoggedIn) {
       return item.discount || 0;

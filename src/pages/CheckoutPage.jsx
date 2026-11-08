@@ -12,6 +12,9 @@ import toast from "react-hot-toast";
 import { nigeriaStatesLgas } from "../data/nigeria-states-lgas";
 // Phase 4: country-aware payment routing
 import { useCountry } from "../context/CountryContext.jsx";
+import { useCampaign } from "../context/CampaignContext.jsx";
+import { withCampaignPrices } from "../utils/campaignPrices.js";
+import { isPriceChanged } from "@yehgs/icvng-core/campaigns";
 import { useTranslation } from "../hooks/useTranslation";
 import {
   MapPin,
@@ -327,7 +330,16 @@ const CheckoutPage = () => {
   // Stripe makes sense for a currency the receiving account doesn't hold.
   const bankTransferAvailable =
     hasBankTransfer && selectedCurrency === bankTransferDetails?.currencyCode;
-  const cartItem = useSelector((state) => state.cartItem.cart);
+  const rawCartItem = useSelector((state) => state.cartItem.cart);
+  // Lines carry the server's live campaign price (if any); subtotal, totals and
+  // the submitted order items all derive from this. The server re-prices every
+  // line and answers 409 PRICE_CHANGED if this view is stale.
+  const { offsetMs: campaignOffsetMs, epoch: campaignEpoch, refresh: refreshCampaign } = useCampaign();
+  const cartItem = useMemo(
+    () => withCampaignPrices(rawCartItem, campaignOffsetMs),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [rawCartItem, campaignOffsetMs, campaignEpoch],
+  );
   const user = useSelector((state) => state.user);
   const navigate = useNavigate();
 
@@ -588,6 +600,12 @@ const CheckoutPage = () => {
         });
 
         if (!result.success) {
+          if (isPriceChanged(result)) {
+            // A campaign started/ended/changed since the cart was priced: reload both and let the shopper review.
+            toast.error(t("campaign.priceChanged"), { duration: 7000 });
+            await Promise.all([fetchCartItem?.(), refreshCampaign?.()]);
+            return;
+          }
           toast.error(result.message);
           return;
         }
@@ -651,6 +669,12 @@ const CheckoutPage = () => {
         });
 
         if (!result.success) {
+          if (isPriceChanged(result)) {
+            // A campaign started/ended/changed since the cart was priced: reload both and let the shopper review.
+            toast.error(t("campaign.priceChanged"), { duration: 7000 });
+            await Promise.all([fetchCartItem?.(), refreshCampaign?.()]);
+            return;
+          }
           toast.error(result.message);
           return;
         }

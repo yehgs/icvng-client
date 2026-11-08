@@ -1,10 +1,12 @@
 //client
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import { useDispatch, useSelector } from "react-redux";
 // Phase 2: country-aware currency
 import { useCountry } from "../context/CountryContext.jsx";
+import { useCampaign } from "../context/CampaignContext.jsx";
+import { lineCampaignInfo } from "../utils/campaignPrices.js";
 import { handleAddItemCart } from "../store/cartProduct";
 import AxiosToastError from "../utils/AxiosToastError";
 import toast from "react-hot-toast";
@@ -102,6 +104,9 @@ const GlobalProvider = ({ children }) => {
     hasPaystack,
     t,
   } = useCountry();
+  // Server clock offset + a counter that bumps whenever campaign data changes/ends,
+  // so cart totals recompute (and drop an expired discount) without a reload.
+  const { offsetMs: campaignOffsetMs, epoch: campaignEpoch } = useCampaign();
 
   // Default selected currency to the active country's native currency —
   // i-coffee.ng → NGN, i-coffee.tg → XOF, i-coffee.it → EUR, etc.
@@ -486,11 +491,14 @@ const GlobalProvider = ({ children }) => {
         const quantity = item.quantity || 0;
         qty += quantity;
         if (item.productId) {
+          // A live campaign price (server-computed) replaces the stored line price.
+          const camp = lineCampaignInfo(item, campaignOffsetMs);
           const price =
-            item.selectedPrice ||
-            item.productId.btcPrice ||
-            item.productId.price ||
-            0;
+            camp?.unit ??
+            (item.selectedPrice ||
+              item.productId.btcPrice ||
+              item.productId.price ||
+              0);
           tPrice += price * quantity;
           const priceOption = item.priceOption || "regular";
           let orig = item.productId.btcPrice || item.productId.price || 0;
@@ -504,7 +512,7 @@ const GlobalProvider = ({ children }) => {
             item.productId.price5weeksDelivery > 0
           )
             orig = item.productId.price5weeksDelivery;
-          notDiscount += orig * quantity;
+          notDiscount += (camp?.original ?? orig) * quantity;
         }
       });
     } else {
@@ -522,7 +530,19 @@ const GlobalProvider = ({ children }) => {
     setTotalQty(qty);
     setTotalPrice(tPrice);
     setNotDiscountTotalPrice(notDiscount);
-  }, [cartItem, guestCart, isLoggedIn]);
+  }, [cartItem, guestCart, isLoggedIn, campaignEpoch, campaignOffsetMs]);
+
+  // The server re-prices each cart row (and stores selectedPrice) whenever the
+  // cart is read. When campaign data changes — a campaign started, was paused,
+  // or ended — pull a fresh cart so the stored line prices follow it, instead
+  // of showing the old campaign price until the next manual refresh.
+  const lastCampaignEpoch = useRef(campaignEpoch);
+  useEffect(() => {
+    if (lastCampaignEpoch.current === campaignEpoch) return;
+    lastCampaignEpoch.current = campaignEpoch;
+    if (isLoggedIn) fetchCartItem?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [campaignEpoch]);
 
   // ─── EFFECTS ──────────────────────────────────────────────────────────────────
   useEffect(() => {

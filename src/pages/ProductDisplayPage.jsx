@@ -31,6 +31,9 @@ import toast from "react-hot-toast";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
 import { useTranslatedProduct } from "../hooks/useTranslatedProduct.js";
 import { useCountry } from "../context/CountryContext.jsx";
+import { useCampaign } from "../context/CampaignContext.jsx";
+import CampaignBadge from "../components/campaign/CampaignBadge";
+import CampaignCountdown from "../components/campaign/CampaignCountdown";
 
 const ProductDisplayPage = () => {
   const params = useParams();
@@ -85,6 +88,7 @@ const ProductDisplayPage = () => {
   // product's own fields AND its referenced brand/category/subCategory/
   // tags/attributes, which previously stayed in English regardless.
   const { language } = useCountry();
+  const { pricingFor } = useCampaign();
   const { t } = useTranslation();
   const translatedData = useTranslatedProduct(data);
   const [selectedPriceOption, setSelectedPriceOption] = useState("regular");
@@ -658,16 +662,24 @@ const ProductDisplayPage = () => {
                                 className={`text-xl font-bold ${option.color}`}
                               >
                                 {formatPrice(
-                                  pricewithDiscount(
-                                    option.price,
-                                    data.discount,
-                                  ),
+                                  pricingFor(data, option.key)?.finalPrice ??
+                                    pricewithDiscount(
+                                      option.price,
+                                      data.discount,
+                                    ),
                                 )}
                               </div>
-                              {data.discount > 0 && (
+                              {pricingFor(data, option.key) ? (
                                 <div className="text-sm text-gray-500 line-through">
-                                  {formatPrice(option.price)}
+                                  <span className="sr-only">{t("campaign.wasPrice")} </span>
+                                  {formatPrice(pricingFor(data, option.key).originalPrice)}
                                 </div>
+                              ) : (
+                                data.discount > 0 && (
+                                  <div className="text-sm text-gray-500 line-through">
+                                    {formatPrice(option.price)}
+                                  </div>
+                                )
                               )}
                             </div>
                           </div>
@@ -738,7 +750,21 @@ const ProductDisplayPage = () => {
                   ) : null}
                 </div>
 
-                {data.discount > 0 && (
+                {pricingFor(data, selectedPriceOption) && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <CampaignBadge pricing={pricingFor(data, selectedPriceOption)} className="!text-sm !px-3 !py-1" />
+                    <span className="text-sm font-medium text-gray-700">
+                      {pricingFor(data, selectedPriceOption).campaign?.name}
+                    </span>
+                    <CampaignCountdown
+                      endsAt={pricingFor(data, selectedPriceOption).campaign?.endsAt}
+                      compact
+                      className="text-sm text-gray-700"
+                    />
+                  </div>
+                )}
+
+                {!pricingFor(data, selectedPriceOption) && data.discount > 0 && (
                   <div className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm font-medium inline-block">
                     {t('productPage.offSave', { percent: data.discount })}{" "}
                     {formatPrice(

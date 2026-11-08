@@ -32,6 +32,7 @@ import SiteMeta from "./components/SiteMeta";
 import ChatWidget from "./components/ChatWidget";
 // Phase 2
 import CountryRedirectPopup from "./components/country/CountryRedirectPopup";
+import CampaignShell from "./components/campaign/CampaignShell";
 
 // ─── Cache helpers (module-level so they're always defined) ──────────────────
 const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes
@@ -275,6 +276,8 @@ function App() {
 
   return (
     <GlobalProvider>
+      {/* Seasonal campaign: themed announcement bar + decorative effect (no effect on checkout) */}
+      <CampaignShell hideEffect={location.pathname.startsWith("/checkout")} />
       <HeaderTest />
       <main className="min-h-[78vh]">
         <Outlet />

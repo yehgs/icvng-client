@@ -13,6 +13,7 @@ import "./styles/editor.css";
 import { reloadOnceForNewDeploy } from "./utils/lazyRetry.js";
 // Phase 2: country / i18n
 import { CountryProvider } from "./context/CountryContext.jsx";
+import { CampaignProvider } from "./context/CampaignContext.jsx";
 
 // Stale-deploy chunk errors (see utils/lazyRetry.js) — also catch Vite's own
 // preload failure event so CSS/modulepreload misses recover the same way.
@@ -24,7 +25,9 @@ createRoot(document.getElementById("root")).render(
   // <StrictMode>
   <Provider store={store}>
     <CountryProvider>
-      <RouterProvider router={router} />
+      <CampaignProvider>
+        <RouterProvider router={router} />
+      </CampaignProvider>
     </CountryProvider>
   </Provider>,
   // </StrictMode>,

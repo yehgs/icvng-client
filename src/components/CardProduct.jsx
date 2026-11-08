@@ -28,13 +28,17 @@ import AuthModal from "./AuthModel";
 import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
 import { useTranslatedProduct } from "../hooks/useTranslatedProduct.js";
 import { useCountry } from "../context/CountryContext";
+import { useCampaign } from "../context/CampaignContext";
+import CampaignBadge from "./campaign/CampaignBadge";
 
 const CardProduct = ({ data }) => {
   // Merge server-side translations (FR/IT) over the English source data —
   // covers the product's own fields AND its referenced brand/category/
   // subCategory/tags/attributes.
   const translatedData = useTranslatedProduct(data);
-  const { t } = useCountry();
+  const { t, language } = useCountry();
+  // Server-computed campaign prices (null when none is live / after expiry).
+  const { pricingFor } = useCampaign();
   const url = `/product/${valideURLConvert(data.name)}-${data._id}`;
   const [showRequestModal, setShowRequestModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -467,10 +471,14 @@ const CardProduct = ({ data }) => {
               {t("product.featured")}
             </span>
           )}
-          {Boolean(data.discount) && (
-            <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full">
-              {t('storefront.percentOff', { percent: data.discount })}
-            </span>
+          {pricingFor(data, selectedPriceOption) ? (
+            <CampaignBadge pricing={pricingFor(data, selectedPriceOption)} />
+          ) : (
+            Boolean(data.discount) && (
+              <span className="text-white bg-green-600 px-2 py-0.5 text-xs font-medium rounded-full">
+                {t('storefront.percentOff', { percent: data.discount })}
+              </span>
+            )
           )}
         </div>
       </div>
@@ -564,12 +572,38 @@ const CardProduct = ({ data }) => {
                 <span className="font-medium">{option.label}</span>
               </div>
               <div className={`font-bold ${option.color}`}>
-                {formatPrice(pricewithDiscount(option.price, data.discount))}
-                {Boolean(data.discount) && (
-                  <div className="text-xs text-gray-400 line-through">
-                    {formatPrice(option.price)}
-                  </div>
-                )}
+                {(() => {
+                  // A live campaign price (server-computed) wins over the standing discount.
+                  const cp = pricingFor(data, option.key);
+                  if (cp) {
+                    return (
+                      <>
+                        {formatPrice(cp.finalPrice)}
+                        <div className="text-xs text-gray-500 line-through">
+                          <span className="sr-only">{t("campaign.wasPrice")} </span>
+                          {formatPrice(cp.originalPrice)}
+                        </div>
+                        {cp.campaign?.endsAt && (
+                          <div className="text-[10px] font-medium text-gray-600 no-underline">
+                            {t("campaign.offerEnds", {
+                              date: new Intl.DateTimeFormat(language || undefined, { day: "numeric", month: "short" }).format(new Date(cp.campaign.endsAt)),
+                            })}
+                          </div>
+                        )}
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      {formatPrice(pricewithDiscount(option.price, data.discount))}
+                      {Boolean(data.discount) && (
+                        <div className="text-xs text-gray-400 line-through">
+                          {formatPrice(option.price)}
+                        </div>
+                      )}
+                    </>
+                  );
+                })()}
               </div>
             </div>
           ))}

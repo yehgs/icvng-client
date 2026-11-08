@@ -1,0 +1,8 @@
+/* TEAM */
+Developer: Calstins Ltd
+Website: https://calstins.com
+Product: I-Coffee
+Website: https://i-coffee.ng
+
+/* THANKS */
+Platform development and engineering: Calstins Ltd

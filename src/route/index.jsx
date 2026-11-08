@@ -27,6 +27,7 @@ import AdminPermision from "../layouts/AdminPermision";
 const ProductDisplayPage = lazyRetry(() => import("../pages/ProductDisplayPage"));
 const CartMobile = lazyRetry(() => import("../pages/CartMobile"));
 const CheckoutPage = lazyRetry(() => import("../pages/CheckoutPage"));
+const CampaignLandingPage = lazyRetry(() => import("../pages/CampaignLandingPage"));
 const Success = lazyRetry(() => import("../pages/Success"));
 const Cancel = lazyRetry(() => import("../pages/Cancel"));
 // Phase 4: Google OAuth callback page
@@ -202,6 +203,11 @@ const router = createBrowserRouter([
       {
         path: "blog/:slug",
         element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><SingleBlogPost  /></Suspense>,
+      },
+      // Seasonal campaign landing page
+      {
+        path: "campaign/:slug",
+        element: <Suspense fallback={<><div className="flex items-center justify-center min-h-[60vh]"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-secondary-200"></div></div></>}><CampaignLandingPage /></Suspense>,
       },
       // Cart & Checkout
       {
