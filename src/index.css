@@ -167,3 +167,18 @@ body {
     opacity: 1;
   }
 }
+
+
+/* Seasonal campaign: the brand tokens (primary/secondary/background/accent) are re-skinned through CSS
+   variables set by CampaignShell. The few places that use raw Tailwind amber for a MAIN action (the checkout
+   pay button) opt in with .cta-primary so the campaign colour reaches them too. No effect without a campaign. */
+html[data-campaign] .cta-primary {
+  background-color: rgb(var(--brand-primary-200));
+  color: #fff;
+}
+html[data-campaign] .cta-primary:hover:not(:disabled) {
+  background-color: rgb(var(--brand-secondary-100));
+}
+html[data-campaign] ::selection {
+  background-color: rgb(var(--brand-primary-200) / 0.35);
+}

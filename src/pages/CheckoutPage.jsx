@@ -1361,7 +1361,7 @@ const CheckoutPage = () => {
                   <button
                     onClick={handleSubmit}
                     disabled={submitting || !agreeToTerms}
-                    className="flex-1 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
+                    className="cta-primary flex-1 bg-amber-400 hover:bg-amber-500 disabled:opacity-50 text-gray-900 font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition"
                   >
                     {submitting ? (
                       <>

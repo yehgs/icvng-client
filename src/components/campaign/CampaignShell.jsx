@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { safeCampaignLink } from "@yehgs/icvng-core/campaigns";
 import { useCampaign } from "../../context/CampaignContext";
 import { useCountry } from "../../context/CountryContext";
+import { brandCssVars } from "../../utils/campaignTheme";
 import SeasonalEffect from "./SeasonalEffect";
 import CampaignCountdown from "./CampaignCountdown";
 
@@ -20,12 +21,21 @@ export default function CampaignShell({ hideEffect = false }) {
 
   useEffect(() => {
     const root = document.documentElement;
-    const names = Object.keys(cssVars || {});
-    names.forEach((n) => root.style.setProperty(n, cssVars[n]));
+    // --campaign-* (landing page + badges) and --brand-* (the Tailwind brand colours used by every page:
+    // home, shop, product, cart, checkout, orders, account). Brand vars are contrast-checked.
+    const all = { ...(cssVars || {}), ...(campaign ? brandCssVars(campaign.theme) : {}) };
+    const names = Object.keys(all);
+    names.forEach((n) => root.style.setProperty(n, all[n]));
     if (campaign) root.setAttribute("data-campaign", campaign.type || "CUSTOM");
+    // Tint the mobile browser chrome with the campaign colour, restoring the original afterwards.
+    const meta = document.querySelector('meta[name="theme-color"]');
+    const prevMeta = meta ? meta.getAttribute("content") : null;
+    const primary = campaign?.theme?.primaryColor;
+    if (meta && /^#[0-9a-f]{6}$/i.test(primary || "")) meta.setAttribute("content", primary);
     return () => {
       names.forEach((n) => root.style.removeProperty(n));
       root.removeAttribute("data-campaign");
+      if (meta && prevMeta !== null) meta.setAttribute("content", prevMeta);
     };
   }, [campaign, cssVars]);
 
