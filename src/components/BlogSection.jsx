@@ -6,6 +6,7 @@ import Axios from "../utils/Axios";
 import SummaryApi from "../common/SummaryApi";
 import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
 import { useCountry } from "../context/CountryContext";
+import SocialFeedsSection from "./SocialFeedsSection";
 
 /**
  * Blog section component for homepage featuring latest blog posts
@@ -35,69 +36,8 @@ const BlogSection = () => {
       }
     } catch (error) {
       console.error("Error fetching featured posts:", error);
-      // Fallback data for development - mark all as featured
-      setFeaturedPosts([
-        {
-          _id: "1",
-          title: "The Ethiopian Coffee Story: Birthplace of Coffee",
-          excerpt:
-            "Discover the legendary birthplace of coffee in the highlands of Ethiopia, where coffee culture began over a thousand years ago.",
-          featuredImage:
-            "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=600&h=400&fit=crop",
-          slug: "ethiopian-coffee-story-birthplace-of-coffee",
-          category: { name: "Coffee Origins", slug: "coffee-origins" },
-          author: { name: "Coffee Expert" },
-          publishedAt: new Date().toISOString(),
-          readTime: 5,
-          views: 1250,
-          featured: true,
-        },
-        {
-          _id: "2",
-          title: "Colombian Coffee: The Perfect Climate for Perfect Beans",
-          excerpt:
-            "Explore how Colombia's unique geography and climate create some of the world's most beloved coffee beans.",
-          featuredImage:
-            "https://images.unsplash.com/photo-1442550528053-c431ecb55509?w=600&h=400&fit=crop",
-          slug: "colombian-coffee-perfect-climate-perfect-beans",
-          category: { name: "Coffee Origins", slug: "coffee-origins" },
-          author: { name: "Coffee Expert" },
-          publishedAt: new Date().toISOString(),
-          readTime: 7,
-          views: 980,
-          featured: true,
-        },
-        {
-          _id: "3",
-          title: "Jamaica Blue Mountain: The World's Most Expensive Coffee",
-          excerpt:
-            "Uncover the secrets behind Jamaica Blue Mountain coffee, one of the rarest and most sought-after coffees in the world.",
-          featuredImage:
-            "https://images.unsplash.com/photo-1497935586351-b67a49e012bf?w=600&h=400&fit=crop",
-          slug: "jamaica-blue-mountain-worlds-most-expensive-coffee",
-          category: { name: "Coffee Origins", slug: "coffee-origins" },
-          author: { name: "Coffee Expert" },
-          publishedAt: new Date().toISOString(),
-          readTime: 6,
-          views: 1450,
-          featured: true,
-        },
-        {
-          _id: "4",
-          title: "Brazilian Coffee: The Giant of Global Coffee Production",
-          excerpt:
-            "Learn about Brazil's dominance in the coffee world and the diverse regions that produce everything from commodity to specialty grade beans.",
-          featuredImage:
-            "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=600&h=400&fit=crop",
-          slug: "brazilian-coffee-giant-global-production",
-          category: { name: "Coffee Origins", slug: "coffee-origins" },
-          author: { name: "Coffee Expert" },
-          publishedAt: new Date().toISOString(),
-          readTime: 8,
-          views: 890,
-          featured: true,
-        },
-      ]);
+      // Never invent posts (they would link to pages that do not exist): show the normal empty state.
+      setFeaturedPosts([]);
     } finally {
       setLoading(false);
     }
@@ -179,6 +119,8 @@ const BlogSection = () => {
 
   if (loading) {
     return (
+      <>
+      <SocialFeedsSection />
       <section className="py-12 bg-gradient-to-br from-amber-50 to-orange-50">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
@@ -202,10 +144,14 @@ const BlogSection = () => {
           </div>
         </div>
       </section>
+      </>
     );
   }
 
   return (
+    <>
+    {/* Social pages come first, on their own dark band, then the blog cards */}
+    <SocialFeedsSection />
     <section className="py-12 bg-gradient-to-br from-amber-50 to-orange-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
@@ -253,6 +199,7 @@ const BlogSection = () => {
         )}
       </div>
     </section>
+    </>
   );
 };
 

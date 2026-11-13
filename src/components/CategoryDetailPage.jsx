@@ -15,6 +15,7 @@ import noDataImage from '../assets/nothing here yet.webp';
 import ShopFilter from '../components/EnhancedShopFilter';
 import { FaSearch, FaChevronRight } from 'react-icons/fa';
 import { useTranslation } from '../hooks/useTranslation.js';
+import useSeoMeta from '../hooks/useSeoMeta.js';
 
 const CategoryDetailPage = () => {
   const { t } = useTranslation();
@@ -41,6 +42,17 @@ const CategoryDetailPage = () => {
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const [searchInput, setSearchInput] = useState(searchText);
   const [resolutionError, setResolutionError] = useState(null);
+  useSeoMeta(
+    resolutionError
+      ? { title: 'Page not found', noIndex: true }
+      : pageTitle && !loading
+        ? {
+            title: pageTitle,
+            description: `${pageTitle} — ${t('homeSections.allProducts')}`,
+            noIndex: products.length === 0,
+          }
+        : {}
+  );
 
   // Additional filter state
   const [filters, setFilters] = useState({

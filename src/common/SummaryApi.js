@@ -11,6 +11,11 @@ export const baseURL = import.meta.env.VITE_API_URL;
 // package, so it ships without a core release.
 const SummaryApi = {
   ...endpoints,
+  // Social-media page cards for the home "Coffee Stories" section (country from the request host).
+  getSocialPages: {
+    url: "/api/social/public",
+    method: "get",
+  },
   // Banner landing pages (training / machine rental) -> saved for the Nigeria team + emailed via Resend
   submitBookingRequest: {
     url: "/api/booking-requests",

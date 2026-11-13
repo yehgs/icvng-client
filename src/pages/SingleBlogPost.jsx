@@ -22,6 +22,8 @@ import SummaryApi from "../common/SummaryApi";
 import { useEntityTranslation } from "../hooks/useEntityTranslation.js";
 import { useBulkEntityTranslation } from "../hooks/useBulkEntityTranslation.js";
 import { useTranslation } from "../hooks/useTranslation.js";
+import useSeoMeta from "../hooks/useSeoMeta.js";
+import { useCountry } from "../context/CountryContext.jsx";
 
 const SingleBlogPost = () => {
   const { t } = useTranslation();
@@ -62,8 +64,6 @@ const SingleBlogPost = () => {
   useEffect(() => {
     if (post) {
       fetchRelatedPosts();
-      // Add structured data for SEO
-      addStructuredData();
     }
   }, [post]);
 
@@ -77,57 +77,11 @@ const SingleBlogPost = () => {
 
       if (response.data.success) {
         setPost(response.data.data);
-        // Update page metadata
-        updatePageMetadata(response.data.data);
       }
     } catch (error) {
       console.error("Error fetching post:", error);
-      // Fallback data for development
-      setPost({
-        _id: "1",
-        title: "The Ethiopian Coffee Story: Birthplace of Coffee",
-        excerpt:
-          "Discover the legendary birthplace of coffee in the highlands of Ethiopia, where coffee culture began over a thousand years ago.",
-        content: `
-          <h2>The Legend of Kaldi and the Dancing Goats</h2>
-          <p>The story of coffee begins in the ancient highlands of Ethiopia, where legend tells of a goat herder named Kaldi who noticed his goats becoming unusually energetic after eating certain red berries. This discovery would eventually change the world forever.</p>
-          
-          <h3>Ethiopian Coffee Regions</h3>
-          <p>Ethiopia produces some of the world's finest coffee beans, with distinct regions offering unique flavor profiles:</p>
-          <ul>
-            <li><strong>Yirgacheffe:</strong> Known for its bright acidity and floral notes</li>
-            <li><strong>Sidamo:</strong> Full-bodied with wine-like characteristics</li>
-            <li><strong>Harrar:</strong> Bold and earthy with berry undertones</li>
-          </ul>
-          
-          <h3>Traditional Coffee Ceremony</h3>
-          <p>The Ethiopian coffee ceremony is a beautiful tradition that brings communities together. Green coffee beans are roasted over an open flame, ground by hand, and brewed in a clay pot called a jebena. This ritual can take hours and represents hospitality and friendship.</p>
-        `,
-        featuredImage:
-          "https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=1200&h=600&fit=crop",
-        imageAlt: "Ethiopian coffee ceremony with traditional jebena pot",
-        slug: "ethiopian-coffee-story-birthplace-of-coffee",
-        category: { name: "Coffee Origins", slug: "coffee-origins" },
-        tags: [
-          { name: "Ethiopia", color: "#DC143C", slug: "ethiopia" },
-          { name: "Arabica", color: "#8B4513", slug: "arabica" },
-          { name: "Single Origin", color: "#228B22", slug: "single-origin" },
-        ],
-        author: {
-          name: "Coffee Expert",
-          avatar:
-            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
-        },
-        publishedAt: new Date().toISOString(),
-        readTime: 5,
-        views: 1250,
-        likes: 42,
-        seoTitle:
-          "Ethiopian Coffee Origins - The Birthplace of Coffee | I-Coffee.ng",
-        seoDescription:
-          "Learn about Ethiopian coffee origins, from the legend of Kaldi to modern coffee regions like Yirgacheffe and Sidamo.",
-        relatedProducts: [],
-      });
+      // Never fabricate a post: an unknown/failed slug must show the not-found state (and be noindex).
+      setPost(null);
     } finally {
       setLoading(false);
     }
@@ -159,78 +113,6 @@ const SingleBlogPost = () => {
         },
       ]);
     }
-  };
-
-  const updatePageMetadata = (postData) => {
-    // Update document title
-    document.title =
-      postData.seoTitle || `${postData.title} | I-Coffee.ng Blog`;
-
-    // Update meta description
-    const metaDescription = document.querySelector('meta[name="description"]');
-    if (metaDescription) {
-      metaDescription.setAttribute(
-        "content",
-        postData.seoDescription || postData.excerpt,
-      );
-    }
-
-    // Update Open Graph tags
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    const ogDescription = document.querySelector(
-      'meta[property="og:description"]',
-    );
-    const ogImage = document.querySelector('meta[property="og:image"]');
-
-    if (ogTitle)
-      ogTitle.setAttribute("content", postData.socialTitle || postData.title);
-    if (ogDescription)
-      ogDescription.setAttribute(
-        "content",
-        postData.socialDescription || postData.excerpt,
-      );
-    if (ogImage)
-      ogImage.setAttribute(
-        "content",
-        postData.socialImage || postData.featuredImage,
-      );
-  };
-
-  const addStructuredData = () => {
-    const structuredData = {
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: post.title,
-      description: post.excerpt,
-      image: post.featuredImage,
-      author: {
-        "@type": "Person",
-        name: post.author.name,
-      },
-      publisher: {
-        "@type": "Organization",
-        name: "I-Coffee.ng",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://i-coffee.ng/logo.png",
-        },
-      },
-      datePublished: post.publishedAt,
-      dateModified: post.updatedAt || post.publishedAt,
-      mainEntityOfPage: {
-        "@type": "WebPage",
-        "@id": `https://i-coffee.ng/blog/${post.slug}`,
-      },
-    };
-
-    const script = document.createElement("script");
-    script.type = "application/ld+json";
-    script.textContent = JSON.stringify(structuredData);
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
   };
 
   const formatDate = (dateString) => {
@@ -278,6 +160,46 @@ const SingleBlogPost = () => {
     setLiked(!liked);
     // In a real app, you would send this to your API
   };
+
+  const { country: seoCountry } = useCountry();
+  const seoDomain = `https://${seoCountry?.domain || "i-coffee.ng"}`;
+  useSeoMeta(
+    post
+      ? {
+          title: post.seoTitle || post.title,
+          description: post.seoDescription || post.excerpt,
+          image: post.socialImage || post.featuredImage,
+          type: "article",
+          published: post.publishedAt,
+          modified: post.updatedAt || post.publishedAt,
+          jsonLd: [
+            {
+              "@context": "https://schema.org",
+              "@type": "BlogPosting",
+              headline: post.title,
+              description: post.excerpt,
+              image: post.featuredImage || undefined,
+              author: post.author?.name ? { "@type": "Person", name: post.author.name } : undefined,
+              publisher: { "@type": "Organization", name: seoCountry?.seo?.siteName || "I-Coffee", logo: { "@type": "ImageObject", url: `${seoDomain}/favicon.svg` } },
+              datePublished: post.publishedAt,
+              dateModified: post.updatedAt || post.publishedAt,
+              mainEntityOfPage: { "@type": "WebPage", "@id": `${seoDomain}/blog/${post.slug}` },
+            },
+            {
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                { "@type": "ListItem", position: 1, name: seoCountry?.seo?.siteName || "I-Coffee", item: seoDomain },
+                { "@type": "ListItem", position: 2, name: "Blog", item: `${seoDomain}/blogs` },
+                { "@type": "ListItem", position: 3, name: post.title, item: `${seoDomain}/blog/${post.slug}` },
+              ],
+            },
+          ],
+        }
+      : loading
+        ? {}
+        : { title: "Page not found", noIndex: true }
+  );
 
   if (loading) {
     return (

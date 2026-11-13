@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Home, Coffee, Search } from 'lucide-react';
 import { useCountry } from '../context/CountryContext.jsx';
+import useSeoMeta from '../hooks/useSeoMeta.js';
 
 /**
  * 404 Not Found Page
@@ -9,6 +10,7 @@ import { useCountry } from '../context/CountryContext.jsx';
  */
 const NotFoundPage = () => {
   const { t } = useCountry();
+  useSeoMeta({ title: '404', noIndex: true });
   // Go back to previous page
   const handleGoBack = () => {
     window.history.back();

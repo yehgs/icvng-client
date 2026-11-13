@@ -32,6 +32,7 @@ import { isFiveWeekDeliveryCategory } from "../config/deliveryCategories";
 import { useTranslatedProduct } from "../hooks/useTranslatedProduct.js";
 import { useCountry } from "../context/CountryContext.jsx";
 import { useCampaign } from "../context/CampaignContext.jsx";
+import useSeoMeta from "../hooks/useSeoMeta.js";
 import CampaignBadge from "../components/campaign/CampaignBadge";
 import CampaignCountdown from "../components/campaign/CampaignCountdown";
 
@@ -87,7 +88,7 @@ const ProductDisplayPage = () => {
   // Apply server-stored translations when language is not EN — covers the
   // product's own fields AND its referenced brand/category/subCategory/
   // tags/attributes, which previously stayed in English regardless.
-  const { language } = useCountry();
+  const { language, country } = useCountry();
   const { pricingFor } = useCampaign();
   const { t } = useTranslation();
   const translatedData = useTranslatedProduct(data);
@@ -299,6 +300,57 @@ const ProductDisplayPage = () => {
     showFiveWeekDelivery,
   ]);
 
+
+  // ── SEO: title/description/OG + Product & Breadcrumb JSON-LD built from what is actually displayed ──
+  {
+    const seoCountry = country;
+    const seoDomain = `https://${seoCountry?.domain || "i-coffee.ng"}`;
+    const seoImages = (Array.isArray(data.image) ? data.image : []).filter((x) => typeof x === "string" && x);
+    const seoPrice = priceOptions[0]?.price;
+    const seoPath = typeof window !== "undefined" ? window.location.pathname : "";
+    const seoDesc = data.seoDescription || String(data.shortDescription || data.description || "").replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim().slice(0, 160);
+    useSeoMeta(
+      data._id
+        ? {
+            title: data.seoTitle || translatedData?.name || data.name,
+            description: seoDesc,
+            image: seoImages[0],
+            type: "product",
+            noIndex: data.productAvailability === false,
+            jsonLd: [
+              {
+                "@context": "https://schema.org",
+                "@type": "Product",
+                name: translatedData?.name || data.name,
+                description: seoDesc || undefined,
+                image: seoImages.slice(0, 6),
+                sku: data.sku || undefined,
+                brand: data.brand?.[0]?.name ? { "@type": "Brand", name: data.brand[0].name } : undefined,
+                aggregateRating: data.averageRating > 0 && data.ratings?.length ? { "@type": "AggregateRating", ratingValue: Number(data.averageRating).toFixed(1), reviewCount: data.ratings.length } : undefined,
+                offers: seoPrice > 0
+                  ? {
+                      "@type": "Offer",
+                      url: `${seoDomain}${seoPath}`,
+                      priceCurrency: seoCountry?.currency?.code,
+                      price: Number(seoPrice).toFixed(seoCountry?.currency?.decimals ?? 2),
+                      availability: hasAvailableStock ? "https://schema.org/InStock" : "https://schema.org/PreOrder",
+                    }
+                  : undefined,
+              },
+              {
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  { "@type": "ListItem", position: 1, name: seoCountry?.seo?.siteName || "I-Coffee", item: seoDomain },
+                  { "@type": "ListItem", position: 2, name: "Shop", item: `${seoDomain}/shop` },
+                  { "@type": "ListItem", position: 3, name: translatedData?.name || data.name, item: `${seoDomain}${seoPath}` },
+                ],
+              },
+            ],
+          }
+        : {}
+    );
+  }
   // ─────────────────────────────────────────────────────────────────────────
 
   const handleAddToCart = async () => {

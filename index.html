@@ -38,8 +38,7 @@
       content="I-Coffee platform developed by Calstins Ltd"
     />
 
-    <link rel="canonical" href="https://www.i-coffee.ng" />
-
+    
     <meta
       property="og:title"
       content="Buy Coffee Products Online in Nigeria | I-Coffee"
@@ -49,10 +48,9 @@
       content="Shop quality coffee, beans, espresso machines and accessories across Nigeria."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.i-coffee.ng" />
     <meta
       property="og:image"
-      content="http://res.cloudinary.com/dwwsz3kss/image/upload/v1752169680/icv-ng/cyzkcev27uypuzjgwna2.jpg"
+      content="https://res.cloudinary.com/dwwsz3kss/image/upload/v1752169680/icv-ng/cyzkcev27uypuzjgwna2.jpg"
     />
     <meta property="og:site_name" content="I-Coffee Nigeria" />
 
@@ -70,10 +68,15 @@
       content="https://www.i-coffee.ng/images/twitter-card.jpg"
     /> -->
 
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="theme-color" content="#4a2c1a" />
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <!-- canonical, og:url, hreflang and JSON-LD are written per page/country by src/components/SiteMeta.jsx and hooks/useSeoMeta.js;
+         a static canonical here would wrongly point every country domain at i-coffee.ng. -->
   </head>
 
   <body>
+    <noscript>I-Coffee — coffee, espresso machines and accessories. Please enable JavaScript to shop.</noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
